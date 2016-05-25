@@ -1,0 +1,162 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head> 
+    <title>Getting Started: Serving Web Content</title> 
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+
+    <!-- Optional theme -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous" />-->
+
+    <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <style>
+
+        .pointer {
+            cursor: pointer;
+        }
+
+        .PER {
+            background-color: lightyellow;
+        }
+
+        .ORG {
+            background-color: lightblue;
+        }
+
+        .LOC {
+            background-color: lightgreen;
+
+        }
+
+        .GPE {
+            background-color: lightcoral;
+        }
+
+        #text {
+            font-size: 14pt;
+        }
+
+    </style>
+
+</head>
+<body>
+  <div class="container">
+      <h3>Annotation Example</h3>
+
+
+      <div class="panel panel-default">
+          <div class="panel-body" >
+              <div th:utext="${htmlstring}" id="text" />
+          </div>
+      </div>
+
+      <a th:if="${previd} > -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default">Previous</a>
+      <a th:if="${nextid} > -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default">Next</a>
+
+
+    </div>
+</body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    $(document).ready(function() {
+
+        function getParameterByName(name) {
+            var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+            return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+        }
+
+
+        $('[data-toggle="popover"]').popover();
+
+
+        $("[id^=cons]").popover({
+            placement: "bottom",
+            content: function () {
+                var html = $("#buttons").html();
+                var out = "<div id='" + $(this)[0].id + "'>" + html + "</div>";
+                return out;
+            },
+            title: function () {
+                var t = $(this)[0];
+                return "Labeled: " + t.className + ", id: " + t.id;
+            },
+            html: true,
+            trigger: "manual"
+        }).on("click", function(){
+            $(this).popover("toggle");
+        });
+
+
+        $(".container").on("click", "button", function(){
+                var buttonvalue = $(this)[0].value;
+                var spanid = $(this).parents("[id^=cons]")[0].id;
+
+            $("#" + spanid).popover("hide");
+
+            $("#" + spanid).removeClass("PER ORG LOC GPE").addClass(buttonvalue);
+
+
+
+            console.log(buttonvalue);
+            console.log(spanid);
+
+            // I need the name of the button pressed
+            // and I need the span it is associated with.
+            $.ajax({
+                method: "POST",
+                url: "/result",
+                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
+            }).done(function (msg) {
+                console.log("WOOT");
+            });
+        });
+
+
+    });
+
+
+
+
+    /*]]>*/
+</script>
+
+<template id="buttons">
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-md-4">
+                <button type="button" id="PER" class="btn PER" th:field="PER" value="PER">PER</button>
+            </div>
+            <div class="col-md-4">
+                <button type="button" id="ORG" class="btn ORG" th:field="ORG" value="ORG">ORG</button>
+            </div>
+            <div class="col-md-4">
+
+            </div>
+        </div>
+        <div class="row"><br /></div>
+        <div class="row">
+
+            <div class="col-md-4">
+                <button type="button" id="LOC" class="btn LOC" value="LOC">LOC</button>
+            </div>
+            <div class="col-md-4">
+                <button type="button" id="GPE" class="btn GPE" value="GPE">GPE</button>
+            </div>
+            <div class="col-md-4">
+                <button type="button" id="O" class="btn btn-warning" value="O">No label</button>
+            </div>
+        </div>
+    </div>
+</template>
+
+</html>
