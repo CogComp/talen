@@ -1,21 +1,25 @@
 package hello;
+import edu.illinois.cs.cogcomp.annotation.AnnotatorException;
+import edu.illinois.cs.cogcomp.annotation.AnnotatorService;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.*;
+import edu.illinois.cs.cogcomp.core.io.LineIO;
+import edu.illinois.cs.cogcomp.core.utilities.configuration.ResourceManager;
+import edu.illinois.cs.cogcomp.nlp.pipeline.IllinoisPipelineFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.IOException;
 import java.util.*;
 
 @Controller
 public class AnnotationController {
 
     private HashMap<String, TextAnnotation> tas;
-    int currta;
-    int currconst;
 
     public HashMap<String, TextAnnotation> loadTAs(){
         TextAnnotation ta = TextAnnotationUtilities.createFromTokenizedString("Rashid Buffet is my name , and I 'm from Norway .");
@@ -44,18 +48,50 @@ public class AnnotationController {
         ret.put("1", ta2);
 
         return ret;
-
     }
 
+    public HashMap<String, TextAnnotation> loadEnglish() throws AnnotatorException, IOException {
+        ResourceManager rm = new ResourceManager( "config/pipeline-config.properties" );
+        AnnotatorService pipeline = IllinoisPipelineFactory.buildPipeline( rm );
 
-    public AnnotationController(){
-        // load a set of texannotations from CONLL format?.
+        HashMap<String, TextAnnotation> ret = new HashMap<>();
 
+        List<String> lines = LineIO.read("eng.txt");
+
+        for(int i = 0; i < 20; i++){
+            String text = lines.get(i);
+            TextAnnotation ta = pipeline.createAnnotatedTextAnnotation( "nothing", i+"", text );
+            ret.put(i + "", ta);
+        }
+
+        return ret;
+    }
+
+    @RequestMapping(value = "/dummy", method=RequestMethod.POST)
+    public String dummy(Model model){
         tas = loadTAs();
+        model.addAttribute("tas", tas);
+        return "getstarted";
+    }
 
+    @RequestMapping(value = "/english", method=RequestMethod.POST)
+    public String english(Model model){
+        try {
+            tas = loadEnglish();
+            model.addAttribute("tas", tas);
+            return "getstarted";
 
-        currta = 0;
-        currconst = 0;
+        } catch (AnnotatorException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "dummy";
+    }
+
+    @RequestMapping("/")
+    public String home(Model model){
+        return "home";
     }
 
 
