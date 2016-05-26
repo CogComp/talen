@@ -13,13 +13,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.*;
 
 @Controller
 public class AnnotationController {
 
-    private HashMap<String, TextAnnotation> tas;
+    //private HashMap<String, TextAnnotation> tas;
 
     public HashMap<String, TextAnnotation> loadTAs(){
         TextAnnotation ta = TextAnnotationUtilities.createFromTokenizedString("Rashid Buffet is my name , and I 'm from Norway .");
@@ -58,7 +59,7 @@ public class AnnotationController {
 
         List<String> lines = LineIO.read("eng.txt");
 
-        for(int i = 0; i < 20; i++){
+        for(int i = 0; i < 100; i++){
             String text = lines.get(i);
             TextAnnotation ta = pipeline.createAnnotatedTextAnnotation( "nothing", i+"", text );
             ret.put(i + "", ta);
@@ -68,35 +69,42 @@ public class AnnotationController {
     }
 
     @RequestMapping(value = "/dummy", method=RequestMethod.GET)
-    public String dummy(Model model){
-        tas = loadTAs();
+    public String dummy(HttpSession hs, Model model){
+        HashMap<String, TextAnnotation> tas = loadTAs();
+        hs.setAttribute("tas", tas);
         model.addAttribute("tas", tas);
-        return "getstarted";
+        return "redirect:/annotation";
     }
 
     @RequestMapping(value = "/english", method=RequestMethod.GET)
-    public String english(Model model){
+    public String english(HttpSession hs, Model model){
         try {
-            tas = loadEnglish();
+            HashMap<String, TextAnnotation> tas = loadEnglish();
+            hs.setAttribute("tas", tas);
             model.addAttribute("tas", tas);
-            return "getstarted";
+            return "redirect:/annotation";
 
         } catch (AnnotatorException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "dummy";
+        return "redirect:/annotation";
     }
 
     @RequestMapping("/")
-    public String home(Model model){
+    public String home(HttpSession hs){
+        System.out.println(hs.getAttributeNames());
         return "home";
     }
 
 
     @RequestMapping(value="/annotation", method=RequestMethod.GET)
-    public String annotation(@RequestParam(value="taid", defaultValue="-1") String taid, Model model) {
+    public String annotation(@RequestParam(value="taid", defaultValue="-1") String taid, HttpSession hs, Model model) {
+
+        System.out.println(hs.getAttribute("tas"));
+
+        HashMap<String, TextAnnotation> tas = (HashMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         if(!tas.containsKey(taid)){
             model.addAttribute("tas", tas);
@@ -150,7 +158,7 @@ public class AnnotationController {
 
 
     @RequestMapping(value="/result", method=RequestMethod.POST)
-    public String result(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String id, Model model) {
+    public String result(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String id, HttpSession hs, Model model) {
 
         System.out.println(label);
         System.out.println(spanid);
@@ -158,6 +166,8 @@ public class AnnotationController {
 
         String[] ss = spanid.split("-");
         Pair<Integer, Integer> span = new Pair<>(Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
+
+        HashMap<String, TextAnnotation> tas = (HashMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         TextAnnotation ta = tas.get(id);
         View ner = ta.getView(ViewNames.NER_CONLL);
