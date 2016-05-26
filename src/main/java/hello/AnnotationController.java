@@ -67,14 +67,14 @@ public class AnnotationController {
         return ret;
     }
 
-    @RequestMapping(value = "/dummy", method=RequestMethod.POST)
+    @RequestMapping(value = "/dummy", method=RequestMethod.GET)
     public String dummy(Model model){
         tas = loadTAs();
         model.addAttribute("tas", tas);
         return "getstarted";
     }
 
-    @RequestMapping(value = "/english", method=RequestMethod.POST)
+    @RequestMapping(value = "/english", method=RequestMethod.GET)
     public String english(Model model){
         try {
             tas = loadEnglish();
