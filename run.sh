@@ -1,1 +1,1 @@
-mvn spring-boot:run -Drun.addResources=true
+mvn spring-boot:run -Drun.addResources=true -Dserver.port=8080

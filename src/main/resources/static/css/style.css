@@ -1,0 +1,43 @@
+.pointer {
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 5px;
+}
+
+.PER {
+    background-color: yellow;
+}
+
+.ORG {
+    background-color: lightblue;
+}
+
+.LOC {
+    background-color: greenyellow;
+}
+
+.GPE {
+    background-color: lightcoral;
+}
+
+#legendcontainer {
+    padding: 7px;
+}
+
+.legend {
+    width: 10px;
+    height: 10px;
+    padding: 3px;
+    border-radius: 3px;
+}
+
+#text {
+    font-size: 14pt;
+}
+
+.popover{
+    max-width: 600px; /* Max Width of the popover (depending on the container!) */
+}
+
+
+/* generated here: http://work.smarchal.com/twbscolor/css/e74c3cc0392becf0f1ffbbbc0 */

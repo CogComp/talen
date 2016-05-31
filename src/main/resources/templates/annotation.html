@@ -1,55 +1,24 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
 <html xmlns:th="http://www.thymeleaf.org">
 <head> 
-    <title>Getting Started: Serving Web Content</title> 
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Annotation</title>
 
-
-
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
-
-    <!-- Optional theme -->
-    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous" />-->
-
-    <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-
-    <style>
-
-        .pointer {
-            cursor: pointer;
-        }
-
-        .PER {
-            background-color: lightyellow;
-        }
-
-        .ORG {
-            background-color: lightblue;
-        }
-
-        .LOC {
-            background-color: lightgreen;
-
-        }
-
-        .GPE {
-            background-color: lightcoral;
-        }
-
-        #text {
-            font-size: 14pt;
-        }
-
-    </style>
+    <div th:include="base :: head"></div>
 
 </head>
 <body>
+<div th:include="base :: nav"></div>
   <div class="container">
+
       <h3>Annotation Example</h3>
 
+      <div id="legendcontainer">
+          Legend:
+          <span class="PER legend">PER</span>
+          <span class="ORG legend">ORG</span>
+          <span class="LOC legend">LOC</span>
+          <span class="GPE legend">GPE</span>
+      </div>
 
       <div class="panel panel-default">
           <div class="panel-body" >
@@ -61,7 +30,9 @@
       <a th:if="${nextid} > -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default">Next</a>
 
 
-    </div>
+
+
+  </div>
 </body>
 
 <script th:inline="javascript">
@@ -73,10 +44,6 @@
             var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
             return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
         }
-
-
-        $('[data-toggle="popover"]').popover();
-
 
         $("[id^=cons]").popover({
             placement: "bottom",
@@ -104,8 +71,6 @@
 
             $("#" + spanid).removeClass("PER ORG LOC GPE").addClass(buttonvalue);
 
-
-
             console.log(buttonvalue);
             console.log(spanid);
 
@@ -119,6 +84,27 @@
                 console.log("WOOT");
             });
         });
+
+        $('body').on('click', function (e) {
+
+            $('[id^=cons]').each(function () {
+                //the 'is' for buttons that trigger popups
+                //the 'has' for icons within a button that triggers a popup
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                    $(this).popover('hide');
+                }
+            });
+
+            //buttons and icons within buttons
+            /*
+             if ($(e.target).data('toggle') !== 'popover'
+             && $(e.target).parents('[data-toggle="popover"]').length === 0
+             && $(e.target).parents('.popover.in').length === 0) {
+             $('[data-toggle="popover"]').popover('hide');
+             }
+             */
+        });
+
 
 
     });
@@ -153,7 +139,7 @@
                 <button type="button" id="GPE" class="btn GPE" value="GPE">GPE</button>
             </div>
             <div class="col-md-4">
-                <button type="button" id="O" class="btn btn-warning" value="O">No label</button>
+                <button type="button" id="O" class="btn btn-default" value="O">No label</button>
             </div>
         </div>
     </div>
