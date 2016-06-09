@@ -1,13 +1,11 @@
 package hello;
-import edu.illinois.cs.cogcomp.annotation.AnnotatorException;
-import edu.illinois.cs.cogcomp.annotation.AnnotatorService;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
-import edu.illinois.cs.cogcomp.core.datastructures.textannotation.*;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
-import edu.illinois.cs.cogcomp.core.utilities.configuration.ResourceManager;
-import edu.illinois.cs.cogcomp.nlp.pipeline.IllinoisPipelineFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +28,17 @@ public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
 
-    //private HashMap<String, TextAnnotation> tas;
-
     private HashMap<String, String> folders;
 
+    /**
+     * When this class is loaded, it reads a file called config/folders.txt. This is made up
+     * of lines formatted as:
+     *    name path
+     * The name is an identifier, the path is the absolute path to the folder. This
+     * folder path must contain TextAnnotations.
+     *
+     * @throws FileNotFoundException
+     */
     public AnnotationController() throws FileNotFoundException {
         List<String> lines = LineIO.read("config/folders.txt");
         folders = new HashMap<>();
@@ -48,6 +53,17 @@ public class AnnotationController {
         }
     }
 
+    /**
+     * Given a foldername (first field in folders.txt), this will get the path to that folder (second field
+     * in folders.txt) and will read all textannotations from that folder.
+     *
+     * This returns a TreeMap from integer id to TextAnnotation. These ids are assigned only here -- they do
+     * not correspond to the internal TextAnnotation id.
+     *
+     * @param folder folder identifier
+     * @return
+     * @throws IOException
+     */
     public TreeMap<Integer, TextAnnotation> loadFolder(String folder) throws IOException {
 
         String folderurl = folders.get(folder);
@@ -55,7 +71,6 @@ public class AnnotationController {
         File f = new File(folderurl);
 
         TreeMap<Integer, TextAnnotation> ret = new TreeMap<>();
-
 
         String[] files = f.list();
 
@@ -72,8 +87,15 @@ public class AnnotationController {
     }
 
 
+    /**
+     * This is called when the user clicks on the language button on the homepage.
+     * @param folder
+     * @param hs
+     * @return
+     * @throws IOException
+     */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
-    public String dummy(@RequestParam(value="folder") String folder, HttpSession hs,  Model model) throws IOException {
+    public String dummy(@RequestParam(value="folder") String folder, HttpSession hs) throws IOException {
         TreeMap<Integer, TextAnnotation> tas = loadFolder(folder);
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", folder);
@@ -81,13 +103,11 @@ public class AnnotationController {
         return "redirect:/annotation";
     }
 
-
     @RequestMapping(value = "/save", method=RequestMethod.GET)
-    public String save(HttpSession hs) throws IOException {
+    public String save(@RequestParam(value="taid", required=true) Integer taid, HttpSession hs) throws IOException {
 
         // write out to
-
-        String username = (String) hs.getAttribute("name");
+        String username = (String) hs.getAttribute("username");
         String folder = (String) hs.getAttribute("dataname");
         String folderpath = folders.get(folder);
 
@@ -96,10 +116,17 @@ public class AnnotationController {
             folderpath = folderpath.replaceAll("/$", "");
             String outpath = folderpath + "-annotation-" + username + "/";
             logger.info("Writing out to: " + outpath);
+            logger.info("id is: " + taid);
+
             TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
-            for(int id: tas.keySet()){
-                SerializationHelper.serializeTextAnnotationToFile(tas.get(id), outpath + id, true);
-            }
+
+            SerializationHelper.serializeTextAnnotationToFile(tas.get(taid), outpath + taid, true);
+
+
+            // this will save all of them...
+//            for(int id: tas.keySet()){
+//                SerializationHelper.serializeTextAnnotationToFile(tas.get(id), outpath + id, true);
+//            }
         }
         // nothing happens to this...
         return "redirect:/";
@@ -115,15 +142,22 @@ public class AnnotationController {
     @RequestMapping(value="/setname")
     public String setname(@ModelAttribute User user, HttpSession hs){
         logger.info("Setting name to: " + user.getName());
+        // Just make sure everything is clear first... just in case.
         System.out.println("Logging in!");
-        hs.setAttribute("name", user.getName());
+        hs.removeAttribute("username");
+        hs.removeAttribute("dataname");
+        hs.removeAttribute("tas");
+
+        hs.setAttribute("username", user.getName());
         return "redirect:/";
     }
 
     @RequestMapping(value="/logout")
     public String logout(HttpSession hs){
         logger.info("Logging out...");
-        hs.removeAttribute("name");
+        hs.removeAttribute("username");
+        hs.removeAttribute("dataname");
+        hs.removeAttribute("tas");
         return "redirect:/";
     }
 
@@ -132,17 +166,19 @@ public class AnnotationController {
 
         TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
 
+        // Go to the homepage.
         if(tas == null){
             return "redirect:/";
         }
 
 
-        if(taid == null || !tas.containsKey(taid)){
-            model.addAttribute("tas", tas);
-            List<Integer> li = new ArrayList<>(tas.keySet());
-            Collections.sort(li);
-            model.addAttribute("sortedkeys", li);
+        // If there's no taid, then return the getstarted page (not a redirect).
+        if(taid == null){
             return "getstarted";
+        }
+
+        if(!tas.containsKey(taid)){
+            return "redirect:/annotation";
         }
 
         TextAnnotation ta = tas.get(taid);
@@ -153,13 +189,6 @@ public class AnnotationController {
         logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
         logger.info("\tText: " + ta.getTokenizedText());
         logger.info("\tConstituents: " + ner.getConstituents());
-//        System.out.println(ta.getTokenizedText());
-//        System.out.println(ner.getConstituents());
-//        for(Constituent c : ner.getConstituents()){
-//            System.out.println(c.getSurfaceForm());
-//            System.out.println(c.getLabel());
-//            System.out.println(c.getSpan());
-//        }
 
         String[] text = ta.getTokenizedText().split(" ");
 

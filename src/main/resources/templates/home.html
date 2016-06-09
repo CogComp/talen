@@ -15,7 +15,7 @@
 
         <div class="col-md-4"></div>
         <div class="col-md-4">
-            <span th:if="${session.name} == null"> <!-- if customer is anonymous-->
+            <span th:if="${session.username} == null"> <!-- if customer is anonymous-->
 
                 <form th:action="@{/setname}" th:object="${user}" method="post">
                     <div class="form-group">
@@ -27,12 +27,13 @@
 
             </span>
 
-            <span th:unless="${session.name} == null">
+            <span th:unless="${session.username} == null">
             <p>Please select an option:</p>
                 <div class="list-group">
-                    <div th:each="folder : ${folders}">
-                        <a href="#" th:href="@{/loaddata(folder=${folder})}" class="list-group-item" th:text="${folder}"></a>
-                    </div>
+                    <a th:each="folder : ${folders}" href="#" th:href="@{/loaddata(folder=${folder})}" class="list-group-item"  th:text="${folder}"></a>
+                    <!--<span th:each="folder : ${folders}">-->
+                        <!---->
+                    <!--</span>-->
                 </div>
 
             </span>

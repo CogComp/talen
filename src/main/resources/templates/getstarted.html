@@ -17,9 +17,9 @@
               <th>ID</th>
               <th>Text annotation</th>
           </tr>
-          <tr th:each="key : ${tas.keySet()}">
+          <tr th:each="key : ${session.tas.keySet()}">
               <td th:text="${key}"></td>
-              <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${tas.get(key)}"></a></td>
+              <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${session.tas.get(key)}"></a></td>
           </tr>
       </table>
 

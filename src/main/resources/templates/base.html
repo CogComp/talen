@@ -31,10 +31,10 @@
                     <span class="icon-bar"></span>
                 </button>
 
-                <a class="navbar-brand" href="#">NER Annotator</a>
+                <a class="navbar-brand" href="/">NER Annotator</a>
             </div>
 
-            <span th:unless="${session.name} == null"> <!-- if customer is not anonymous(logged in)-->
+            <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->
                 <div class="navbar-collapse navbar-ex1-collapse">
                     <ul class="nav navbar-nav" id="pagesbar">
                         <li><a href="/">Home</a></li>
@@ -43,11 +43,11 @@
                     </ul>
 
 
-
-                        <ul class="nav navbar-nav navbar-right">
-                            <li><a href="#" th:text="${'Hi there ' + session.name + '!'}">Hi there</a></li>
-                            <li><a href="/logout" id="logoutlink" th:text="Logout">Logout</a></li>
-                        </ul>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li><span class="navbar-text" th:text="${'Hi there ' + session.username + '!'}">Hi there</span></li>
+                        <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
+                        <li><a href="/logout" id="logoutlink" th:text="Logout">Logout</a></li>
+                    </ul>
 
                 </div><!-- /.navbar-collapse -->
 

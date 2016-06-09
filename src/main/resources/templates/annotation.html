@@ -45,6 +45,7 @@
       </div>
 
       <a id="removebutton" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+      <!--<a id="savebutton" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>-->
       <br />
       <br />
 
@@ -143,6 +144,28 @@
             });
 
         });
+
+
+        function savetas(){
+            console.log("saving tas...");
+
+            console.log(this);
+
+            var taid = getParameterByName("taid");
+            console.log(taid);
+
+            $.ajax({
+                url: "/save",
+                data: {taid: taid}
+            }).done(function (msg) {
+                console.log("finished saving!");
+            });
+
+        }
+
+        $( ".saveclass" ).click(savetas);
+
+        $( "#savebutton" ).click(savetas);
 
 
 
