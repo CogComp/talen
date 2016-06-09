@@ -12,12 +12,30 @@
 
       <h3>Annotation Example</h3>
 
-      <div id="legendcontainer">
-          Legend:
-          <span class="PER legend">PER</span>
-          <span class="ORG legend">ORG</span>
-          <span class="LOC legend">LOC</span>
-          <span class="GPE legend">GPE</span>
+      <!--<div id="legendcontainer">-->
+          <!--Legend:-->
+          <!--<span class="PER legend">PER</span>-->
+          <!--<span class="ORG legend">ORG</span>-->
+          <!--<span class="LOC legend">LOC</span>-->
+          <!--<span class="GPE legend">GPE</span>-->
+      <!--</div>-->
+
+
+      <div id="tagdescriptions">
+
+          <p><span class="PER">Person</span>: Humans identified by name, nickname or alias.
+          E.g., Hillary Clinton, George W. Bush</p>
+
+          <p><span class="ORG">Organization</span>: Corporations, institutions, goverment agencies and other groups of people
+          E.g., Republican Parity, World Bank, NYPD, ABC News, San Francisco 49ers</p>
+
+          <p><span class="LOC">Location</span>: Names of geographically defined places (international regions, bodies of water, mountains, etc.) Locations also include man-made structures like airports, highways, streets, factories, and monuments.
+
+          E.g., North America, Mars, Berlin Wall, Disneyland, Mississippi River</p>
+
+          <p><span class="GPE">Geopolitical</span>: (1) a physical location, (2) a government, and (3) a population. All three of these elements must be present
+          E.g., United States, China, Philadelphia, Illinois</p>
+
       </div>
 
       <div class="panel panel-default">
@@ -26,8 +44,15 @@
           </div>
       </div>
 
-      <a th:if="${previd} > -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default">Previous</a>
-      <a th:if="${nextid} > -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default">Next</a>
+      <a id="removebutton" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+      <br />
+      <br />
+
+      <div class="btn-group btn-group" role="group" aria-label="Next and previous">
+          <a th:if="${previd} > -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+          <a th:if="${nextid} > -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+      </div>
+
 
 
 
@@ -62,17 +87,20 @@
             $(this).popover("toggle");
         });
 
+        $("#removebutton").click(function(){
+            $.each($(".pointer"), function(i, v){
+                console.log(v);
+                changelabel("O",v.id);
+            });
+        });
 
-        $(".container").on("click", "button", function(){
-                var buttonvalue = $(this)[0].value;
-                var spanid = $(this).parents("[id^=cons]")[0].id;
-
-            $("#" + spanid).popover("hide");
-
-            $("#" + spanid).removeClass("PER ORG LOC GPE").addClass(buttonvalue);
+        // buttonvalue is the new label.
+        function changelabel(buttonvalue, spanid){
 
             console.log(buttonvalue);
             console.log(spanid);
+
+            $("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
 
             // I need the name of the button pressed
             // and I need the span it is associated with.
@@ -83,6 +111,25 @@
             }).done(function (msg) {
                 console.log("WOOT");
             });
+        }
+
+        // on right click, change label to nothing.
+        $(".pointer").contextmenu(function(event){
+            console.log(event);
+            event.preventDefault();
+            console.log("Right clicked!");
+            var spanid = event.currentTarget.id;
+
+            changelabel("O", spanid);
+        });
+
+        $(".container").on("click", "button", function(){
+            var buttonvalue = $(this)[0].value;
+            var spanid = $(this).parents("[id^=cons]")[0].id;
+
+            $("#" + spanid).popover("hide");
+
+            changelabel(buttonvalue, spanid);
         });
 
         $('body').on('click', function (e) {
@@ -95,14 +142,6 @@
                 }
             });
 
-            //buttons and icons within buttons
-            /*
-             if ($(e.target).data('toggle') !== 'popover'
-             && $(e.target).parents('[data-toggle="popover"]').length === 0
-             && $(e.target).parents('.popover.in').length === 0) {
-             $('[data-toggle="popover"]').popover('hide');
-             }
-             */
         });
 
 

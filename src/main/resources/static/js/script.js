@@ -4,18 +4,19 @@
 
 $(document).ready(function() {
 
-    $(window).bind('beforeunload', function(){
-        
+    function savetas(){
         console.log("saving tas...");
         $.ajax({
             url: "/save"
         }).done(function (msg) {
             console.log("finished saving!");
         });
-        
-    });
 
+    }
 
+    $( ".saveclass" ).click(savetas);
+
+    $(window).bind('beforeunload', savetas);
 
 
 

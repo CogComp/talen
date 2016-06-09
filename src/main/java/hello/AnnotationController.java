@@ -61,7 +61,7 @@ public class AnnotationController {
 
         Random r = new Random();
 
-        for(int i = 0; i < 100; i++){
+        for(int i = 0; i < 200; i++){
             int randint = r.nextInt(files.length);
             String file = files[randint];
             TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
@@ -88,9 +88,10 @@ public class AnnotationController {
         // write out to
 
         String username = (String) hs.getAttribute("name");
-        if(username != null) {
-            String folder = (String) hs.getAttribute("dataname");
-            String folderpath = folders.get(folder);
+        String folder = (String) hs.getAttribute("dataname");
+        String folderpath = folders.get(folder);
+
+        if(username != null && folderpath != null) {
 
             folderpath = folderpath.replaceAll("/$", "");
             String outpath = folderpath + "-annotation-" + username + "/";
@@ -113,13 +114,15 @@ public class AnnotationController {
 
     @RequestMapping(value="/setname")
     public String setname(@ModelAttribute User user, HttpSession hs){
-        logger.debug("Setting name to: " + user.getName());
+        logger.info("Setting name to: " + user.getName());
+        System.out.println("Logging in!");
         hs.setAttribute("name", user.getName());
         return "redirect:/";
     }
 
     @RequestMapping(value="/logout")
     public String logout(HttpSession hs){
+        logger.info("Logging out...");
         hs.removeAttribute("name");
         return "redirect:/";
     }

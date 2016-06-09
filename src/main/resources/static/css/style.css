@@ -20,6 +20,11 @@
     background-color: lightcoral;
 }
 
+.O {
+    border-bottom: 1px dashed gray;
+    border-radius: 0px;
+}
+
 #legendcontainer {
     padding: 7px;
 }
