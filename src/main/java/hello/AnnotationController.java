@@ -171,7 +171,6 @@ public class AnnotationController {
             return "redirect:/";
         }
 
-
         // If there's no taid, then return the getstarted page (not a redirect).
         if(taid == null){
             return "getstarted";
