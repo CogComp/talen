@@ -68,7 +68,7 @@
             return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
         }
 
-        $("[id^=cons]").popover({
+        $("[id^=tok]").popover({
             placement: "bottom",
             content: function () {
                 var html = $("#buttons").html();
@@ -92,47 +92,53 @@
             });
         });
 
-        // buttonvalue is the new label.
-        function changelabel(buttonvalue, spanid){
-
-            console.log(buttonvalue);
-            console.log(spanid);
-
-            $("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
-
-            // I need the name of the button pressed
-            // and I need the span it is associated with.
-            $.ajax({
-                method: "POST",
-                url: "/result",
-                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
-            }).done(function (msg) {
-                console.log("WOOT");
-            });
-        }
+//        // buttonvalue is the new label.
+//        function changelabel(buttonvalue, spanid){
+//
+//            console.log(buttonvalue);
+//            console.log(spanid);
+//
+//            // TODO: make labels be generic.
+//            $("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
+//
+//            // I need the name of the button pressed
+//            // and I need the span it is associated with.
+//            $.ajax({
+//                method: "POST",
+//                url: "/result",
+//                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
+//            }).done(function (msg) {
+//                console.log("WOOT");
+//            });
+//        }
 
         // on right click, change label to nothing.
-        $(".pointer").contextmenu(function(event){
-            console.log(event);
-            event.preventDefault();
-            console.log("Right clicked!");
-            var spanid = event.currentTarget.id;
-
-            changelabel("O", spanid);
-        });
+//        $(".pointer").contextmenu(function(event){
+//            console.log(event);
+//            event.preventDefault();
+//            console.log("Right clicked!");
+//            var spanid = event.currentTarget.id;
+//
+//            changelabel("O", spanid);
+//        });
 
         $(".container").on("click", "button", function(){
+
             var buttonvalue = $(this)[0].value;
-            var spanid = $(this).parents("[id^=cons]")[0].id;
+
+            var spanid = $(this).parents("[id^=tok]")[0].id;
+
+            console.log("Clicked on a button..." + buttonvalue);
+            console.log("refers to: " + spanid);
 
             $("#" + spanid).popover("hide");
 
-            changelabel(buttonvalue, spanid);
+            tokenclick(spanid, buttonvalue);
         });
 
         $('body').on('click', function (e) {
 
-            $('[id^=cons]').each(function () {
+            $('[id^=tok]').each(function () {
                 //the 'is' for buttons that trigger popups
                 //the 'has' for icons within a button that triggers a popup
                 if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
@@ -141,6 +147,103 @@
             });
 
         });
+
+        // given a span id (e.g. tok-4), return the integer
+        function getnum(spanid){
+            return parseInt(spanid.split("-")[1]);
+        }
+
+        function isLabel(s, label){
+            return $(s).parent().hasClass(label);
+        }
+
+        // run this function when you click on a token.
+        function tokenclick(spanid, newclass) {
+
+            var tokid = getnum(spanid);
+
+            var tokobj = $("#" + spanid);
+            console.log(tokobj);
+
+            var prev= "#tok-" + (tokid -1);
+            var next = "#tok-" + (tokid + 1);
+
+            if(isLabel(tokobj, newclass)){
+                console.log("remove class");
+
+                if(isLabel(prev, newclass) && isLabel(next, newclass)){
+                    console.log("interior - don't do anything.");
+                } else if(isLabel(next, newclass)){
+                    tokobj.insertBefore(tokobj.parent());
+                }else if(isLabel(prev, newclss)){
+                    tokobj.insertAfter(tokobj.parent());
+                    //$(this).remove();
+                }else{
+                    var p = tokobj.parent();
+                    tokobj.insertBefore(p);
+                    p.remove();
+                }
+
+            }else{
+                console.log("add class");
+
+                // TODO: decide on logic for interior case.
+                //if(isOrg(prev) && isOrg(next)){
+                //    console.log("interior");
+                //} else
+                if(isLabel(next, newclass)){
+                    console.log("next is org");
+
+                    var cons = $(next).parent();
+                    tokobj.detach();
+                    cons.prepend(tokobj);
+
+                }else if (isLabel(prev, newclass)) {
+                    console.log("prev is org");
+
+                    var cons = $(prev).parent();
+                    tokobj.detach();
+                    cons.append(tokobj);
+
+                }else{
+                    // all on your own.
+                    tokobj.detach();
+
+                    var cons = $("<span>", {class: newclass + " pointer cons"});
+                    cons.append(tokobj);
+                    cons.insertAfter(prev);
+                }
+            }
+
+            // clean up
+            // get all spans with class ORG
+            // fix ids
+            // remove if has no children.
+            $("span.cons").each(function (){
+                var kids = $(this).children("span");
+                if(kids.length == 0){
+                    $(this).remove();
+                }else{
+                    var first = $(kids[0]);
+                    var last = $(kids[kids.length-1]);
+                    var firstnum = getnum(first.attr("id"));
+                    var lastnum = getnum(last.attr("id"))+1;
+
+                    var newspanid = "cons-"+ firstnum+"-" + lastnum;
+                    $(this).attr("id", newspanid);
+
+                    $.ajax({
+                        method: "POST",
+                        url: "/result",
+                        data: {label: "ORG", spanid: newspanid, id: getParameterByName("taid")}
+                    }).done(function (msg) {
+                        console.log("WOOT");
+                    });
+
+                }
+
+            });
+        };
 
 
         function savetas(){
