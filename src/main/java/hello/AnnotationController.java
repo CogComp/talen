@@ -244,10 +244,14 @@ public class AnnotationController {
         logger.info("\tText: " + ta.getTokenizedText());
         logger.info("\tConstituents: " + ner.getConstituents());
 
+        for(Constituent c  : ner.getConstituents()){
+            logger.info("\t" + c + " : " + c.getSpan());
+        }
+
         String[] text = ta.getTokenizedText().split(" ");
 
+        // FIXME: Set this programmatically...
         String annolabel = "ORG";
-
 
         // add spans to every word that is not a constituent.
         for(int t = 0; t < text.length; t++){
@@ -293,16 +297,23 @@ public class AnnotationController {
         String[] ss = spanid.split("-");
         Pair<Integer, Integer> span = new Pair<>(Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
 
+        logger.info(span.getFirst() + ":" + span.getSecond());
+
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         TextAnnotation ta = tas.get(idstring);
         View ner = ta.getView(ViewNames.NER_CONLL);
         List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
-        Constituent c = lc.get(0);
-        Constituent newc = c.cloneForNewViewWithDestinationLabel(ViewNames.NER_CONLL, label);
-        
-        ner.removeConstituent(c);
+        if(lc.size() > 0) {
+            Constituent oldc = lc.get(0);
+            ner.removeConstituent(oldc);
+
+            //Constituent newc = c.cloneForNewViewWithDestinationLabel(ViewNames.NER_CONLL, label);
+            //ner.addConstituent(newc);
+
+        }
+        Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
         ner.addConstituent(newc);
 
         // just a dummy response...

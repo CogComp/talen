@@ -49,8 +49,8 @@
       <br />
 
       <div class="btn-group btn-group" role="group" aria-label="Next and previous">
-          <a th:if="${previd} > -1" th:href="@{/annotationadd(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
-          <a th:if="${nextid} > -1" th:href="@{/annotationadd(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+          <a th:if="${previd} != -1" th:href="@{/annotationadd(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+          <a th:if="${nextid} != -1" th:href="@{/annotationadd(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
       </div>
 
   </div>
@@ -81,65 +81,27 @@
 
             // this loops over all spans in the text and adds
             var tokens = $(".token");
-            //console.log(t);
-
-//            var start = -1;
-//            var end = -1;
-//            var cons = null;
-//            for(var i = 0; i < tokens.length; i++){
-//                console.log(tokens[i]);
-//                vartok = $(tokens[i]);
-//
-//                if(tok.parent().hasClass("ORG")){
-//                    //sp.remove();
-//                    if(cons == null){
-//                       start = i;
-//                       cons = $("<span>", {class: "ORG pointer"});
-//                    }
-//                    cons.append(tok);
-//                    console.log(tok.text());
-//                }else{
-//                    if(cons != null){
-//                       // set ID.
-//                       $("#text").append(cons);
-//                       cons = null;
-//                       start = -1;
-//                       end = -1;
-//                    }
-//                }
-//
-//            }
 
             // I need the name of the button pressed
             // and I need the span it is associated with.
-            $.ajax({
-                method: "POST",
-                url: "/result",
-                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
-            }).done(function (msg) {
-                console.log("WOOT");
-            });
+
         }
-
-        // on right click, change label to nothing.
-        $(".pointer").contextmenu(function(event){
-            console.log(event);
-            event.preventDefault();
-            console.log("Right clicked!");
-            var spanid = event.currentTarget.id;
-
-            changelabel("O", spanid);
-        });
 
         function isOrg(s){
             return $(s).parent().hasClass("ORG");
         }
 
+        // given a span id (e.g. tok-4), return the integer
+        function getnum(spanid){
+            return parseInt(spanid.split("-")[1]);
+        }
+
+        // run this function when you click on a token.
         $('[id^=tok]').click(function () {
             var spanid = $(this)[0].id;
             console.log("Clicked: " + spanid);
 
-            var tokid = parseInt(spanid.split("-")[1]);
+            var tokid = getnum(spanid);
 
             var prev= "#tok-" + (tokid -1);
             var next = "#tok-" + (tokid + 1);
@@ -190,9 +152,6 @@
                     cons.insertAfter(prev);
 
                 }
-
-
-                //changelabel("ORG", spanid);
             }
 
             // clean up
@@ -200,27 +159,30 @@
             // fix ids
             // remove if has no children.
             $("span.ORG").each(function (){
-               if($(this).children("span").length == 0){
+                var kids = $(this).children("span");
+               if(kids.length == 0){
                    $(this).remove();
+               }else{
+                   var first = $(kids[0]);
+                   var last = $(kids[kids.length-1]);
+                   var firstnum = getnum(first.attr("id"));
+                   var lastnum = getnum(last.attr("id"))+1;
+
+                   var newspanid = "cons-"+ firstnum+"-" + lastnum;
+                   $(this).attr("id", newspanid);
+
+                   $.ajax({
+                       method: "POST",
+                       url: "/result",
+                       data: {label: "ORG", spanid: newspanid, id: getParameterByName("taid")}
+                   }).done(function (msg) {
+                       console.log("WOOT");
+                   });
+
                }
+
             });
         });
-
-//        $('[id^=cons]').click(function () {
-//            // remove label
-//            var spanid = $(this)[0].id;
-//            console.log("remove label " + spanid);
-//
-//            changelabel("O", spanid);
-//        });
-//
-//        $('[id^=tok]').click(function () {
-//            // add label
-//            var spanid =$(this)[0].id;
-//            console.log("add label " + spanid);
-//
-//            changelabel("ORG", spanid);
-//        });
 
 
         function savetas(){
