@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings("ALL")
 @Controller
 public class AnnotationController {
 
@@ -74,11 +75,11 @@ public class AnnotationController {
 
         String[] files = f.list();
 
-        Random r = new Random();
+        int limit = Math.min(files.length, 300);
 
-        for(int i = 0; i < 200; i++){
-            int randint = r.nextInt(files.length);
-            String file = files[randint];
+        for(int i = 0; i < limit; i++){
+            System.out.println(files[i]);
+            String file = files[i];
             TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
             ret.put(i, ta);
         }
@@ -121,12 +122,6 @@ public class AnnotationController {
             TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
 
             SerializationHelper.serializeTextAnnotationToFile(tas.get(taid), outpath + taid, true);
-
-
-            // this will save all of them...
-//            for(int id: tas.keySet()){
-//                SerializationHelper.serializeTextAnnotationToFile(tas.get(id), outpath + id, true);
-//            }
         }
         // nothing happens to this...
         return "redirect:/";
@@ -211,6 +206,69 @@ public class AnnotationController {
         }
 
         return "annotation";
+    }
+
+
+    @RequestMapping(value="/annotationadd", method=RequestMethod.GET)
+    public String annotation_add(@RequestParam(value="taid", required=false) Integer taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
+
+        TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
+
+        // Go to the homepage.
+        if(tas == null){
+            return "redirect:/";
+        }
+
+        // If there's no taid, then return the getstarted page (not a redirect).
+        if(taid == null){
+            return "getstarted";
+        }
+
+        if(!tas.containsKey(taid)){
+            return "redirect:/annotation";
+        }
+
+        TextAnnotation ta = tas.get(taid);
+        View ner = ta.getView(ViewNames.NER_CONLL);
+
+        model.addAttribute("ta", ta);
+
+        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
+        logger.info("\tText: " + ta.getTokenizedText());
+        logger.info("\tConstituents: " + ner.getConstituents());
+
+        String[] text = ta.getTokenizedText().split(" ");
+
+        String annolabel = "ORG";
+
+
+        // add spans to every word that is not a constituent.
+        for(int t = 0; t < text.length; t++){
+            text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+        }
+
+        for(Constituent c : ner.getConstituents()){
+            if(!c.getLabel().equals(annolabel)) continue;
+
+            int start = c.getStartSpan();
+            int end = c.getEndSpan();
+
+            text[start] = String.format("<span class='%s pointer' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
+            text[end-1] += "</span>";
+
+        }
+
+        String out = StringUtils.join(text, " ");
+
+        model.addAttribute("htmlstring", out);
+        model.addAttribute("previd", taid-1);
+        if(taid < tas.size()-1) {
+            model.addAttribute("nextid", taid + 1);
+        }else{
+            model.addAttribute("nextid", -1);
+        }
+
+        return "annotationadd";
     }
 
 

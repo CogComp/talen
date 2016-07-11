@@ -1,0 +1,258 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head> 
+    <title>Annotation</title>
+
+    <div th:include="base :: head"></div>
+
+</head>
+<body>
+<div th:include="base :: nav"></div>
+  <div class="container">
+
+      <h3>Annotation Example</h3>
+
+      <!--<div id="legendcontainer">-->
+          <!--Legend:-->
+          <!--<span class="PER legend">PER</span>-->
+          <!--<span class="ORG legend">ORG</span>-->
+          <!--<span class="LOC legend">LOC</span>-->
+          <!--<span class="GPE legend">GPE</span>-->
+      <!--</div>-->
+
+      <!--<div id="tagdescriptions">-->
+
+          <!--<p><span class="PER">Person</span>: Humans identified by name, nickname or alias.-->
+          <!--E.g., Hillary Clinton, George W. Bush</p>-->
+
+          <!--<p><span class="ORG">Organization</span>: Corporations, institutions, goverment agencies and other groups of people-->
+          <!--E.g., Republican Parity, World Bank, NYPD, ABC News, San Francisco 49ers</p>-->
+
+          <!--<p><span class="LOC">Location</span>: Names of geographically defined places (international regions, bodies of water, mountains, etc.) Locations also include man-made structures like airports, highways, streets, factories, and monuments.-->
+
+          <!--E.g., North America, Mars, Berlin Wall, Disneyland, Mississippi River</p>-->
+
+          <!--<p><span class="GPE">Geopolitical</span>: (1) a physical location, (2) a government, and (3) a population. All three of these elements must be present-->
+          <!--E.g., United States, China, Philadelphia, Illinois</p>-->
+
+      <!--</div>-->
+
+      <div class="panel panel-default">
+          <div class="panel-body" >
+              <div th:utext="${htmlstring}" id="text" />
+          </div>
+      </div>
+
+      <a id="removebutton" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+      <!--<a id="savebutton" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>-->
+      <br />
+      <br />
+
+      <div class="btn-group btn-group" role="group" aria-label="Next and previous">
+          <a th:if="${previd} > -1" th:href="@{/annotationadd(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+          <a th:if="${nextid} > -1" th:href="@{/annotationadd(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+      </div>
+
+
+
+
+
+  </div>
+</body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    $(document).ready(function() {
+
+        function getParameterByName(name) {
+            var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+            return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+        }
+
+
+        $("#removebutton").click(function(){
+            $.each($(".pointer"), function(i, v){
+                console.log(v);
+                changelabel("O",v.id);
+            });
+        });
+
+        // buttonvalue is the new label.
+        function changelabel(buttonvalue, spanid){
+
+            //$("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
+
+            // this loops over all spans in the text and adds
+            var tokens = $(".token");
+            //console.log(t);
+
+//            var start = -1;
+//            var end = -1;
+//            var cons = null;
+//            for(var i = 0; i < tokens.length; i++){
+//                console.log(tokens[i]);
+//                vartok = $(tokens[i]);
+//
+//                if(tok.parent().hasClass("ORG")){
+//                    //sp.remove();
+//                    if(cons == null){
+//                       start = i;
+//                       cons = $("<span>", {class: "ORG pointer"});
+//                    }
+//                    cons.append(tok);
+//                    console.log(tok.text());
+//                }else{
+//                    if(cons != null){
+//                       // set ID.
+//                       $("#text").append(cons);
+//                       cons = null;
+//                       start = -1;
+//                       end = -1;
+//                    }
+//                }
+//
+//            }
+
+            // I need the name of the button pressed
+            // and I need the span it is associated with.
+            $.ajax({
+                method: "POST",
+                url: "/result",
+                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
+            }).done(function (msg) {
+                console.log("WOOT");
+            });
+        }
+
+        // on right click, change label to nothing.
+        $(".pointer").contextmenu(function(event){
+            console.log(event);
+            event.preventDefault();
+            console.log("Right clicked!");
+            var spanid = event.currentTarget.id;
+
+            changelabel("O", spanid);
+        });
+
+        function isOrg(s){
+            return $(s).parent().hasClass("ORG");
+        }
+
+        $('[id^=tok]').click(function () {
+            var spanid = $(this)[0].id;
+            console.log("Clicked: " + spanid);
+
+            var tokid = parseInt(spanid.split("-")[1]);
+
+            var prev= "#tok-" + (tokid -1);
+            var next = "#tok-" + (tokid + 1);
+
+            if(isOrg(this)){
+                console.log("remove class");
+
+                if(isOrg(prev) && isOrg(next)){
+                    console.log("interior - don't do anything.");
+                } else if(isOrg(next)){
+                    $(this).insertBefore($(this).parent());
+                }else if(isOrg(prev)){
+                    $(this).insertAfter($(this).parent());
+                    //$(this).remove();
+                }else{
+                    var p = $(this).parent();
+                    $(this).insertBefore(p);
+                    p.remove();
+                }
+
+            }else{
+                console.log("add class");
+
+                // TODO: decide on logic for interior case.
+                //if(isOrg(prev) && isOrg(next)){
+                //    console.log("interior");
+                //} else
+                if(isOrg(next)){
+                    console.log("next is org");
+
+                    var cons = $(next).parent();
+                    $(this).detach();
+                    cons.prepend($(this));
+
+                }else if (isOrg(prev)) {
+                    console.log("prev is org");
+
+                    var cons = $(prev).parent();
+                    $(this).detach();
+                    cons.append($(this));
+
+                }else{
+                    // all on your own.
+                    $(this).detach();
+
+                    var cons = $("<span>", {class: "ORG pointer"});
+                    cons.append($(this));
+                    cons.insertAfter(prev);
+
+                }
+
+
+                //changelabel("ORG", spanid);
+            }
+
+            // clean up
+            // get all spans with class ORG
+            // fix ids
+            // remove if has no children.
+            $("span.ORG").each(function (){
+               if($(this).children("span").length == 0){
+                   $(this).remove();
+               }
+            });
+        });
+
+//        $('[id^=cons]').click(function () {
+//            // remove label
+//            var spanid = $(this)[0].id;
+//            console.log("remove label " + spanid);
+//
+//            changelabel("O", spanid);
+//        });
+//
+//        $('[id^=tok]').click(function () {
+//            // add label
+//            var spanid =$(this)[0].id;
+//            console.log("add label " + spanid);
+//
+//            changelabel("ORG", spanid);
+//        });
+
+
+        function savetas(){
+            console.log("saving tas...");
+
+            console.log(this);
+
+            var taid = getParameterByName("taid");
+            console.log(taid);
+
+            $.ajax({
+                url: "/save",
+                data: {taid: taid}
+            }).done(function (msg) {
+                console.log("finished saving!");
+            });
+
+        }
+
+        $( ".saveclass" ).click(savetas);
+
+        $( "#savebutton" ).click(savetas);
+
+
+
+    });
+
+    /*]]>*/
+</script>
+
+</html>
