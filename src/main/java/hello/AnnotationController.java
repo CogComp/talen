@@ -65,13 +65,14 @@ public class AnnotationController {
      * @return
      * @throws IOException
      */
-    public TreeMap<Integer, TextAnnotation> loadFolder(String folder) throws IOException {
+    public TreeMap<String, TextAnnotation> loadFolder(String folder) throws IOException {
 
         String folderurl = folders.get(folder);
 
         File f = new File(folderurl);
 
-        TreeMap<Integer, TextAnnotation> ret = new TreeMap<>();
+        // This will be ordered by it's keys.
+        TreeMap<String, TextAnnotation> ret = new TreeMap<>();
 
         String[] files = f.list();
 
@@ -81,7 +82,7 @@ public class AnnotationController {
             System.out.println(files[i]);
             String file = files[i];
             TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
-            ret.put(i, ta);
+            ret.put(file, ta);
         }
 
         return ret;
@@ -97,7 +98,7 @@ public class AnnotationController {
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
     public String dummy(@RequestParam(value="folder") String folder, HttpSession hs) throws IOException {
-        TreeMap<Integer, TextAnnotation> tas = loadFolder(folder);
+        TreeMap<String, TextAnnotation> tas = loadFolder(folder);
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", folder);
 
@@ -105,7 +106,7 @@ public class AnnotationController {
     }
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
-    public String save(@RequestParam(value="taid", required=true) Integer taid, HttpSession hs) throws IOException {
+    public String save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException {
 
         // write out to
         String username = (String) hs.getAttribute("username");
@@ -119,7 +120,7 @@ public class AnnotationController {
             logger.info("Writing out to: " + outpath);
             logger.info("id is: " + taid);
 
-            TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
+            TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
             SerializationHelper.serializeTextAnnotationToFile(tas.get(taid), outpath + taid, true);
         }
@@ -157,9 +158,9 @@ public class AnnotationController {
     }
 
     @RequestMapping(value="/annotation", method=RequestMethod.GET)
-    public String annotation(@RequestParam(value="taid", required=false) Integer taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
+    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
 
-        TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         // Go to the homepage.
         if(tas == null){
@@ -198,9 +199,15 @@ public class AnnotationController {
         String out = StringUtils.join(text, " ");
 
         model.addAttribute("htmlstring", out);
-        model.addAttribute("previd", taid-1);
-        if(taid < tas.size()-1) {
-            model.addAttribute("nextid", taid + 1);
+
+        if(!tas.firstKey().equals(taid)) {
+            model.addAttribute("previd", tas.lowerKey(taid));
+        }else{
+            model.addAttribute("previd", -1);
+        }
+
+        if(!tas.lastKey().equals(taid)) {
+            model.addAttribute("nextid", tas.higherKey(taid));
         }else{
             model.addAttribute("nextid", -1);
         }
@@ -210,9 +217,9 @@ public class AnnotationController {
 
 
     @RequestMapping(value="/annotationadd", method=RequestMethod.GET)
-    public String annotation_add(@RequestParam(value="taid", required=false) Integer taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
+    public String annotation_add(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
 
-        TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         // Go to the homepage.
         if(tas == null){
@@ -261,9 +268,15 @@ public class AnnotationController {
         String out = StringUtils.join(text, " ");
 
         model.addAttribute("htmlstring", out);
-        model.addAttribute("previd", taid-1);
-        if(taid < tas.size()-1) {
-            model.addAttribute("nextid", taid + 1);
+
+        if(!tas.firstKey().equals(taid)) {
+            model.addAttribute("previd", tas.lowerKey(taid));
+        }else{
+            model.addAttribute("previd", -1);
+        }
+
+        if(!tas.lastKey().equals(taid)) {
+            model.addAttribute("nextid", tas.higherKey(taid));
         }else{
             model.addAttribute("nextid", -1);
         }
@@ -273,28 +286,24 @@ public class AnnotationController {
 
 
     @RequestMapping(value="/result", method=RequestMethod.POST)
-    public String result(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String id, HttpSession hs, Model model) {
+    public String result(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) {
 
-        logger.info(String.format("TextAnnotation with id %s: change span (id:%s) to label: %s.", id, spanid, label));
-
-        int idint = Integer.parseInt(id);
+        logger.info(String.format("TextAnnotation with id %s: change span (id:%s) to label: %s.", idstring, spanid, label));
 
         String[] ss = spanid.split("-");
         Pair<Integer, Integer> span = new Pair<>(Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
 
-        TreeMap<Integer, TextAnnotation> tas = (TreeMap<Integer, TextAnnotation>) hs.getAttribute("tas");
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
-        TextAnnotation ta = tas.get(idint);
+        TextAnnotation ta = tas.get(idstring);
         View ner = ta.getView(ViewNames.NER_CONLL);
         List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
-
 
         Constituent c = lc.get(0);
         Constituent newc = c.cloneForNewViewWithDestinationLabel(ViewNames.NER_CONLL, label);
         
         ner.removeConstituent(c);
         ner.addConstituent(newc);
-
 
         // just a dummy response...
         return "dummy";

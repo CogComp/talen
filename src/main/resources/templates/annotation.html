@@ -50,12 +50,9 @@
       <br />
 
       <div class="btn-group btn-group" role="group" aria-label="Next and previous">
-          <a th:if="${previd} > -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
-          <a th:if="${nextid} > -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+          <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+          <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
       </div>
-
-
-
 
 
   </div>
