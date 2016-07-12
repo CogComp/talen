@@ -66,7 +66,6 @@
             return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
         }
 
-
         $("#removebutton").click(function(){
             $.each($(".pointer"), function(i, v){
                 console.log(v);
@@ -74,115 +73,9 @@
             });
         });
 
-        // buttonvalue is the new label.
-        function changelabel(buttonvalue, spanid){
 
-            //$("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
 
-            // this loops over all spans in the text and adds
-            var tokens = $(".token");
 
-            // I need the name of the button pressed
-            // and I need the span it is associated with.
-
-        }
-
-        function isOrg(s){
-            return $(s).parent().hasClass("ORG");
-        }
-
-        // given a span id (e.g. tok-4), return the integer
-        function getnum(spanid){
-            return parseInt(spanid.split("-")[1]);
-        }
-
-        // run this function when you click on a token.
-        $('[id^=tok]').click(function () {
-            var spanid = $(this)[0].id;
-            console.log("Clicked: " + spanid);
-
-            var tokid = getnum(spanid);
-
-            var prev= "#tok-" + (tokid -1);
-            var next = "#tok-" + (tokid + 1);
-
-            if(isOrg(this)){
-                console.log("remove class");
-
-                if(isOrg(prev) && isOrg(next)){
-                    console.log("interior - don't do anything.");
-                } else if(isOrg(next)){
-                    $(this).insertBefore($(this).parent());
-                }else if(isOrg(prev)){
-                    $(this).insertAfter($(this).parent());
-                    //$(this).remove();
-                }else{
-                    var p = $(this).parent();
-                    $(this).insertBefore(p);
-                    p.remove();
-                }
-
-            }else{
-                console.log("add class");
-
-                // TODO: decide on logic for interior case.
-                //if(isOrg(prev) && isOrg(next)){
-                //    console.log("interior");
-                //} else
-                if(isOrg(next)){
-                    console.log("next is org");
-
-                    var cons = $(next).parent();
-                    $(this).detach();
-                    cons.prepend($(this));
-
-                }else if (isOrg(prev)) {
-                    console.log("prev is org");
-
-                    var cons = $(prev).parent();
-                    $(this).detach();
-                    cons.append($(this));
-
-                }else{
-                    // all on your own.
-                    $(this).detach();
-
-                    var cons = $("<span>", {class: "ORG pointer"});
-                    cons.append($(this));
-                    cons.insertAfter(prev);
-
-                }
-            }
-
-            // clean up
-            // get all spans with class ORG
-            // fix ids
-            // remove if has no children.
-            $("span.ORG").each(function (){
-                var kids = $(this).children("span");
-               if(kids.length == 0){
-                   $(this).remove();
-               }else{
-                   var first = $(kids[0]);
-                   var last = $(kids[kids.length-1]);
-                   var firstnum = getnum(first.attr("id"));
-                   var lastnum = getnum(last.attr("id"))+1;
-
-                   var newspanid = "cons-"+ firstnum+"-" + lastnum;
-                   $(this).attr("id", newspanid);
-
-                   $.ajax({
-                       method: "POST",
-                       url: "/result",
-                       data: {label: "ORG", spanid: newspanid, id: getParameterByName("taid")}
-                   }).done(function (msg) {
-                       console.log("WOOT");
-                   });
-
-               }
-
-            });
-        });
 
 
         function savetas(){

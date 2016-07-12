@@ -198,11 +198,19 @@ public class AnnotationController {
 
         String[] text = ta.getTokenizedText().split(" ");
 
+        // add spans to every word that is not a constituent.
+        for(int t = 0; t < text.length; t++){
+            text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+        }
+
         for(Constituent c : ner.getConstituents()){
+            if(c.getLabel().equals("MISC")) continue;
+
             int start = c.getStartSpan();
             int end = c.getEndSpan();
 
-            text[start] = String.format("<span class='%s pointer' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
+            // important to also include 'cons' class, as it is a keyword in the html
+            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
             text[end-1] += "</span>";
 
         }
@@ -226,80 +234,6 @@ public class AnnotationController {
         return "annotation";
     }
 
-
-    @RequestMapping(value="/annotationadd", method=RequestMethod.GET)
-    public String annotation_add(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
-
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-
-        // Go to the homepage.
-        if(tas == null){
-            return "redirect:/";
-        }
-
-        // If there's no taid, then return the getstarted page (not a redirect).
-        if(taid == null){
-            return "getstarted";
-        }
-
-        if(!tas.containsKey(taid)){
-            return "redirect:/annotation";
-        }
-
-        TextAnnotation ta = tas.get(taid);
-        View ner = ta.getView(ViewNames.NER_CONLL);
-
-        model.addAttribute("ta", ta);
-
-        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
-        logger.info("\tText: " + ta.getTokenizedText());
-        logger.info("\tConstituents: " + ner.getConstituents());
-
-        for(Constituent c  : ner.getConstituents()){
-            logger.info("\t" + c + " : " + c.getSpan());
-        }
-
-        String[] text = ta.getTokenizedText().split(" ");
-
-        // FIXME: Set this programmatically...
-        String annolabel = "ORG";
-
-        // add spans to every word that is not a constituent.
-        for(int t = 0; t < text.length; t++){
-            text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
-        }
-
-        for(Constituent c : ner.getConstituents()){
-            if(!c.getLabel().equals(annolabel)) continue;
-
-            int start = c.getStartSpan();
-            int end = c.getEndSpan();
-
-            text[start] = String.format("<span class='%s pointer' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
-            text[end-1] += "</span>";
-
-        }
-
-        String out = StringUtils.join(text, " ");
-
-        model.addAttribute("htmlstring", out);
-
-        if(!tas.firstKey().equals(taid)) {
-            model.addAttribute("previd", tas.lowerKey(taid));
-        }else{
-            model.addAttribute("previd", -1);
-        }
-
-        if(!tas.lastKey().equals(taid)) {
-            model.addAttribute("nextid", tas.higherKey(taid));
-        }else{
-            model.addAttribute("nextid", -1);
-        }
-
-        return "annotationadd";
-    }
-
-
     @RequestMapping(value="/result", method=RequestMethod.POST)
     public String result(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) {
 
@@ -319,13 +253,13 @@ public class AnnotationController {
         if(lc.size() > 0) {
             Constituent oldc = lc.get(0);
             ner.removeConstituent(oldc);
-
-            //Constituent newc = c.cloneForNewViewWithDestinationLabel(ViewNames.NER_CONLL, label);
-            //ner.addConstituent(newc);
-
         }
-        Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
-        ner.addConstituent(newc);
+
+        // an O label means don't add the constituent.
+        if(!label.equals("O")) {
+            Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
+            ner.addConstituent(newc);
+        }
 
         // just a dummy response...
         return "dummy";

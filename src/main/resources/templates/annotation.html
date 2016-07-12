@@ -68,7 +68,7 @@
             return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
         }
 
-        $("[id^=cons]").popover({
+        $("[id^=tok]").popover({
             placement: "bottom",
             content: function () {
                 var html = $("#buttons").html();
@@ -92,47 +92,51 @@
             });
         });
 
-        // buttonvalue is the new label.
-        function changelabel(buttonvalue, spanid){
-
-            console.log(buttonvalue);
-            console.log(spanid);
-
-            $("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
-
-            // I need the name of the button pressed
-            // and I need the span it is associated with.
-            $.ajax({
-                method: "POST",
-                url: "/result",
-                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
-            }).done(function (msg) {
-                console.log("WOOT");
-            });
-        }
+//        // buttonvalue is the new label.
+//        function changelabel(buttonvalue, spanid){
+//
+//            console.log(buttonvalue);
+//            console.log(spanid);
+//
+//            // TODO: make labels be generic.
+//            $("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
+//
+//            // I need the name of the button pressed
+//            // and I need the span it is associated with.
+//            $.ajax({
+//                method: "POST",
+//                url: "/result",
+//                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
+//            }).done(function (msg) {
+//                console.log("WOOT");
+//            });
+//        }
 
         // on right click, change label to nothing.
-        $(".pointer").contextmenu(function(event){
-            console.log(event);
+        $("[id^=tok]").contextmenu(function(event){
             event.preventDefault();
-            console.log("Right clicked!");
             var spanid = event.currentTarget.id;
-
-            changelabel("O", spanid);
+            console.log("Right clicked on " + spanid);
+            removelabel(spanid);
         });
 
         $(".container").on("click", "button", function(){
+
             var buttonvalue = $(this)[0].value;
-            var spanid = $(this).parents("[id^=cons]")[0].id;
+
+            var spanid = $(this).parents("[id^=tok]")[0].id;
+
+            console.log("Clicked on a button..." + buttonvalue);
+            console.log("refers to: " + spanid);
 
             $("#" + spanid).popover("hide");
 
-            changelabel(buttonvalue, spanid);
+            addlabel(spanid, buttonvalue);
         });
 
         $('body').on('click', function (e) {
 
-            $('[id^=cons]').each(function () {
+            $('[id^=tok]').each(function () {
                 //the 'is' for buttons that trigger popups
                 //the 'has' for icons within a button that triggers a popup
                 if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
@@ -142,14 +146,170 @@
 
         });
 
+        // given a span id (e.g. tok-4), return the integer
+        function getnum(spanid){
+            return parseInt(spanid.split("-")[1]);
+        }
+
+        // check if s is labeled...
+        // this expects a string.
+        function isLabeled(spanid){
+            if(!spanid.startsWith("#")){
+                spanid = "#" + spanid;
+            }
+            var p = $(spanid).parent();
+            return p.hasClass("cons");
+            //return p.hasClass("PER") || p.hasClass("ORG") || p.hasClass("GPE") || p.hasClass("LOC");
+        }
+
+        function isLabel(s, label){
+            return $(s).parent().hasClass(label);
+        }
+
+        function sameparent(a, b){
+            var pa = $(a).parent().attr("id");
+            var pb = $(b).parent().attr("id");
+            return pa == pb;
+        }
+
+        // Given a span, remove the label.
+        function removelabel(spanid) {
+
+            if (isLabeled(spanid)) {
+                console.log("Removing label from: " + spanid);
+
+                var tokobj = $("#" + spanid);
+                var parent = tokobj.parent();
+
+                var tokid = getnum(spanid);
+
+                // FIXME: needs to be aware of first and last token positions
+                var prev = "#tok-" + (tokid - 1);
+                var next = "#tok-" + (tokid + 1);
+
+                // really should be... have same parent.
+                //if (isLabeled(prev) && isLabeled(next)) {
+                if(sameparent(tokobj, prev) && sameparent(tokobj, next)){
+                    console.log("interior - don't do anything.");
+                } else if (sameparent(tokobj, next)) {
+                    tokobj.insertBefore(tokobj.parent());
+                } else if (sameparent(tokobj, prev)) {
+                    console.log(tokobj.parent());
+                    tokobj.insertAfter(tokobj.parent());
+                } else {
+                    // just a singleton.
+                    var p = tokobj.parent();
+                    tokobj.insertBefore(p);
+                    p.remove();
+                }
+
+                // be sure to clean up next...
+                var newspanid = fixspanid(parent);
+
+                $.ajax({
+                    method: "POST",
+                    url: "/result",
+                    data: {label: "O", spanid: newspanid, id: getParameterByName("taid")}
+                }).done(function (msg) {
+                    console.log("successful removal.");
+                });
+
+            }
+
+
+        }
+
+
+        // fix the spanid of constituent span.
+        function fixspanid(parent){
+            var kids = $(parent).children("span");
+
+            // if no kids, then this is the span to be removed.
+            var newspanid = $(parent).attr("id");
+            if(kids.length > 0) {
+                var first = $(kids[0]);
+                var last = $(kids[kids.length - 1]);
+                var firstnum = getnum(first.attr("id"));
+                var lastnum = getnum(last.attr("id")) + 1;
+
+                newspanid = "cons-" + firstnum + "-" + lastnum;
+                $(parent).attr("id", newspanid);
+            }
+
+            // remove all spans with no children.
+            $("span.cons").each(function (){
+                var kids = $(this).children("span");
+                if(kids.length == 0){
+                    $(this).remove();
+                }
+            });
+
+            return newspanid;
+        }
+
+        // run this function when you click on a token.
+        function addlabel(spanid, newclass) {
+            console.log("Adding " + newclass + " to " + spanid);
+
+            var tokid = getnum(spanid);
+
+            var tokobj = $("#" + spanid);
+
+            // remove label.
+            if(isLabeled(spanid)){
+                removelabel(spanid);
+            }
+
+            // FIXME: needs to be aware of first and last token positions
+            var prev= "#tok-" + (tokid -1);
+            var next = "#tok-" + (tokid + 1);
+
+            // TODO: decide on logic for interior case.
+            //if(isOrg(prev) && isOrg(next)){
+            //    console.log("interior");
+            //} else
+            if(isLabel(next, newclass)){
+                var cons = $(next).parent();
+                tokobj.detach();
+                cons.prepend(tokobj);
+
+            }else if (isLabel(prev, newclass)) {
+                var cons = $(prev).parent();
+                tokobj.detach();
+                cons.append(tokobj);
+
+            }else{
+                // all on your own.
+                var prevsib = tokobj.prev();
+                var nextsib = tokobj.next();
+
+                tokobj.detach();
+                var cons = $("<span>", {class: newclass + " pointer cons"});
+                cons.append(tokobj);
+
+                // this handles when we click on the first word.
+                if(!prevsib.hasClass("pointer")){
+                    cons.insertBefore(nextsib);
+                }else{
+                    cons.insertAfter(prevsib);
+                }
+            }
+
+            // Now fix the label of the constituent span.
+            var newspanid = fixspanid(tokobj.parent());
+
+            $.ajax({
+                method: "POST",
+                url: "/result",
+                data: {label: newclass, spanid: newspanid, id: getParameterByName("taid")}
+            }).done(function (msg) {
+                console.log("successful label add.");
+            });
+        };
 
         function savetas(){
-            console.log("saving tas...");
-
-            console.log(this);
-
             var taid = getParameterByName("taid");
-            console.log(taid);
+            console.log("saving ta: " + taid);
 
             $.ajax({
                 url: "/save",
@@ -159,13 +319,8 @@
             });
 
         }
-
         $( ".saveclass" ).click(savetas);
-
         $( "#savebutton" ).click(savetas);
-
-
-
     });
 
 
