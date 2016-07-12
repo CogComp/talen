@@ -72,7 +72,18 @@ public class AnnotationController {
         File f = new File(folderurl);
 
         // This will be ordered by it's keys.
-        TreeMap<String, TextAnnotation> ret = new TreeMap<>();
+        TreeMap<String, TextAnnotation> ret = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int retval;
+                try{
+                    retval = Integer.compare(Integer.parseInt(o1), Integer.parseInt(o2));
+                }catch(NumberFormatException e){
+                    retval = o1.compareTo(o2);
+                }
+                return retval;
+            }
+        });
 
         String[] files = f.list();
 
