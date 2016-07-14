@@ -1,2 +1,2 @@
 # Specify names and locations of datasets
-English src/main/resources/tas/eng/
+English   data/eng-tas/

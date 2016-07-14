@@ -1,4 +1,4 @@
-package hello;
+package io.github.mayhewsw;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
@@ -23,6 +23,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * This contains the main logic of the whole thing.
+ */
 @SuppressWarnings("ALL")
 @Controller
 public class AnnotationController {
