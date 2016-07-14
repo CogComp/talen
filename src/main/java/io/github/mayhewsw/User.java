@@ -1,4 +1,4 @@
-package hello;
+package io.github.mayhewsw;
 
 /**
  * Created by mayhew2 on 5/31/16.
