@@ -3,6 +3,7 @@
 target/
 *.iml
 tas/
+config/folders.txt
 
 
 # Mobile Tools for Java (J2ME)

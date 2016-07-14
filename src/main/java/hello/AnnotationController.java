@@ -44,7 +44,7 @@ public class AnnotationController {
         List<String> lines = LineIO.read("config/folders.txt");
         folders = new HashMap<>();
         for(String line: lines){
-            if(line.length() == 0){
+            if(line.length() == 0 || line.startsWith("#")){
                 continue;
             }
             String[] sl = line.trim().split("\\s+");
