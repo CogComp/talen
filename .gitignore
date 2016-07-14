@@ -2,7 +2,6 @@
 *~
 target/
 *.iml
-tas/
 config/folders.txt
 
 
