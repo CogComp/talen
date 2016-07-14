@@ -90,7 +90,6 @@ public class AnnotationController {
         int limit = Math.min(files.length, 300);
 
         for(int i = 0; i < limit; i++){
-            System.out.println(files[i]);
             String file = files[i];
             TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
             ret.put(file, ta);
