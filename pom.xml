@@ -7,6 +7,11 @@
     <artifactId>ner-annotation</artifactId>
     <version>0.1.0</version>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <start-class>io.github.mayhewsw.Application</start-class>
+    </properties>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -23,18 +28,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>edu.illinois.cs.cogcomp</groupId>
-            <artifactId>illinois-nlp-pipeline</artifactId>
-            <version>0.1.18</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
@@ -46,20 +39,9 @@
         <dependency>
             <groupId>edu.illinois.cs.cogcomp</groupId>
             <artifactId>illinois-core-utilities</artifactId>
-            <version>3.0.24</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
+            <version>3.0.55</version>
         </dependency>
     </dependencies>
-
-    <properties>
-        <java.version>1.8</java.version>
-        <start-class>io.github.mayhewsw.Application</start-class>
-    </properties>
 
     <build>
         <plugins>
