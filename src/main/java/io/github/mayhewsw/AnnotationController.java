@@ -6,7 +6,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
-import org.apache.commons.lang3.StringUtils;
+import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -51,8 +51,8 @@ public class AnnotationController {
                 continue;
             }
             String[] sl = line.trim().split("\\s+");
-            System.out.println(line);
-            System.out.println(sl.length);
+            logger.debug(line);
+            logger.debug(sl.length + "");
             folders.put(sl[0], sl[1]);
         }
     }
@@ -152,7 +152,7 @@ public class AnnotationController {
     public String setname(@ModelAttribute User user, HttpSession hs){
         logger.info("Setting name to: " + user.getName());
         // Just make sure everything is clear first... just in case.
-        System.out.println("Logging in!");
+        logger.info("Logging in!");
         hs.removeAttribute("username");
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
@@ -217,7 +217,7 @@ public class AnnotationController {
 
         }
 
-        String out = StringUtils.join(text, " ");
+        String out = StringUtils.join(" ", text);
 
         model.addAttribute("htmlstring", out);
 

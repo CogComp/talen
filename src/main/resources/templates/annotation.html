@@ -12,22 +12,13 @@
 
       <h3>Annotation Example</h3>
 
-      <!--<div id="legendcontainer">-->
-          <!--Legend:-->
-          <!--<span class="PER legend">PER</span>-->
-          <!--<span class="ORG legend">ORG</span>-->
-          <!--<span class="LOC legend">LOC</span>-->
-          <!--<span class="GPE legend">GPE</span>-->
-      <!--</div>-->
-
-
       <div id="tagdescriptions">
 
           <p><span class="PER">Person</span>: Humans identified by name, nickname or alias.
           E.g., Hillary Clinton, George W. Bush</p>
 
           <p><span class="ORG">Organization</span>: Corporations, institutions, goverment agencies and other groups of people
-          E.g., Republican Parity, World Bank, NYPD, ABC News, San Francisco 49ers</p>
+          E.g., Republican Party, World Bank, NYPD, ABC News, San Francisco 49ers</p>
 
           <p><span class="LOC">Location</span>: Names of geographically defined places (international regions, bodies of water, mountains, etc.) Locations also include man-made structures like airports, highways, streets, factories, and monuments.
 
@@ -86,31 +77,11 @@
         });
 
         $("#removebutton").click(function(){
-            $.each($(".pointer"), function(i, v){
+            $.each($("[id^=tok]"), function(i, v){
                 console.log(v);
-                changelabel("O",v.id);
+                removelabel(v.id);
             });
         });
-
-//        // buttonvalue is the new label.
-//        function changelabel(buttonvalue, spanid){
-//
-//            console.log(buttonvalue);
-//            console.log(spanid);
-//
-//            // TODO: make labels be generic.
-//            $("#" + spanid).removeClass("PER ORG LOC GPE O").addClass(buttonvalue);
-//
-//            // I need the name of the button pressed
-//            // and I need the span it is associated with.
-//            $.ajax({
-//                method: "POST",
-//                url: "/result",
-//                data: {label: buttonvalue, spanid: spanid, id: getParameterByName("taid")}
-//            }).done(function (msg) {
-//                console.log("WOOT");
-//            });
-//        }
 
         // on right click, change label to nothing.
         $("[id^=tok]").contextmenu(function(event){
@@ -307,20 +278,20 @@
             });
         };
 
-        function savetas(){
+        function save(){
             var taid = getParameterByName("taid");
             console.log("saving ta: " + taid);
 
             $.ajax({
                 url: "/save",
                 data: {taid: taid}
-            }).done(function (msg) {
+            }).done(function () {
                 console.log("finished saving!");
             });
 
         }
-        $( ".saveclass" ).click(savetas);
-        $( "#savebutton" ).click(savetas);
+        $( ".saveclass" ).click(save);
+        $( "#savebutton" ).click(save);
     });
 
 
