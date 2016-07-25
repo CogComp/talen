@@ -1,2 +1,11 @@
 # Specify names and locations of datasets
-English   data/eng-tas/
+English   data/eng-tas/	ta
+EnglishConll   data/eng-conll/	conll
+NI-ULY    /shared/corpora/ner/eval/ta/NI2-uly/	ta
+NI-arabic	/shared/corpora/ner/eval/ta/NI2-new/	ta
+NI-arabic-ULY	/shared/corpora/ner/eval/ta/NI2-uly-new/	ta
+checkpoint2-uly	/shared/corpora/ner/eval/ta/newNW-per-sub-uly/	ta
+NI2	/shared/corpora/ner/eval/ta/newNW-SWM2/	ta
+Dev	/shared/corpora/ner/eval/column/dev-iter13-stem-uly-swmcorrect/	conll
+Dev2	/shared/corpora/ner/eval/column/dev2/	conll
+Dev2Trans	/shared/corpora/ner/eval/column/dev2-translat/	conll   

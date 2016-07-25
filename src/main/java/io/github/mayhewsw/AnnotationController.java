@@ -7,6 +7,9 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
+import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import edu.illinois.cs.cogcomp.transliteration.SPModel;
+import edu.illinois.cs.cogcomp.utils.TopList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import javax.xml.soap.Text;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,7 +36,14 @@ public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
 
+    final String ugrevmodel = "/shared/corpora/transliteration/lorelei/models/probs-ug-rev.txt";
+    private static SPModel spmodel;
+
     private HashMap<String, String> folders;
+    private HashMap<String,String> foldertypes;
+    private final String FOLDERTA = "ta";
+    private final String FOLDERCONLL = "conll";
+
 
     /**
      * When this class is loaded, it reads a file called config/folders.txt. This is made up
@@ -43,9 +54,13 @@ public class AnnotationController {
      *
      * @throws FileNotFoundException
      */
-    public AnnotationController() throws FileNotFoundException {
+    public AnnotationController() throws IOException {
+
+        spmodel = new SPModel(ugrevmodel);
+
         List<String> lines = LineIO.read("config/folders.txt");
         folders = new HashMap<>();
+        foldertypes = new HashMap<>();
         for(String line: lines){
             if(line.length() == 0 || line.startsWith("#")){
                 continue;
@@ -54,6 +69,7 @@ public class AnnotationController {
             logger.debug(line);
             logger.debug(sl.length + "");
             folders.put(sl[0], sl[1]);
+            foldertypes.put(sl[0], sl[2]);
         }
     }
 
@@ -71,6 +87,7 @@ public class AnnotationController {
     public TreeMap<String, TextAnnotation> loadFolder(String folder) throws IOException {
 
         String folderurl = folders.get(folder);
+        String foldertype = foldertypes.get(folder);
 
         File f = new File(folderurl);
 
@@ -88,14 +105,21 @@ public class AnnotationController {
             }
         });
 
-        String[] files = f.list();
-
-        int limit = Math.min(files.length, 300);
-
-        for(int i = 0; i < limit; i++){
-            String file = files[i];
-            TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
-            ret.put(file, ta);
+        if(foldertype.equals(FOLDERTA)) {
+            String[] files = f.list();
+            int limit = Math.min(files.length, 300);
+            for (int i = 0; i < limit; i++) {
+                String file = files[i];
+                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
+                ret.put(file, ta);
+            }
+        }else if(foldertype.equals(FOLDERCONLL)){
+            CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
+            while(cnl.hasNext()){
+                TextAnnotation ta = cnl.next();
+                logger.info("Loading: " + ta.getId());
+                ret.put(ta.getId(), ta);
+            }
         }
 
         return ret;
@@ -125,6 +149,7 @@ public class AnnotationController {
         String username = (String) hs.getAttribute("username");
         String folder = (String) hs.getAttribute("dataname");
         String folderpath = folders.get(folder);
+        String foldertype = foldertypes.get(folder);
 
         if(username != null && folderpath != null) {
 
@@ -134,8 +159,15 @@ public class AnnotationController {
             logger.info("id is: " + taid);
 
             TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+            TextAnnotation taToSave = tas.get(taid);
+            String savepath = outpath + taid;
 
-            SerializationHelper.serializeTextAnnotationToFile(tas.get(taid), outpath + taid, true);
+            if(foldertype.equals(FOLDERTA)) {
+                SerializationHelper.serializeTextAnnotationToFile(taToSave, savepath, true);
+            }else if(foldertype.equals(FOLDERCONLL)) {
+                CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
+            }
+
         }
         // nothing happens to this...
         return "redirect:/";
@@ -195,8 +227,8 @@ public class AnnotationController {
         model.addAttribute("ta", ta);
 
         logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
-        logger.info("\tText: " + ta.getTokenizedText());
-        logger.info("\tConstituents: " + ner.getConstituents());
+        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
+        logger.info("Num Constituents: " + ner.getConstituents().size());
 
         String[] text = ta.getTokenizedText().split(" ");
 
@@ -236,29 +268,75 @@ public class AnnotationController {
         return "annotation";
     }
 
-    @RequestMapping(value="/result", method=RequestMethod.POST)
-    public String result(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) {
+    /**
+     * This should never get label O
+     * @param label
+     * @param spanid
+     * @param idstring
+     * @param hs
+     * @param model
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value="/addtoken", method=RequestMethod.POST)
+    public String addtoken(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: change span (id:%s) to label: %s.", idstring, spanid, label));
 
         String[] ss = spanid.split("-");
         Pair<Integer, Integer> span = new Pair<>(Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
 
-        logger.info(span.getFirst() + ":" + span.getSecond());
-
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         TextAnnotation ta = tas.get(idstring);
+        String[] spantoks = ta.getTokensInSpan(span.getFirst(), span.getSecond());
+
+        String text = StringUtils.join(" ", spantoks);
+        logger.info(text);
+        logger.info(spanid);
+
+        //String outname = "";
+        // for(String sn : spantoks){
+        //     TopList<Double, String> cands = spmodel.Generate(sn);
+        //     if (cands.size() > 0) {
+        //         sn = cands.getFirst().getSecond();
+        //     } else {
+        //         // don't do anything.
+        //     }
+        //     outname += sn + " ";
+        // }
+        // logger.info(outname);
+
+
         View ner = ta.getView(ViewNames.NER_CONLL);
         List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
+        int origstart = span.getFirst();
+        int origend = span.getSecond();
+        String origlabel = null;
         if(lc.size() > 0) {
             Constituent oldc = lc.get(0);
+//            origstart = oldc.getStartSpan();
+//            origend = oldc.getEndSpan();
+//            origlabel = oldc.getLabel();
             ner.removeConstituent(oldc);
         }
 
+
+//        if(origstart != span.getFirst()){
+//            // this means last token is being changed.
+//            Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, origstart, span.getFirst());
+//            ner.addConstituent(newc);
+//        }else if(origend != span.getSecond()){
+//            // this means first token is being changed.
+//            Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, span.getSecond(), origend);
+//            ner.addConstituent(newc);
+//        }
+
         // an O label means don't add the constituent.
-        if(!label.equals("O")) {
+        if(label.equals("O")) {
+            System.err.println("Should never happen: label is O");
+        }else{
             Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
             ner.addConstituent(newc);
         }
@@ -266,5 +344,49 @@ public class AnnotationController {
         // just a dummy response...
         return "dummy";
     }
+
+    @RequestMapping(value="/removetoken", method=RequestMethod.POST)
+    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+
+        logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
+
+        String[] ss = tokid.split("-");
+        int inttokid = Integer.parseInt(ss[1]);
+        Pair<Integer, Integer> tokspan = new Pair<>(inttokid, inttokid+1);
+
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+
+        TextAnnotation ta = tas.get(idstring);
+
+        String[] spantoks = ta.getTokensInSpan(tokspan.getFirst(), tokspan.getSecond());
+        String text = StringUtils.join(" ", spantoks);
+        logger.info(text);
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+        List<Constituent> lc = ner.getConstituentsCoveringSpan(tokspan.getFirst(), tokspan.getSecond());
+
+        if(lc.size() > 0) {
+            Constituent oldc = lc.get(0);
+
+            int origstart = oldc.getStartSpan();
+            int origend = oldc.getEndSpan();
+            String origlabel = oldc.getLabel();
+            ner.removeConstituent(oldc);
+
+            if(origstart != tokspan.getFirst()){
+                // this means last token is being changed.
+                Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, origstart, tokspan.getFirst());
+                ner.addConstituent(newc);
+            }else if(origend != tokspan.getSecond()){
+                // this means first token is being changed.
+                Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, tokspan.getSecond(), origend);
+                ner.addConstituent(newc);
+            }
+        }
+
+                // just a dummy response...
+        return "dummy";
+    }
+
 
 }

@@ -35,8 +35,8 @@
           </div>
       </div>
 
+      <a id="savebutton" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
       <a id="removebutton" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
-      <!--<a id="savebutton" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>-->
       <br />
       <br />
 
@@ -102,7 +102,11 @@
 
             $("#" + spanid).popover("hide");
 
-            addlabel(spanid, buttonvalue);
+            if(buttonvalue == "O"){
+                removelabel(spanid);
+            }else{
+                addlabel(spanid, buttonvalue);
+            }
         });
 
         $('body').on('click', function (e) {
@@ -151,6 +155,7 @@
 
                 var tokobj = $("#" + spanid);
                 var parent = tokobj.parent();
+                var origparentid = parent.id;
 
                 var tokid = getnum(spanid);
 
@@ -174,13 +179,14 @@
                     p.remove();
                 }
 
-                // be sure to clean up next...
-                var newspanid = fixspanid(parent);
+                fixspanid(parent);
 
+                // think carefully about what to send to server.
+                // we had a constituent, we remove a token on one end.
                 $.ajax({
                     method: "POST",
-                    url: "/result",
-                    data: {label: "O", spanid: newspanid, id: getParameterByName("taid")}
+                    url: "/removetoken",
+                    data: {tokid: spanid, id: getParameterByName("taid")}
                 }).done(function (msg) {
                     console.log("successful removal.");
                 });
@@ -271,7 +277,7 @@
 
             $.ajax({
                 method: "POST",
-                url: "/result",
+                url: "/addtoken",
                 data: {label: newclass, spanid: newspanid, id: getParameterByName("taid")}
             }).done(function (msg) {
                 console.log("successful label add.");
