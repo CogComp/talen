@@ -10,7 +10,9 @@
 <div th:include="base :: nav"></div>
   <div class="container">
 
-      <h3>Annotation Example</h3>
+      <div class="page-header">
+          <h1>Annotation <small th:text="${taid}"></small></h1>
+      </div>
 
       <div id="tagdescriptions">
 
@@ -29,22 +31,24 @@
 
       </div>
 
-      <div class="panel panel-default">
-          <div class="panel-body" >
-              <div th:utext="${htmlstring}" id="text" />
+
+          <div class="panel panel-default">
+              <div class="panel-body" >
+                  <div th:utext="${htmlstring}" id="text" />
+              </div>
+          </div>
+
+      <div class="form-group">
+        <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+        <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+      </div>
+
+      <div class="form-group">
+          <div class="btn-group" role="group" aria-label="Next and previous">
+              <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+              <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
           </div>
       </div>
-
-      <a id="savebutton" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
-      <a id="removebutton" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
-      <br />
-      <br />
-
-      <div class="btn-group btn-group" role="group" aria-label="Next and previous">
-          <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
-          <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
-      </div>
-
 
   </div>
 </body>
@@ -88,6 +92,7 @@
             event.preventDefault();
             var spanid = event.currentTarget.id;
             console.log("Right clicked on " + spanid);
+
             removelabel(spanid);
         });
 
@@ -150,6 +155,10 @@
         function removelabel(spanid) {
 
             if (isLabeled(spanid)) {
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+                $("#savebutton").css({"border-color" : "#c00"});
+
+
                 console.log("Removing label from: " + spanid);
 
                 var tokobj = $("#" + spanid);
@@ -220,9 +229,13 @@
             return newspanid;
         }
 
+
         // run this function when you click on a token.
         function addlabel(spanid, newclass) {
             console.log("Adding " + newclass + " to " + spanid);
+
+            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+            $("#savebutton").css({"border-color" : "#c00"});
 
             var tokid = getnum(spanid);
 
@@ -243,11 +256,14 @@
             //} else
             if(isLabel(next, newclass)){
                 var cons = $(next).parent();
+                $(next).before(" ");
                 tokobj.detach();
                 cons.prepend(tokobj);
 
+
             }else if (isLabel(prev, newclass)) {
                 var cons = $(prev).parent();
+                $(prev).after(" ");
                 tokobj.detach();
                 cons.append(tokobj);
 
@@ -263,8 +279,10 @@
                 // this handles when we click on the first word.
                 if(!prevsib.hasClass("pointer")){
                     cons.insertBefore(nextsib);
+                    nextsib.before(" ");
                 }else{
                     cons.insertAfter(prevsib);
+                    prevsib.after(" ");
                 }
             }
 
@@ -286,9 +304,15 @@
 
             $.ajax({
                 url: "/save",
-                data: {taid: taid}
+                data: {taid: taid},
+                beforeSend: function() {
+                    // setting a timeout
+                    $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");
+                }
             }).done(function () {
                 console.log("finished saving!");
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
+                $("#savebutton").css({"border-color" : ""});
             });
 
         }

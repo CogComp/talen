@@ -122,7 +122,8 @@ public class AnnotationController {
         if((new File(outfolder)).exists()) {
 
             if (foldertype.equals(FOLDERTA)) {
-                String[] files = f.list();
+                File outf = new File(outfolder);
+                String[] files = outf.list();
                 int limit = Math.min(files.length, 300);
                 for (int i = 0; i < limit; i++) {
                     String file = files[i];
@@ -246,6 +247,7 @@ public class AnnotationController {
         View ner = ta.getView(ViewNames.NER_CONLL);
 
         model.addAttribute("ta", ta);
+        model.addAttribute("taid", taid);
 
         logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
         logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
