@@ -8,7 +8,6 @@ import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import edu.illinois.cs.cogcomp.transliteration.SPModel;
 import edu.illinois.cs.cogcomp.utils.TopList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +34,7 @@ import java.util.*;
 public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
-
-    final String ugrevmodel = "/shared/corpora/transliteration/lorelei/models/probs-ug-rev.txt";
-    private static SPModel spmodel;
-
+    
     private HashMap<String, String> folders;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
@@ -55,8 +51,6 @@ public class AnnotationController {
      * @throws FileNotFoundException
      */
     public AnnotationController() throws IOException {
-
-        spmodel = new SPModel(ugrevmodel);
 
         List<String> lines = LineIO.read("config/folders.txt");
         folders = new HashMap<>();
@@ -325,19 +319,6 @@ public class AnnotationController {
         logger.info(text);
         logger.info(spanid);
 
-        //String outname = "";
-        // for(String sn : spantoks){
-        //     TopList<Double, String> cands = spmodel.Generate(sn);
-        //     if (cands.size() > 0) {
-        //         sn = cands.getFirst().getSecond();
-        //     } else {
-        //         // don't do anything.
-        //     }
-        //     outname += sn + " ";
-        // }
-        // logger.info(outname);
-
-
         View ner = ta.getView(ViewNames.NER_CONLL);
         List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
@@ -346,22 +327,8 @@ public class AnnotationController {
         String origlabel = null;
         if(lc.size() > 0) {
             Constituent oldc = lc.get(0);
-//            origstart = oldc.getStartSpan();
-//            origend = oldc.getEndSpan();
-//            origlabel = oldc.getLabel();
             ner.removeConstituent(oldc);
         }
-
-
-//        if(origstart != span.getFirst()){
-//            // this means last token is being changed.
-//            Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, origstart, span.getFirst());
-//            ner.addConstituent(newc);
-//        }else if(origend != span.getSecond()){
-//            // this means first token is being changed.
-//            Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, span.getSecond(), origend);
-//            ner.addConstituent(newc);
-//        }
 
         // an O label means don't add the constituent.
         if(label.equals("O")) {
@@ -414,9 +381,7 @@ public class AnnotationController {
             }
         }
 
-                // just a dummy response...
+        // just a dummy response...
         return "dummy";
     }
-
-
 }
