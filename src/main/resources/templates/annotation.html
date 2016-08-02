@@ -151,6 +151,23 @@
             return pa == pb;
         }
 
+
+        $.fn.removeText = function() {
+            for (var i=this.length-1; i>=0; --i) removeText(this[i]);
+        };
+
+        function removeText(node) {
+            console.log(node.childNodes);
+            if (!node || !node.childNodes || !node.childNodes.length) return;
+            for (var i=node.childNodes.length-1; i>=0; --i) {
+                var childNode = node.childNodes[i];
+                console.log(childNode + " " + i);
+                if (childNode.nodeType === 3 && (i == 0 || i == node.childNodes.length-1))
+                    node.removeChild(childNode);
+                //else if (childNode.nodeType === 1) removeText(childNode);
+            }
+        }
+
         // Given a span, remove the label.
         function removelabel(spanid) {
 
@@ -176,10 +193,14 @@
                 if(sameparent(tokobj, prev) && sameparent(tokobj, next)){
                     console.log("interior - don't do anything.");
                 } else if (sameparent(tokobj, next)) {
+                    var p = tokobj.parent();
                     tokobj.insertBefore(tokobj.parent());
+                    p.before(" ");
                 } else if (sameparent(tokobj, prev)) {
                     console.log(tokobj.parent());
+                    var p = tokobj.parent();
                     tokobj.insertAfter(tokobj.parent());
+                    p.after(" ");
                 } else {
                     // just a singleton.
                     var p = tokobj.parent();
@@ -206,6 +227,9 @@
         function fixspanid(parent){
             var kids = $(parent).children("span");
 
+
+            console.log($(parent).children());
+
             // if no kids, then this is the span to be removed.
             var newspanid = $(parent).attr("id");
             if(kids.length > 0) {
@@ -225,6 +249,11 @@
                     $(this).remove();
                 }
             });
+
+
+            var hh = $(parent).html();
+            $(parent).removeText();
+
 
             return newspanid;
         }
