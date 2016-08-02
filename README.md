@@ -17,7 +17,7 @@ documents to annotate. The format of the file is
 where format is either `ta` if the files are serialized TextAnnotations, or `conll` if the files are in CoNLL NER format. See
 [data/eng-conll/eng.conll](data/eng-conll/eng.conll) for an example of CoNLL NER format. 
 
-TextAnnotations are the core datastructure from [illinois-cogcomp-nlp](https://github.com/IllinoisCogComp/illinois-cogcomp-nlp), from [University of Illinois CogComp](http://cogcomp.cs.illinois.edu/). 
+TextAnnotations are the core datastructure from [illinois-cogcomp-nlp](https://github.com/IllinoisCogComp/illinois-cogcomp-nlp), from [University of Illinois CogComp group](http://cogcomp.cs.illinois.edu/). 
 
 ## Usage
 
