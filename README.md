@@ -38,9 +38,18 @@ work is lost.
 You make annotations by clicking on words and selecting a label. If you want to remove a label, you can either press the No Label
 button, or you can right click on a word.
 
+One caveat: if you label one word, and then label an adjacent word with the same tag, these tags will be automatically joined. However,
+if the word to be tagged is between two words which are already tagged, it will always join to the right tag, and not the left tag. If you
+want to tag consecutive tokens separately, but with the same label (as in, Denver Colorado), you need to tag Denver first, then the word after Colorado,
+then Colorado, then remove the word after Colorado. Clunky, I know. Suggestions for improvement? Open an issue or a pull request!
+
 A document is saved either by pressing the Save button, or by pressing the Next or Previous buttons. If you navigate away using
 the links on the top of the page, the document is not saved. 
 
 Currently the labels supported are LOC, ORG, GPE, and PER. These can be changed easily (just grep, and replace), and will be
 generalized in a future version of this interface. 
 
+This is still in development. If you want to spend a lot of time annotating something, please make sure that the annotations are being
+saved correctly as you go along.
+
+I welcome issues and pull requests.
