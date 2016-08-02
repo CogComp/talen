@@ -4,9 +4,6 @@
 
 A tool for annotating word sequences. 
 
-Note: this requires a file called config/folders.txt that maps a folder name (anything you want) to a path. This
-path must contain serialized TextAnnotations.
-
 ## Configuration
 
 On startup, this reads a file called [config/folders.txt](config/folders.txt), which contains paths to folders containing
