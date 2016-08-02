@@ -17,7 +17,7 @@
           <p><span class="PER">Person</span>: Humans identified by name, nickname or alias.
           E.g., Hillary Clinton, George W. Bush</p>
 
-          <p><span class="ORG">Organization</span>: Corporations, institutions, goverment agencies and other groups of people
+          <p><span class="ORG">Organization</span>: Corporations, institutions, government agencies and other groups of people
           E.g., Republican Party, World Bank, NYPD, ABC News, San Francisco 49ers</p>
 
           <p><span class="LOC">Location</span>: Names of geographically defined places (international regions, bodies of water, mountains, etc.) Locations also include man-made structures like airports, highways, streets, factories, and monuments.
@@ -134,7 +134,6 @@
             }
             var p = $(spanid).parent();
             return p.hasClass("cons");
-            //return p.hasClass("PER") || p.hasClass("ORG") || p.hasClass("GPE") || p.hasClass("LOC");
         }
 
         function isLabel(s, label){

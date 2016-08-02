@@ -10,12 +10,10 @@ import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
@@ -302,7 +300,8 @@ public class AnnotationController {
      * @throws Exception
      */
     @RequestMapping(value="/addtoken", method=RequestMethod.POST)
-    public String addtoken(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    @ResponseStatus(value = HttpStatus.OK)
+    public void addtoken(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: change span (id:%s) to label: %s.", idstring, spanid, label));
 
@@ -337,12 +336,11 @@ public class AnnotationController {
             ner.addConstituent(newc);
         }
 
-        // just a dummy response...
-        return "dummy";
     }
 
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
-    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    @ResponseStatus(value = HttpStatus.OK)
+    public void removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
 
@@ -379,8 +377,5 @@ public class AnnotationController {
                 ner.addConstituent(newc);
             }
         }
-
-        // just a dummy response...
-        return "dummy";
     }
 }
