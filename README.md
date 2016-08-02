@@ -43,7 +43,7 @@ then Colorado, then remove the word after Colorado. Clunky, I know. Suggestions 
 A document is saved either by pressing the Save button, or by pressing the Next or Previous buttons. If you navigate away using
 the links on the top of the page, the document is not saved. 
 
-Currently the labels supported are LOC, ORG, GPE, and PER. These can be changed easily (just grep, and replace), and will be
+Currently the labels supported are LOC, ORG, GPE, and PER. These can be changed easily (just grep, and replace), and may be
 generalized in a future version of this interface. 
 
 This is still in development. If you want to spend a lot of time annotating something, please make sure that the annotations are being
