@@ -1,0 +1,4 @@
+GPE
+ORG
+LOC
+PER
