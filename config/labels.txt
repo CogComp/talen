@@ -1,4 +1,5 @@
-GPE
-ORG
-LOC
-PER
+GPE lightcoral
+ORG lightblue
+LOC greenyellow
+PER yellow
+MISC orange

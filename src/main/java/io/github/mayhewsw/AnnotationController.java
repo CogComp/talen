@@ -33,6 +33,7 @@ public class AnnotationController {
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
     
     private HashMap<String, String> folders;
+    private List<String> labels;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
@@ -49,6 +50,7 @@ public class AnnotationController {
      */
     public AnnotationController() throws IOException {
 
+        logger.debug("Loading folders.txt");
         List<String> lines = LineIO.read("config/folders.txt");
         folders = new HashMap<>();
         foldertypes = new HashMap<>();
@@ -62,6 +64,22 @@ public class AnnotationController {
             folders.put(sl[0], sl[1]);
             foldertypes.put(sl[0], sl[2]);
         }
+
+        logger.debug("Loading labels.txt");
+        List<String> labellines = LineIO.read("config/labels.txt");
+        List<String> csslines = new ArrayList<String>();
+        labels = new ArrayList<>();
+        for(String line: labellines){
+            if(line.length() == 0 || line.startsWith("#")){
+                continue;
+            }
+            String[] sl = line.trim().split("\\s+");
+            labels.add(sl[0]);
+            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
+        }
+        logger.debug("using labels: " + labels.toString());
+
+        LineIO.write("src/main/resources/static/css/labels.css", csslines);
     }
 
     /**
@@ -252,6 +270,7 @@ public class AnnotationController {
         logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
         logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
         logger.info("Num Constituents: " + ner.getConstituents().size());
+        logger.info("Constituents: " + ner.getConstituents());
 
         String[] text = ta.getTokenizedText().split(" ");
 
@@ -261,7 +280,6 @@ public class AnnotationController {
         }
 
         for(Constituent c : ner.getConstituents()){
-            if(c.getLabel().equals("MISC")) continue;
 
             int start = c.getStartSpan();
             int end = c.getEndSpan();
@@ -287,6 +305,8 @@ public class AnnotationController {
         }else{
             model.addAttribute("nextid", -1);
         }
+
+        model.addAttribute("labels", labels);
 
         return "annotation";
     }
