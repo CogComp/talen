@@ -32,17 +32,10 @@ import java.util.*;
 public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
-<<<<<<< HEAD
 
-    final String ugrevmodel = "/shared/corpora/transliteration/lorelei/models/probs-ug-rev.txt";
-    private static SPModel spmodel;
-
-    private TreeMap<String, String> folders;
-=======
     
     private HashMap<String, String> folders;
     private List<String> labels;
->>>>>>> 407885988e5062e7764b9a48c8f1de3e4d070ee2
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
@@ -59,16 +52,9 @@ public class AnnotationController {
      */
     public AnnotationController() throws IOException {
 
-<<<<<<< HEAD
-//        ugd = new UgDictionary("/shared/corpora/corporaWeb/lorelei/evaluation-20160705/LDC2016E57_LORELEI_IL3_Incident_Language_Pack_for_Year_1_Eval/set0/docs/categoryI_dictionary/IL3_dictionary.xml.ULY");
-
-        spmodel = new SPModel(ugrevmodel);
-
-=======
         logger.debug("Loading folders.txt");
->>>>>>> 407885988e5062e7764b9a48c8f1de3e4d070ee2
         List<String> lines = LineIO.read("config/folders.txt");
-        folders = new TreeMap<String, String>();
+        folders = new HashMap<String, String>();
         foldertypes = new HashMap<>();
         for(String line: lines){
             if(line.length() == 0 || line.startsWith("#")){
@@ -109,7 +95,7 @@ public class AnnotationController {
      * @return
      * @throws IOException
      */
-    public TreeMap<String, TextAnnotation> loadFolder(String folder, String username) throws IOException {
+    public TreeMap<String, TextAnnotation> loadFolder(String folder, String username) throws Exception {
 
         String folderurl = folders.get(folder);
         String foldertype = foldertypes.get(folder);
@@ -156,14 +142,10 @@ public class AnnotationController {
         if((new File(outfolder)).exists()) {
 
             if (foldertype.equals(FOLDERTA)) {
-<<<<<<< HEAD
-                String[] files = f.list();
-                int limit = Math.min(files.length, 500);
-=======
                 File outf = new File(outfolder);
                 String[] files = outf.list();
                 int limit = Math.min(files.length, 300);
->>>>>>> 407885988e5062e7764b9a48c8f1de3e4d070ee2
+
                 for (int i = 0; i < limit; i++) {
                     String file = files[i];
                     TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file);
@@ -194,7 +176,7 @@ public class AnnotationController {
      * @throws IOException
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
-    public String dummy(@RequestParam(value="folder") String folder, HttpSession hs) throws IOException {
+    public String dummy(@RequestParam(value="folder") String folder, HttpSession hs) throws Exception {
         String username = (String) hs.getAttribute("username");
         TreeMap<String, TextAnnotation> tas = loadFolder(folder, username);
         hs.setAttribute("tas", tas);
