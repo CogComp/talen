@@ -8,13 +8,13 @@
 <div th:fragment="head">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
     <link rel="stylesheet" href="#" th:href="@{/css/style.css}" />
 
 
 
-    <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script   src="http://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script th:src="@{/js/script.js}"></script>
 </div>
 
@@ -34,24 +34,27 @@
                 <a class="navbar-brand" href="/">NER Annotator</a>
             </div>
 
-            <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->
+
                 <div class="navbar-collapse navbar-ex1-collapse">
+
                     <ul class="nav navbar-nav" id="pagesbar">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/annotation">All annotations</a></li>
+                        <li th:unless="${session.username} == null"><a href="/">Home</a></li>
+                        <li th:unless="${session.username} == null"><a href="/annotation">All annotations</a></li>
                         <li><a target="_blank" href="https://youtu.be/gAYcwFXnC54">Instructions</a></li>
+                        <li><a target="_blank" href="/dict">Dictionary</a></li>
                     </ul>
 
-
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><span class="navbar-text" th:text="${'Hi there ' + session.username + '!'}">Hi there</span></li>
-                        <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
-                        <li><a href="/logout" id="logoutlink" th:text="Logout">Logout</a></li>
-                    </ul>
+                    <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><span class="navbar-text" th:text="${'Hi there ' + session.username + '!'}">Hi there</span></li>
+                            <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
+                            <li><a href="/logout" id="logoutlink" th:text="Logout">Logout</a></li>
+                        </ul>
+                    </span>
 
                 </div><!-- /.navbar-collapse -->
 
-            </span>
+
 
 
         </div>

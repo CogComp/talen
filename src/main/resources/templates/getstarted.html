@@ -19,7 +19,7 @@
           </tr>
           <tr th:each="key : ${session.tas.keySet()}">
               <td th:text="${key}"></td>
-              <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${session.tas.get(key)}"></a></td>
+              <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${session.tas.get(key).getText().substring(0,10)}"></a></td>
           </tr>
       </table>
 

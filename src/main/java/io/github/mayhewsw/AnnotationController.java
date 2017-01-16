@@ -7,6 +7,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
+//import edu.illinois.cs.cogcomp.ner.data.UgDictionary;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import edu.illinois.cs.cogcomp.transliteration.SPModel;
 import edu.illinois.cs.cogcomp.utils.TopList;
@@ -14,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
@@ -39,11 +37,11 @@ public class AnnotationController {
     final String ugrevmodel = "/shared/corpora/transliteration/lorelei/models/probs-ug-rev.txt";
     private static SPModel spmodel;
 
-    private HashMap<String, String> folders;
+    private TreeMap<String, String> folders;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
-
+//    private UgDictionary ugd;
 
     /**
      * When this class is loaded, it reads a file called config/folders.txt. This is made up
@@ -56,10 +54,12 @@ public class AnnotationController {
      */
     public AnnotationController() throws IOException {
 
+//        ugd = new UgDictionary("/shared/corpora/corporaWeb/lorelei/evaluation-20160705/LDC2016E57_LORELEI_IL3_Incident_Language_Pack_for_Year_1_Eval/set0/docs/categoryI_dictionary/IL3_dictionary.xml.ULY");
+
         spmodel = new SPModel(ugrevmodel);
 
         List<String> lines = LineIO.read("config/folders.txt");
-        folders = new HashMap<>();
+        folders = new TreeMap<String, String>();
         foldertypes = new HashMap<>();
         for(String line: lines){
             if(line.length() == 0 || line.startsWith("#")){
@@ -107,7 +107,7 @@ public class AnnotationController {
 
         if(foldertype.equals(FOLDERTA)) {
             String[] files = f.list();
-            int limit = Math.min(files.length, 300);
+            int limit = Math.min(files.length, 500);
             for (int i = 0; i < limit; i++) {
                 String file = files[i];
                 TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
@@ -132,7 +132,7 @@ public class AnnotationController {
 
             if (foldertype.equals(FOLDERTA)) {
                 String[] files = f.list();
-                int limit = Math.min(files.length, 300);
+                int limit = Math.min(files.length, 500);
                 for (int i = 0; i < limit; i++) {
                     String file = files[i];
                     TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file);
@@ -414,8 +414,48 @@ public class AnnotationController {
             }
         }
 
-                // just a dummy response...
+        // just a dummy response...
         return "dummy";
+    }
+
+    @RequestMapping(value="/dict", method=RequestMethod.GET)
+    public String dict(Model model) throws Exception {
+        return "dict";
+    }
+
+    @RequestMapping(value="/dict", method=RequestMethod.POST)
+    @ResponseBody
+    public String dict(@RequestParam(value="word") String word, @RequestParam(value="ratio") String strratio, Model model) throws Exception {
+
+        word = word.toLowerCase();
+
+        double ratio = 0.9;
+//
+//        try{
+//            ratio = Double.parseDouble(strratio);
+//        }catch (NumberFormatException e){
+//            System.err.println("Ratio should be a number! Using default 0.9");
+//        }
+//
+//        Pair<String,String> p = ugd.pairlookup(word, ratio);
+//        String orig = p.getFirst();
+//        String definition = p.getSecond();
+//
+//        definition = ugd.cleandefinition(definition);
+//
+//
+//        if(definition == null){
+//            orig = "";
+//            definition = "Definition not found. Try a lower threshold.";
+//        }else{
+//            orig = "<b>" + orig + "</b>: ";
+//        }
+//
+//        System.out.println(orig + " ||| " + definition);
+//
+//        // just a dummy response...
+//        return orig + definition;
+        return "NOT IMPLEMENTED RIGHT NOW";
     }
 
 

@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dictionary</title>
+    <div th:include="base :: head"></div>
+
+</head>
+<body>
+<div th:include="base :: nav"></div>
+<div class="container">
+
+
+
+    <div class="row">
+
+        <div class="col-md-2"></div>
+        <div class="col-md-6">
+            <h4 style="margin-bottom: 40px">Uyghur Dictionary</h4>
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label for="searchfield" class="col-sm-2 control-label">Word:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control input-lg enter" id="searchfield" placeholder="Uighur word"></input>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="ratio" class="col-sm-2 control-label">Ratio:</label>
+                    <div class="col-sm-5">
+                        <input type="text" class="form-control enter" id="ratio" placeholder="Ratio"></input>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <button id="searchbutton" class="btn btn-default">Look up</button>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <div class="row" style="margin-top: 20px">
+
+        <div class="col-md-2"></div>
+        <div class="col-md-6">
+
+            <div class="panel panel-default" id="defpanel">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Definition</h3>
+                </div>
+                <div class="panel-body" id="def">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    $(document).ready(function() {
+        $( "#defpanel" ).hide( );
+
+        $("#ratio").val("0.9");
+
+        console.log("doc ready...");
+
+        function search() {
+            console.log("being called...");
+            var word = $("#searchfield").val();
+            console.log(word);
+
+            $("#defpanel").show();
+
+            $.ajax({
+                method: "POST",
+                url: "/dict",
+                data: {word: word, ratio: $("#ratio").val()}
+            }).done(function (msg) {
+                console.log("successful lookup:" + msg);
+
+                $("#def").html(msg);
+            });
+        }
+
+
+        $(".enter").keydown(function (event) {
+            var keypressed = event.keyCode || event.which;
+            if (keypressed == 13) {
+                search();
+            }
+        });
+
+        $("#searchbutton").on("click", search);
+
+    });
+    /*]]>*/
+</script>
+
+</html>
