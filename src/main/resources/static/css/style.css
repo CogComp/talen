@@ -1,29 +1,12 @@
 .pointer {
     cursor: pointer;
+
+}
+
+.cons {
     padding: 3px;
     border-radius: 5px;
 }
-
-.PER {
-    background-color: yellow;
-}
-
-.ORG {
-    background-color: lightblue;
-}
-
-.LOC {
-    background-color: greenyellow;
-}
-
-.GPE {
-    background-color: lightcoral;
-}
-
-/*.O {
-    border-bottom: 1px dashed gray;
-    border-radius: 0px;
-}*/
 
 #legendcontainer {
     padding: 7px;
@@ -44,5 +27,15 @@
     max-width: 600px; /* Max Width of the popover (depending on the container!) */
 }
 
+#savebutton {
+    width: 100px;
+}
 
-/* generated here: http://work.smarchal.com/twbscolor/css/e74c3cc0392becf0f1ffbbbc0 */
+#tagdescriptions {
+    margin: 10px;
+}
+
+#tagdescriptions span {
+    padding: 2px;
+    border-radius: 2px;
+}

@@ -9,10 +9,9 @@ import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 //import edu.illinois.cs.cogcomp.ner.data.UgDictionary;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import edu.illinois.cs.cogcomp.transliteration.SPModel;
-import edu.illinois.cs.cogcomp.utils.TopList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -33,11 +32,17 @@ import java.util.*;
 public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
+<<<<<<< HEAD
 
     final String ugrevmodel = "/shared/corpora/transliteration/lorelei/models/probs-ug-rev.txt";
     private static SPModel spmodel;
 
     private TreeMap<String, String> folders;
+=======
+    
+    private HashMap<String, String> folders;
+    private List<String> labels;
+>>>>>>> 407885988e5062e7764b9a48c8f1de3e4d070ee2
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
@@ -54,10 +59,14 @@ public class AnnotationController {
      */
     public AnnotationController() throws IOException {
 
+<<<<<<< HEAD
 //        ugd = new UgDictionary("/shared/corpora/corporaWeb/lorelei/evaluation-20160705/LDC2016E57_LORELEI_IL3_Incident_Language_Pack_for_Year_1_Eval/set0/docs/categoryI_dictionary/IL3_dictionary.xml.ULY");
 
         spmodel = new SPModel(ugrevmodel);
 
+=======
+        logger.debug("Loading folders.txt");
+>>>>>>> 407885988e5062e7764b9a48c8f1de3e4d070ee2
         List<String> lines = LineIO.read("config/folders.txt");
         folders = new TreeMap<String, String>();
         foldertypes = new HashMap<>();
@@ -71,6 +80,22 @@ public class AnnotationController {
             folders.put(sl[0], sl[1]);
             foldertypes.put(sl[0], sl[2]);
         }
+
+        logger.debug("Loading labels.txt");
+        List<String> labellines = LineIO.read("config/labels.txt");
+        List<String> csslines = new ArrayList<String>();
+        labels = new ArrayList<>();
+        for(String line: labellines){
+            if(line.length() == 0 || line.startsWith("#")){
+                continue;
+            }
+            String[] sl = line.trim().split("\\s+");
+            labels.add(sl[0]);
+            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
+        }
+        logger.debug("using labels: " + labels.toString());
+
+        LineIO.write("src/main/resources/static/css/labels.css", csslines);
     }
 
     /**
@@ -131,8 +156,14 @@ public class AnnotationController {
         if((new File(outfolder)).exists()) {
 
             if (foldertype.equals(FOLDERTA)) {
+<<<<<<< HEAD
                 String[] files = f.list();
                 int limit = Math.min(files.length, 500);
+=======
+                File outf = new File(outfolder);
+                String[] files = outf.list();
+                int limit = Math.min(files.length, 300);
+>>>>>>> 407885988e5062e7764b9a48c8f1de3e4d070ee2
                 for (int i = 0; i < limit; i++) {
                     String file = files[i];
                     TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file);
@@ -255,10 +286,12 @@ public class AnnotationController {
         View ner = ta.getView(ViewNames.NER_CONLL);
 
         model.addAttribute("ta", ta);
+        model.addAttribute("taid", taid);
 
         logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
         logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
         logger.info("Num Constituents: " + ner.getConstituents().size());
+        logger.info("Constituents: " + ner.getConstituents());
 
         String[] text = ta.getTokenizedText().split(" ");
 
@@ -268,7 +301,6 @@ public class AnnotationController {
         }
 
         for(Constituent c : ner.getConstituents()){
-            if(c.getLabel().equals("MISC")) continue;
 
             int start = c.getStartSpan();
             int end = c.getEndSpan();
@@ -295,6 +327,8 @@ public class AnnotationController {
             model.addAttribute("nextid", -1);
         }
 
+        model.addAttribute("labels", labels);
+
         return "annotation";
     }
 
@@ -309,7 +343,8 @@ public class AnnotationController {
      * @throws Exception
      */
     @RequestMapping(value="/addtoken", method=RequestMethod.POST)
-    public String addtoken(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    @ResponseStatus(value = HttpStatus.OK)
+    public void addtoken(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: change span (id:%s) to label: %s.", idstring, spanid, label));
 
@@ -325,19 +360,6 @@ public class AnnotationController {
         logger.info(text);
         logger.info(spanid);
 
-        //String outname = "";
-        // for(String sn : spantoks){
-        //     TopList<Double, String> cands = spmodel.Generate(sn);
-        //     if (cands.size() > 0) {
-        //         sn = cands.getFirst().getSecond();
-        //     } else {
-        //         // don't do anything.
-        //     }
-        //     outname += sn + " ";
-        // }
-        // logger.info(outname);
-
-
         View ner = ta.getView(ViewNames.NER_CONLL);
         List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
@@ -346,22 +368,8 @@ public class AnnotationController {
         String origlabel = null;
         if(lc.size() > 0) {
             Constituent oldc = lc.get(0);
-//            origstart = oldc.getStartSpan();
-//            origend = oldc.getEndSpan();
-//            origlabel = oldc.getLabel();
             ner.removeConstituent(oldc);
         }
-
-
-//        if(origstart != span.getFirst()){
-//            // this means last token is being changed.
-//            Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, origstart, span.getFirst());
-//            ner.addConstituent(newc);
-//        }else if(origend != span.getSecond()){
-//            // this means first token is being changed.
-//            Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, span.getSecond(), origend);
-//            ner.addConstituent(newc);
-//        }
 
         // an O label means don't add the constituent.
         if(label.equals("O")) {
@@ -371,12 +379,11 @@ public class AnnotationController {
             ner.addConstituent(newc);
         }
 
-        // just a dummy response...
-        return "dummy";
     }
 
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
-    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    @ResponseStatus(value = HttpStatus.OK)
+    public void removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
 
@@ -413,50 +420,6 @@ public class AnnotationController {
                 ner.addConstituent(newc);
             }
         }
-
-        // just a dummy response...
-        return "dummy";
     }
-
-    @RequestMapping(value="/dict", method=RequestMethod.GET)
-    public String dict(Model model) throws Exception {
-        return "dict";
-    }
-
-    @RequestMapping(value="/dict", method=RequestMethod.POST)
-    @ResponseBody
-    public String dict(@RequestParam(value="word") String word, @RequestParam(value="ratio") String strratio, Model model) throws Exception {
-
-        word = word.toLowerCase();
-
-        double ratio = 0.9;
-//
-//        try{
-//            ratio = Double.parseDouble(strratio);
-//        }catch (NumberFormatException e){
-//            System.err.println("Ratio should be a number! Using default 0.9");
-//        }
-//
-//        Pair<String,String> p = ugd.pairlookup(word, ratio);
-//        String orig = p.getFirst();
-//        String definition = p.getSecond();
-//
-//        definition = ugd.cleandefinition(definition);
-//
-//
-//        if(definition == null){
-//            orig = "";
-//            definition = "Definition not found. Try a lower threshold.";
-//        }else{
-//            orig = "<b>" + orig + "</b>: ";
-//        }
-//
-//        System.out.println(orig + " ||| " + definition);
-//
-//        // just a dummy response...
-//        return orig + definition;
-        return "NOT IMPLEMENTED RIGHT NOW";
-    }
-
 
 }

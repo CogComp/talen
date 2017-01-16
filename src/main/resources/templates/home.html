@@ -19,7 +19,7 @@
 
                 <form th:action="@{/setname}" th:object="${user}" method="post">
                     <div class="form-group">
-                        <label for="namefield">Please enter your name (no spaces):</label>
+                        <label for="namefield">Please enter a username:</label>
                         <input type="text" class="form-control" id="namefield" th:field="*{name}" placeholder="Your name" />
                     </div>
                     <button type="submit" class="btn btn-default">Submit</button>

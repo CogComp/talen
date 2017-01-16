@@ -1,0 +1,5 @@
+GPE lightcoral
+ORG lightblue
+LOC greenyellow
+PER yellow
+MISC orange

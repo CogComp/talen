@@ -5,6 +5,9 @@ target/
 config/folders.txt
 .idea/
 
+# automatically generated annotation folders
+*-annotation-*
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 

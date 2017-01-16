@@ -10,42 +10,35 @@
 <div th:include="base :: nav"></div>
   <div class="container">
 
-      <h3>Annotation Example</h3>
+      <div class="page-header">
+          <h1>Annotation <small th:text="${taid}"></small></h1>
+      </div>
 
       <div id="tagdescriptions">
-
-          <p><span class="PER">Person</span>: Humans identified by name, nickname or alias.
-          E.g., Hillary Clinton, George W. Bush</p>
-
-          <p><span class="ORG">Organization</span>: Corporations, institutions, goverment agencies and other groups of people
-          E.g., Republican Party, World Bank, NYPD, ABC News, San Francisco 49ers</p>
-
-          <p><span class="LOC">Location</span>: Names of geographically defined places (international regions, bodies of water, mountains, etc.) Locations also include man-made structures like airports, highways, streets, factories, and monuments.
-
-          E.g., North America, Mars, Berlin Wall, Disneyland, Mississippi River</p>
-
-          <p><span class="GPE">Geopolitical</span>: (1) a physical location, (2) a government, and (3) a population. All three of these elements must be present
-          E.g., United States, China, Philadelphia, Illinois</p>
+          Labels:
+              <span th:each="label : ${labels}" th:class="${label}" th:text="${label}"></span>
 
       </div>
 
-      <div class="panel panel-default">
-          <div class="panel-body" >
-              <div th:utext="${htmlstring}" id="text" />
+
+          <div class="panel panel-default">
+              <div class="panel-body" >
+                  <div th:utext="${htmlstring}" id="text" />
+              </div>
+          </div>
+
+      <div class="form-group">
+        <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+        <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+      </div>
+
+      <div class="form-group">
+          <div class="btn-group" role="group" aria-label="Next and previous">
+              <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+              <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
           </div>
       </div>
 
-      <a id="savebutton" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
-      <!--<a id="removebutton" class="btn btn-default"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>-->
-      <br />
-      <br />
-
-      <div class="btn-group btn-group" role="group" aria-label="Next and previous">
-          <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
-          <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
-      </div>
-
-      <br />
   </div>
 </body>
 
@@ -88,6 +81,7 @@
             event.preventDefault();
             var spanid = event.currentTarget.id;
             console.log("Right clicked on " + spanid);
+
             removelabel(spanid);
         });
 
@@ -134,7 +128,6 @@
             }
             var p = $(spanid).parent();
             return p.hasClass("cons");
-            //return p.hasClass("PER") || p.hasClass("ORG") || p.hasClass("GPE") || p.hasClass("LOC");
         }
 
         function isLabel(s, label){
@@ -147,10 +140,31 @@
             return pa == pb;
         }
 
+
+        $.fn.removeText = function() {
+            for (var i=this.length-1; i>=0; --i) removeText(this[i]);
+        };
+
+        function removeText(node) {
+            console.log(node.childNodes);
+            if (!node || !node.childNodes || !node.childNodes.length) return;
+            for (var i=node.childNodes.length-1; i>=0; --i) {
+                var childNode = node.childNodes[i];
+                console.log(childNode + " " + i);
+                if (childNode.nodeType === 3 && (i == 0 || i == node.childNodes.length-1))
+                    node.removeChild(childNode);
+                //else if (childNode.nodeType === 1) removeText(childNode);
+            }
+        }
+
         // Given a span, remove the label.
         function removelabel(spanid) {
 
             if (isLabeled(spanid)) {
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+                $("#savebutton").css({"border-color" : "#c00"});
+
+
                 console.log("Removing label from: " + spanid);
 
                 var tokobj = $("#" + spanid);
@@ -168,10 +182,14 @@
                 if(sameparent(tokobj, prev) && sameparent(tokobj, next)){
                     console.log("interior - don't do anything.");
                 } else if (sameparent(tokobj, next)) {
+                    var p = tokobj.parent();
                     tokobj.insertBefore(tokobj.parent());
+                    p.before(" ");
                 } else if (sameparent(tokobj, prev)) {
                     console.log(tokobj.parent());
+                    var p = tokobj.parent();
                     tokobj.insertAfter(tokobj.parent());
+                    p.after(" ");
                 } else {
                     // just a singleton.
                     var p = tokobj.parent();
@@ -198,6 +216,9 @@
         function fixspanid(parent){
             var kids = $(parent).children("span");
 
+
+            console.log($(parent).children());
+
             // if no kids, then this is the span to be removed.
             var newspanid = $(parent).attr("id");
             if(kids.length > 0) {
@@ -218,12 +239,21 @@
                 }
             });
 
+
+            var hh = $(parent).html();
+            $(parent).removeText();
+
+
             return newspanid;
         }
+
 
         // run this function when you click on a token.
         function addlabel(spanid, newclass) {
             console.log("Adding " + newclass + " to " + spanid);
+
+            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+            $("#savebutton").css({"border-color" : "#c00"});
 
             var tokid = getnum(spanid);
 
@@ -244,11 +274,14 @@
             //} else
             if(isLabel(next, newclass)){
                 var cons = $(next).parent();
+                $(next).before(" ");
                 tokobj.detach();
                 cons.prepend(tokobj);
 
+
             }else if (isLabel(prev, newclass)) {
                 var cons = $(prev).parent();
+                $(prev).after(" ");
                 tokobj.detach();
                 cons.append(tokobj);
 
@@ -264,8 +297,10 @@
                 // this handles when we click on the first word.
                 if(!prevsib.hasClass("pointer")){
                     cons.insertBefore(nextsib);
+                    nextsib.before(" ");
                 }else{
                     cons.insertAfter(prevsib);
+                    prevsib.after(" ");
                 }
             }
 
@@ -287,9 +322,15 @@
 
             $.ajax({
                 url: "/save",
-                data: {taid: taid}
+                data: {taid: taid},
+                beforeSend: function() {
+                    // setting a timeout
+                    $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");
+                }
             }).done(function () {
                 console.log("finished saving!");
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
+                $("#savebutton").css({"border-color" : ""});
             });
 
         }
@@ -298,38 +339,31 @@
     });
 
 
-
-
     /*]]>*/
 </script>
 
 <template id="buttons">
     <div class="container-fluid">
-        <div class="row">
 
-            <div class="col-md-4">
-                <button type="button" id="PER" class="btn PER" th:field="PER" value="PER">PER</button>
-            </div>
-            <div class="col-md-4">
-                <button type="button" id="ORG" class="btn ORG" th:field="ORG" value="ORG">ORG</button>
-            </div>
-            <div class="col-md-4">
-
+        <div th:each="label,iterStat : ${labels}" th:if="${iterStat.index % 2 == 0}" class="form-group">
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" th:id="${labels[iterStat.index]}" class="btn" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
+                </div><x></x>
+                <div class="col-md-4" th:if="${iterStat.index+1} &lt; ${labels.size()}">
+                    <button type="button" th:id="${labels[iterStat.index+1]}" class="btn" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
+                </div>
             </div>
         </div>
-        <div class="row"><br /></div>
-        <div class="row">
 
-            <div class="col-md-4">
-                <button type="button" id="LOC" class="btn LOC" value="LOC">LOC</button>
-            </div>
-            <div class="col-md-4">
-                <button type="button" id="GPE" class="btn GPE" value="GPE">GPE</button>
-            </div>
-            <div class="col-md-4">
-                <button type="button" id="O" class="btn btn-default" value="O">No label</button>
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" id="O" class="btn btn-default" value="O">No label</button>
+                </div>
             </div>
         </div>
+
     </div>
 </template>
 
