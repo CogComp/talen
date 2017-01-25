@@ -16,6 +16,13 @@ where format is either `ta` if the files are serialized TextAnnotations, or `con
 
 TextAnnotations are the core datastructure from [illinois-cogcomp-nlp](https://github.com/IllinoisCogComp/illinois-cogcomp-nlp), from [University of Illinois CogComp group](http://cogcomp.cs.illinois.edu/). 
 
+Specify the type and color of the desired labels in [config/labels.txt](config/labels.txt). The format is:
+
+    labelname    color
+
+Where `color` is any acceptable CSS color ([example](http://www.w3schools.com/colors/colors_names.asp)).
+
+
 ## Usage
 
 Requires Java 8 and Maven. Run:
