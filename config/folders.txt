@@ -15,5 +15,6 @@
 #Uzbek-compare	/shared/corpora/ner/lorelei/uzug/All-compare/	conll
 #Eval	/shared/corpora/ner/wikifier-features/ug/cp3/final/ensemble3-1/	conll
 #Arabic	/shared/corpora/ner/eval/column/NI1-swm/	conll
-English   data/eng-tas/	ta
-EnglishConll   data/eng-conll/	conll
+Bengali        /shared/corpora/ner/human/bn/conll-anno.urom/ conll
+Tamil        /shared/corpora/ner/human/ta/conll-anno.urom/ conll
+BengaliOrig        /shared/corpora/ner/human/bn/conll conll

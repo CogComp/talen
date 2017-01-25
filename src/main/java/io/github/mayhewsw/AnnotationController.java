@@ -161,9 +161,6 @@ public class AnnotationController {
             }
         }
 
-
-
-
         return ret;
     }
 
@@ -266,6 +263,7 @@ public class AnnotationController {
 
         TextAnnotation ta = tas.get(taid);
         View ner = ta.getView(ViewNames.NER_CONLL);
+        View sents = ta.getView(ViewNames.SENTENCE);
 
         model.addAttribute("ta", ta);
         model.addAttribute("taid", taid);
@@ -292,6 +290,14 @@ public class AnnotationController {
             text[end-1] += "</span>";
 
         }
+
+        for(Constituent c : sents.getConstituents()){
+
+            int start = c.getStartSpan();
+            int end = c.getEndSpan();
+            text[end-1] += "<br />";
+        }
+
 
         String out = StringUtils.join(" ", text);
 

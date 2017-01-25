@@ -12,6 +12,7 @@
 
       <div class="page-header">
           <h1>Annotation <small th:text="${taid}"></small></h1>
+          <a target="_blank" th:href="${'http://www.' + taid.replace('_','/').replace('.conll', '.html')}">Link</a>
       </div>
 
       <div id="tagdescriptions">
