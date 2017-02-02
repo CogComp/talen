@@ -27,8 +27,24 @@
           </div>
 
       <div class="form-group">
-        <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
-        <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+          <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+          <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
+          <a id="dictbutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dictionary</a>
+      </div>
+
+
+      <div class="form-group">
+          <form class="form-inline">
+              <div class="form-group">
+                  <label for="key">Foreign</label>
+                  <input type="text" class="form-control" id="key" placeholder="Foreign word" />
+              </div>
+              <div class="form-group">
+                  <label for="def">English</label>
+                  <input type="text" class="form-control" id="def" placeholder="English word" />
+              </div>
+              <button type="button" id="defsubmit" class="btn btn-default">Submit</button>
+          </form>
       </div>
 
       <div class="form-group">
@@ -81,6 +97,35 @@
         }
 
         loadtok();
+
+
+        $("#dictbutton").click(function(){
+            $.each($("[id^=tok]"), function(i, v){
+                var def = v.getAttribute("def");
+                var txt = $(v).html();
+                if(def != "<i>null</i>") {
+                    $(v).html(def);
+                    v.setAttribute("def", txt);
+                }
+            });
+        });
+
+        $("#defsubmit").click(function(){
+            var def = $("#def").val();
+            var key = $("#key").val();
+            $.ajax({
+                method: "GET",
+                url: "/addword",
+                data: {key: key, def: def, id: getParameterByName("taid")}
+            }).done(function (msg) {
+                console.log("successful addition");
+                $("#def").val("");
+                $("#key").val("");
+                $("#text").html(msg);
+                loadtok();
+            });
+        })
+
 
         $("#removebutton").click(function(){
             if (confirm('Are you sure you want to remove all?')) {

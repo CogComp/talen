@@ -37,6 +37,7 @@ public class AnnotationController {
     
     private HashMap<String, String> folders;
     private List<String> labels;
+    private Dictionary dict;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
@@ -83,6 +84,17 @@ public class AnnotationController {
         logger.debug("using labels: " + labels.toString());
 
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
+
+
+        logger.debug("Loading dictionary.txt");
+        List<String> dictlines = LineIO.read("config/dictionary.txt");
+        // There should only be one line, and it should be the first line.
+        String[] sl = dictlines.get(0).trim().split("\\s+");
+
+        String lang = sl[0];
+        String dictpath = sl[1];
+
+        dict = new Dictionary(dictpath);
     }
 
     /**
@@ -163,6 +175,27 @@ public class AnnotationController {
         }
 
         return ret;
+    }
+
+    /**
+     * This is called when the user clicks on the language button on the homepage.
+     * @param folder
+     * @param hs
+     * @return
+     * @throws IOException
+     */
+    @RequestMapping(value = "/addword", method=RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public String addword(@RequestParam(value="key") String key, @RequestParam(value="def") String def, @RequestParam(value="id", required=true) String taid, HttpSession hs) throws Exception {
+        logger.info("Adding to dict: " + key + " -> " + def);
+        this.dict.add(key, def);
+
+        // Reload the text so the current word is there.
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        TextAnnotation ta = tas.get(taid);
+        String out = this.getHTMLfromTA(ta);
+        return out;
     }
 
 
@@ -256,7 +289,11 @@ public class AnnotationController {
 
         // add spans to every word that is not a constituent.
         for(int t = 0; t < text.length; t++){
-            text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+            String def = null;
+            if(dict.containsKey(text[t])){
+                def = dict.get(text[t]).get(0);
+            }
+            text[t] = "<span class='token pointer' def='<i>"+ def +"</i>' id='tok-" + t + "'>" + text[t] + "</span>";
         }
 
         for(Constituent c : ner.getConstituents()){
