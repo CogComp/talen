@@ -8,7 +8,6 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
-//import edu.illinois.cs.cogcomp.ner.data.UgDictionary;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,14 +33,12 @@ public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
 
-    
     private HashMap<String, String> folders;
     private List<String> labels;
     private Dictionary dict;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
-//    private UgDictionary ugd;
 
     /**
      * When this class is loaded, it reads a file called config/folders.txt. This is made up
@@ -369,6 +366,27 @@ public class AnnotationController {
         model.addAttribute("labels", labels);
 
         return "annotation";
+    }
+
+    @RequestMapping(value="/showdict", method=RequestMethod.GET)
+    public String showdict(HttpSession hs, Model model) {
+        return "dict";
+    }
+
+    @RequestMapping(value="/dict", method=RequestMethod.GET)
+    @ResponseBody
+    public String getdict(@RequestParam(value="word") String word, HttpSession hs, Model model) {
+
+        // pass a dict list to this?
+
+        List<String> defs = dict.get(word);
+
+        String ret = "No definition found";
+        if(defs != null){
+            ret = defs.toString();
+        }
+
+        return ret;
     }
 
     /**
