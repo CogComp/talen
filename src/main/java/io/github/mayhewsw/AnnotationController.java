@@ -1,4 +1,5 @@
 package io.github.mayhewsw;
+import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
@@ -242,36 +243,14 @@ public class AnnotationController {
         return "redirect:/";
     }
 
-    @RequestMapping(value="/annotation", method=RequestMethod.GET)
-    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
-
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-
-        // Go to the homepage.
-        if(tas == null){
-            return "redirect:/";
-        }
-
-        // If there's no taid, then return the getstarted page (not a redirect).
-        if(taid == null){
-            return "getstarted";
-        }
-
-        if(!tas.containsKey(taid)){
-            return "redirect:/annotation";
-        }
-
-        TextAnnotation ta = tas.get(taid);
+    /**
+     * Given a TA, this returns the HTML string.
+     * @param ta
+     * @return
+     */
+    public String getHTMLfromTA(TextAnnotation ta){
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
-
-        model.addAttribute("ta", ta);
-        model.addAttribute("taid", taid);
-
-        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
-        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
-        logger.info("Num Constituents: " + ner.getConstituents().size());
-        logger.info("Constituents: " + ner.getConstituents());
 
         String[] text = ta.getTokenizedText().split(" ");
 
@@ -292,15 +271,50 @@ public class AnnotationController {
         }
 
         for(Constituent c : sents.getConstituents()){
-
             int start = c.getStartSpan();
             int end = c.getEndSpan();
-            text[end-1] += "<br />";
+            text[start] = "<p>" + text[start];
+            text[end-1] += "</p>";
         }
 
 
         String out = StringUtils.join(" ", text);
+        return out;
+    }
 
+    @RequestMapping(value="/annotation", method=RequestMethod.GET)
+    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
+
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+
+        // Go to the homepage.
+        if(tas == null){
+            return "redirect:/";
+        }
+
+        // If there's no taid, then return the getstarted page (not a redirect).
+        if(taid == null){
+            return "getstarted";
+        }
+
+        if(!tas.containsKey(taid)){
+            return "redirect:/annotation";
+        }
+
+        TextAnnotation ta = tas.get(taid);
+
+        model.addAttribute("ta", ta);
+        model.addAttribute("taid", taid);
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+        View sents = ta.getView(ViewNames.SENTENCE);
+        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
+        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
+        logger.info("Num Constituents: " + ner.getConstituents().size());
+        logger.info("Constituents: " + ner.getConstituents());
+
+        // set up the html string.
+        String out = this.getHTMLfromTA(ta);
         model.addAttribute("htmlstring", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -330,54 +344,73 @@ public class AnnotationController {
      * @return
      * @throws Exception
      */
-    @RequestMapping(value="/addtoken", method=RequestMethod.POST)
+    @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public void addtoken(@RequestParam(value="label") String label, @RequestParam(value="spanid") String spanid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    @ResponseBody
+    public String addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
-        logger.info(String.format("TextAnnotation with id %s: change span (id:%s) to label: %s.", idstring, spanid, label));
+        logger.info(String.format("TextAnnotation with id %s: change span %s-%s to label: %s.", idstring, starttokid,endtokid, label));
 
-        String[] ss = spanid.split("-");
-        Pair<Integer, Integer> span = new Pair<>(Integer.parseInt(ss[1]), Integer.parseInt(ss[2]));
+        int starttokint= Integer.parseInt(starttokid);
+        int endtokint = Integer.parseInt(endtokid);
 
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
         TextAnnotation ta = tas.get(idstring);
-        String[] spantoks = ta.getTokensInSpan(span.getFirst(), span.getSecond());
 
-        String text = StringUtils.join(" ", spantoks);
-        logger.info(text);
-        logger.info(spanid);
+        // cannot annotate across sentence boundaries. Return with no changes if this happens.
+        View sents = ta.getView(ViewNames.SENTENCE);
+        List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
+        if(sentlc.size() != 1){
+            String out = this.getHTMLfromTA(ta);
+            return out;
+        }
+
+        // spans is either the single span that was entered, or all matching spans.
+        List<IntPair> spans;
+        boolean propagate = true;
+        if(propagate){
+            String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
+            spans = ta.getSpansMatching(text);
+        }else{
+            spans = new ArrayList<>();
+            spans.add(new IntPair(starttokint, endtokint));
+        }
 
         View ner = ta.getView(ViewNames.NER_CONLL);
-        List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
-        int origstart = span.getFirst();
-        int origend = span.getSecond();
-        String origlabel = null;
-        if(lc.size() > 0) {
-            Constituent oldc = lc.get(0);
-            ner.removeConstituent(oldc);
+        for(IntPair span : spans) {
+            List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
+
+            if (lc.size() > 0) {
+                for (Constituent oldc : lc) {
+                    ner.removeConstituent(oldc);
+                }
+            }
+
+            // an O label means don't add the constituent.
+            if (label.equals("O")) {
+                System.err.println("Should never happen: label is O");
+            } else {
+                Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
+                ner.addConstituent(newc);
+            }
         }
 
-        // an O label means don't add the constituent.
-        if(label.equals("O")) {
-            System.err.println("Should never happen: label is O");
-        }else{
-            Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
-            ner.addConstituent(newc);
-        }
+        String out = this.getHTMLfromTA(ta);
+        return out;
 
     }
 
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public void removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    @ResponseBody
+    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
 
-        String[] ss = tokid.split("-");
-        int inttokid = Integer.parseInt(ss[1]);
-        Pair<Integer, Integer> tokspan = new Pair<>(inttokid, inttokid+1);
+        int tokint= Integer.parseInt(tokid);
+        Pair<Integer, Integer> tokspan = new Pair<>(tokint, tokint+1);
 
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
 
@@ -385,7 +418,6 @@ public class AnnotationController {
 
         String[] spantoks = ta.getTokensInSpan(tokspan.getFirst(), tokspan.getSecond());
         String text = StringUtils.join(" ", spantoks);
-        logger.info(text);
 
         View ner = ta.getView(ViewNames.NER_CONLL);
         List<Constituent> lc = ner.getConstituentsCoveringSpan(tokspan.getFirst(), tokspan.getSecond());
@@ -408,6 +440,24 @@ public class AnnotationController {
                 ner.addConstituent(newc);
             }
         }
+
+        String out = this.getHTMLfromTA(ta);
+        return out;
+    }
+
+    @RequestMapping(value="/removeall", method=RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public String removeall(@RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        TextAnnotation ta = tas.get(idstring);
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+        ner.removeAllConsituents();
+
+        String out = this.getHTMLfromTA(ta);
+        return out;
     }
 
 }

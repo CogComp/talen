@@ -39,3 +39,34 @@
     padding: 2px;
     border-radius: 2px;
 }
+
+
+
+/*** Works on common browsers ***/
+::selection {
+    background-color: lightgray;
+    /*color: red;*/
+}
+
+/*** Mozilla based browsers ***/
+::-moz-selection {
+    background-color: #352e7e;
+    color: #fff;
+}
+
+/***For Other Browsers ***/
+::-o-selection {
+    background-color: #352e7e;
+    color: #fff;
+}
+
+::-ms-selection {
+    background-color: #352e7e;
+    color: #fff;
+}
+
+/*** For Webkit ***/
+::-webkit-selection {
+    background-color: #352e7e;
+    color: #fff;
+}
