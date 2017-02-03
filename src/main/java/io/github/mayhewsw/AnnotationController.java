@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
-import javax.xml.soap.Text;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -36,6 +35,7 @@ public class AnnotationController {
     private HashMap<String, String> folders;
     private List<String> labels;
     private Dictionary dict;
+    HashMap<String, Integer> rules;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
@@ -92,6 +92,8 @@ public class AnnotationController {
         String dictpath = sl[1];
 
         dict = new Dictionary(dictpath);
+
+        rules = new HashMap<>();
     }
 
     /**
@@ -260,6 +262,9 @@ public class AnnotationController {
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
 
+        hs.setMaxInactiveInterval(10);
+        System.out.println("Setting timeout interval to 10 seconds.");
+
         hs.setAttribute("username", user.getName());
         return "redirect:/";
     }
@@ -421,11 +426,20 @@ public class AnnotationController {
             return out;
         }
 
+
+        String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
+
+        String rulekey = text + ":::" + label;
+        if(!rules.containsKey(rulekey)){
+            rules.put(rulekey, 0);
+        }
+        rules.put(rulekey, rules.get(rulekey) + 1);
+        logger.info(rules.toString());
+
         // spans is either the single span that was entered, or all matching spans.
         List<IntPair> spans;
         boolean propagate = true;
         if(propagate){
-            String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
             spans = ta.getSpansMatching(text);
         }else{
             spans = new ArrayList<>();

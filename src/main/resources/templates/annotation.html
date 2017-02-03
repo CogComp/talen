@@ -115,7 +115,7 @@
             var key = $("#key").val();
             $.ajax({
                 method: "GET",
-                url: "/addword",
+                url: "/dict/addword",
                 data: {key: key, def: def, id: getParameterByName("taid")}
             }).done(function (msg) {
                 console.log("successful addition");
