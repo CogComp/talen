@@ -91,9 +91,10 @@ public class AnnotationController {
         String lang = sl[0];
         String dictpath = sl[1];
 
+
         dict = new Dictionary(dictpath);
 
-        rules = new HashMap<>();
+
     }
 
     /**
@@ -207,8 +208,29 @@ public class AnnotationController {
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
     public String dummy(@RequestParam(value="folder") String folder, HttpSession hs) throws Exception {
+        rules = new HashMap<>();
         String username = (String) hs.getAttribute("username");
         TreeMap<String, TextAnnotation> tas = loadFolder(folder, username);
+
+        for(String taid : tas.keySet()){
+            TextAnnotation ta = tas.get(taid);
+            View ner = ta.getView(ViewNames.NER_CONLL);
+
+            // count each annotation just once per document.
+            HashSet<String> set = new HashSet<>();
+            for(Constituent c : ner.getConstituents()){
+                String rulekey = c.getTokenizedSurfaceForm() + ":::" + c.getLabel();
+                set.add(rulekey);
+            }
+
+            for(String rulekey : set) {
+                if (!rules.containsKey(rulekey)) {
+                    rules.put(rulekey, 0);
+                }
+                rules.put(rulekey, rules.get(rulekey) + 1);
+            }
+        }
+
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", folder);
 
@@ -262,8 +284,8 @@ public class AnnotationController {
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
 
-        hs.setMaxInactiveInterval(10);
-        System.out.println("Setting timeout interval to 10 seconds.");
+        //hs.setMaxInactiveInterval(10);
+        //System.out.println("Setting timeout interval to 10 seconds.");
 
         hs.setAttribute("username", user.getName());
         return "redirect:/";
@@ -275,6 +297,7 @@ public class AnnotationController {
         hs.removeAttribute("username");
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
+        rules.clear();
         return "redirect:/";
     }
 
@@ -370,6 +393,17 @@ public class AnnotationController {
 
         model.addAttribute("labels", labels);
 
+        HashMap<String, Integer> docrules = new HashMap<>();
+        for(String rule : rules.keySet()){
+            String[] rs = rule.split(":::");
+            String text = rs[0];
+            if(ta.getSpansMatching(text).size() > 0){
+                docrules.put(rule, rules.get(rule));
+            }
+        }
+
+        model.addAttribute("docrules", docrules.keySet());
+
         return "annotation";
     }
 
@@ -434,7 +468,7 @@ public class AnnotationController {
             rules.put(rulekey, 0);
         }
         rules.put(rulekey, rules.get(rulekey) + 1);
-        logger.info(rules.toString());
+        System.out.println(rules);
 
         // spans is either the single span that was entered, or all matching spans.
         List<IntPair> spans;
@@ -523,7 +557,57 @@ public class AnnotationController {
         TextAnnotation ta = tas.get(idstring);
 
         View ner = ta.getView(ViewNames.NER_CONLL);
-        ner.removeAllConsituents();
+        //ner.removeAllConsituents();
+
+        for(Constituent c : ner.getConstituents()){
+            ner.removeConstituent(c);
+        }
+
+        String out = this.getHTMLfromTA(ta);
+        return out;
+    }
+
+
+    /**
+     * This is called when the user clicks on the language button on the homepage.
+     * @param folder
+     * @param hs
+     * @return
+     * @throws IOException
+     */
+    @RequestMapping(value = "/applyrule", method=RequestMethod.GET)
+    @ResponseBody
+    public String applyrule(@RequestParam(value="rule") String rule, @RequestParam(value="id") String idstring, HttpSession hs) throws Exception {
+
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        TextAnnotation ta = tas.get(idstring);
+
+        String[] rs = rule.split(":::");
+        String text = rs[0];
+        String label = rs[1];
+
+        // spans is either the single span that was entered, or all matching spans.
+        List<IntPair> spans = ta.getSpansMatching(text);
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+
+        for(IntPair span : spans) {
+            List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
+
+            if (lc.size() > 0) {
+                for (Constituent oldc : lc) {
+                    ner.removeConstituent(oldc);
+                }
+            }
+
+            // an O label means don't add the constituent.
+            if (label.equals("O")) {
+                System.err.println("Should never happen: label is O");
+            } else {
+                Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
+                ner.addConstituent(newc);
+            }
+        }
 
         String out = this.getHTMLfromTA(ta);
         return out;

@@ -3,6 +3,7 @@ package io.github.mayhewsw;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -85,7 +86,17 @@ public class Dictionary extends HashMap<String, List<String>> {
         this.newpairs = new ArrayList<>();
 
         this.dictpath = dictpath;
-        ArrayList<String> dictlines = LineIO.readGZip(dictpath);
+
+        ArrayList<String> dictlines = null;
+        File dictfile = new File(dictpath);
+        if(!dictfile.exists()){
+            logger.info("Dictionary file not found: "+dictpath+". Dictionary is empty.");
+            return;
+        }
+
+        dictlines = LineIO.readGZip(dictpath);
+
+
         // I want a dictionary that maps from foreign->english.
 
         HashMap<Pair<String, String>, Integer> pairs = new HashMap<>();
