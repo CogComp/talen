@@ -33,23 +33,23 @@
               <div class="form-group">
                   <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
                   <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
-                  <a id="dictbutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dictionary</a>
+                  <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dictionary</a>
               </div>
 
 
-              <div class="form-group">
-                  <form class="form-inline">
-                      <div class="form-group">
-                          <label for="key">Foreign</label>
-                          <input type="text" class="form-control" id="key" placeholder="Foreign word" />
-                      </div>
-                      <div class="form-group">
-                          <label for="def">English</label>
-                          <input type="text" class="form-control" id="def" placeholder="English word" />
-                      </div>
-                      <button type="button" id="defsubmit" class="btn btn-default">Submit</button>
-                  </form>
-              </div>
+              <!--<div class="form-group">-->
+                  <!--<form class="form-inline">-->
+                      <!--<div class="form-group">-->
+                          <!--<label for="key">Foreign</label>-->
+                          <!--<input type="text" class="form-control" id="key" placeholder="Foreign word" />-->
+                      <!--</div>-->
+                      <!--<div class="form-group">-->
+                          <!--<label for="def">English</label>-->
+                          <!--<input type="text" class="form-control" id="def" placeholder="English word" />-->
+                      <!--</div>-->
+                      <!--<button type="button" id="defsubmit" class="btn btn-default">Submit</button>-->
+                  <!--</form>-->
+              <!--</div>-->
 
               <div class="form-group">
                   <div class="btn-group" role="group" aria-label="Next and previous">
@@ -138,6 +138,9 @@
         });
 
 
+
+
+
         $("#removebutton").click(function(){
             if (confirm('Are you sure you want to remove all?')) {
                 $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
@@ -155,16 +158,28 @@
         });
 
         $(".ruleitem").click(function(){
-            console.log(this.id);
+            console.log(this);
+            var ruleobj = this;
             $.ajax({
                 method: "GET",
                 url: "/applyrule",
-                data: {rule: this.id, id: getParameterByName("taid")}
-            }).done(function (msg) {
-                console.log("successful addition");
-                $("#text").html(msg);
-                loadtok();
+                data: {rule: this.id, id: getParameterByName("taid")},
+                success: function (msg) {
+                    console.log("successful additionsss");
+                    $("#text").html(msg);
+                    loadtok();
+
+                    $(ruleobj).append("<span class='badge'>Applied</span>");
+                }
             });
+
+//            $.ajax({
+//                method: "GET",
+//                url: "/updaterules",
+//                data: {taid: getParameterByName("taid")}
+//            }).done(function (msg) {
+//                console.log(msg)
+//            });
         });
 
 

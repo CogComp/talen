@@ -31,9 +31,6 @@
             <p>Please select an option:</p>
                 <div class="list-group">
                     <a th:each="folder : ${folders}" href="#" th:href="@{/loaddata(folder=${folder})}" class="list-group-item"  th:text="${folder}"></a>
-                    <!--<span th:each="folder : ${folders}">-->
-                        <!---->
-                    <!--</span>-->
                 </div>
 
             </span>

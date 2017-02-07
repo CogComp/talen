@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
@@ -32,10 +31,9 @@ public class AnnotationController {
 
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
 
+    // These are all common objects that don't change user by user.
     private HashMap<String, String> folders;
     private List<String> labels;
-    private Dictionary dict;
-    HashMap<String, Integer> rules;
     private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
@@ -82,19 +80,22 @@ public class AnnotationController {
 
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
+    }
 
-        logger.debug("Loading dictionary.txt");
-        List<String> dictlines = LineIO.read("config/dictionary.txt");
-        // There should only be one line, and it should be the first line.
-        String[] sl = dictlines.get(0).trim().split("\\s+");
+    /**
+     * Important to add folders and user to the model.
+     * @param model
+     * @return
+     */
+    @RequestMapping("/")
+    public String home(Model model, HttpSession hs){
+        model.addAttribute("folders", folders.keySet());
+        model.addAttribute("user", new User());
 
-        String lang = sl[0];
-        String dictpath = sl[1];
-
-
-        dict = new Dictionary(dictpath);
-
-
+        if(hs.getAttribute("dict") == null) {
+            hs.setAttribute("dict", new Dictionary());
+        }
+        return "home";
     }
 
     /**
@@ -177,27 +178,6 @@ public class AnnotationController {
         return ret;
     }
 
-    /**
-     * This is called when the user clicks on the language button on the homepage.
-     * @param folder
-     * @param hs
-     * @return
-     * @throws IOException
-     */
-    @RequestMapping(value = "/addword", method=RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.OK)
-    @ResponseBody
-    public String addword(@RequestParam(value="key") String key, @RequestParam(value="def") String def, @RequestParam(value="id", required=true) String taid, HttpSession hs) throws Exception {
-        logger.info("Adding to dict: " + key + " -> " + def);
-        this.dict.add(key, def);
-
-        // Reload the text so the current word is there.
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        TextAnnotation ta = tas.get(taid);
-        String out = this.getHTMLfromTA(ta);
-        return out;
-    }
-
 
     /**
      * This is called when the user clicks on the language button on the homepage.
@@ -207,10 +187,27 @@ public class AnnotationController {
      * @throws IOException
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
-    public String dummy(@RequestParam(value="folder") String folder, HttpSession hs) throws Exception {
-        rules = new HashMap<>();
+    public String loaddata(@RequestParam(value="folder") String folder, HttpSession hs) throws Exception {
         String username = (String) hs.getAttribute("username");
         TreeMap<String, TextAnnotation> tas = loadFolder(folder, username);
+
+        HashMap<String, Integer> rules = loadallrules(tas);
+
+        hs.setAttribute("tas", tas);
+        hs.setAttribute("dataname", folder);
+        hs.setAttribute("rules", rules);
+
+        return "redirect:/annotation";
+    }
+
+    /**
+     * The rules object is fully defined by the TAs.
+     * TODO: this may change if we allow probabilistic context-type rules.
+     * @param tas
+     * @return
+     */
+    public HashMap<String, Integer> loadallrules(TreeMap<String, TextAnnotation> tas){
+        HashMap<String, Integer> rules = new HashMap<>();
 
         for(String taid : tas.keySet()){
             TextAnnotation ta = tas.get(taid);
@@ -230,12 +227,9 @@ public class AnnotationController {
                 rules.put(rulekey, rules.get(rulekey) + 1);
             }
         }
-
-        hs.setAttribute("tas", tas);
-        hs.setAttribute("dataname", folder);
-
-        return "redirect:/annotation";
+        return rules;
     }
+
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
     public String save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException {
@@ -262,17 +256,9 @@ public class AnnotationController {
             }else if(foldertype.equals(FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
-
         }
         // nothing happens to this...
         return "redirect:/";
-    }
-
-    @RequestMapping("/")
-    public String home(Model model){
-        model.addAttribute("folders", folders.keySet());
-        model.addAttribute("user", new User());
-        return "home";
     }
 
     @RequestMapping(value="/setname")
@@ -288,25 +274,91 @@ public class AnnotationController {
         //System.out.println("Setting timeout interval to 10 seconds.");
 
         hs.setAttribute("username", user.getName());
+
+        // set an empty placeholder.
+
+
         return "redirect:/";
     }
 
     @RequestMapping(value="/logout")
     public String logout(HttpSession hs){
         logger.info("Logging out...");
-        hs.removeAttribute("username");
-        hs.removeAttribute("dataname");
-        hs.removeAttribute("tas");
-        rules.clear();
+//        hs.removeAttribute("username");
+//        hs.removeAttribute("dataname");
+//        hs.removeAttribute("tas");
+
+        // I think this is preferable.
+        hs.invalidate();
+
         return "redirect:/";
     }
 
+
+    @RequestMapping(value="/annotation", method=RequestMethod.GET)
+    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) {
+
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        Dictionary dict = (Dictionary) hs.getAttribute("dict");
+        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+
+        // Go to the homepage.
+        if(tas == null){
+            return "redirect:/";
+        }
+
+        // If there's no taid, then return the getstarted page (not a redirect).
+        if(taid == null){
+            return "getstarted";
+        }
+
+        if(!tas.containsKey(taid)){
+            return "redirect:/annotation";
+        }
+
+        TextAnnotation ta = tas.get(taid);
+
+        model.addAttribute("ta", ta);
+        model.addAttribute("taid", taid);
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+        View sents = ta.getView(ViewNames.SENTENCE);
+        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
+        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
+        logger.info("Num Constituents: " + ner.getConstituents().size());
+        logger.info("Constituents: " + ner.getConstituents());
+
+        // set up the html string.
+        String out = this.getHTMLfromTA(ta, dict);
+        model.addAttribute("htmlstring", out);
+
+        if(!tas.firstKey().equals(taid)) {
+            model.addAttribute("previd", tas.lowerKey(taid));
+        }else{
+            model.addAttribute("previd", -1);
+        }
+
+        if(!tas.lastKey().equals(taid)) {
+            model.addAttribute("nextid", tas.higherKey(taid));
+        }else{
+            model.addAttribute("nextid", -1);
+        }
+
+        model.addAttribute("labels", labels);
+
+        HashMap<String, Integer> docrules = getdocrules(ta, rules);
+        model.addAttribute("docrules", docrules.keySet());
+
+        return "annotation";
+    }
+
+
     /**
      * Given a TA, this returns the HTML string.
-     * @param ta
+     * @param
      * @return
      */
-    public String getHTMLfromTA(TextAnnotation ta){
+    public String getHTMLfromTA(TextAnnotation ta, Dictionary dict){
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
 
@@ -339,94 +391,10 @@ public class AnnotationController {
             text[end-1] += "</p>";
         }
 
-
         String out = StringUtils.join(" ", text);
         return out;
     }
 
-    @RequestMapping(value="/annotation", method=RequestMethod.GET)
-    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model, RedirectAttributes redirectAttributes) {
-
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-
-        // Go to the homepage.
-        if(tas == null){
-            return "redirect:/";
-        }
-
-        // If there's no taid, then return the getstarted page (not a redirect).
-        if(taid == null){
-            return "getstarted";
-        }
-
-        if(!tas.containsKey(taid)){
-            return "redirect:/annotation";
-        }
-
-        TextAnnotation ta = tas.get(taid);
-
-        model.addAttribute("ta", ta);
-        model.addAttribute("taid", taid);
-
-        View ner = ta.getView(ViewNames.NER_CONLL);
-        View sents = ta.getView(ViewNames.SENTENCE);
-        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
-        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
-        logger.info("Num Constituents: " + ner.getConstituents().size());
-        logger.info("Constituents: " + ner.getConstituents());
-
-        // set up the html string.
-        String out = this.getHTMLfromTA(ta);
-        model.addAttribute("htmlstring", out);
-
-        if(!tas.firstKey().equals(taid)) {
-            model.addAttribute("previd", tas.lowerKey(taid));
-        }else{
-            model.addAttribute("previd", -1);
-        }
-
-        if(!tas.lastKey().equals(taid)) {
-            model.addAttribute("nextid", tas.higherKey(taid));
-        }else{
-            model.addAttribute("nextid", -1);
-        }
-
-        model.addAttribute("labels", labels);
-
-        HashMap<String, Integer> docrules = new HashMap<>();
-        for(String rule : rules.keySet()){
-            String[] rs = rule.split(":::");
-            String text = rs[0];
-            if(ta.getSpansMatching(text).size() > 0){
-                docrules.put(rule, rules.get(rule));
-            }
-        }
-
-        model.addAttribute("docrules", docrules.keySet());
-
-        return "annotation";
-    }
-
-    @RequestMapping(value="/showdict", method=RequestMethod.GET)
-    public String showdict(HttpSession hs, Model model) {
-        return "dict";
-    }
-
-    @RequestMapping(value="/dict", method=RequestMethod.GET)
-    @ResponseBody
-    public String getdict(@RequestParam(value="word") String word, HttpSession hs, Model model) {
-
-        // pass a dict list to this?
-
-        List<String> defs = dict.get(word);
-
-        String ret = "No definition found";
-        if(defs != null){
-            ret = defs.toString();
-        }
-
-        return ret;
-    }
 
     /**
      * This should never get label O
@@ -449,6 +417,8 @@ public class AnnotationController {
         int endtokint = Integer.parseInt(endtokid);
 
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        Dictionary dict = (Dictionary)hs.getAttribute("dict");
+        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
 
         TextAnnotation ta = tas.get(idstring);
 
@@ -456,19 +426,19 @@ public class AnnotationController {
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = this.getHTMLfromTA(ta);
+            String out = this.getHTMLfromTA(ta, dict);
             return out;
         }
 
-
         String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
 
+        // TODO: there's really no reason to add this rule immediately. Add rules when the TA is saved.
         String rulekey = text + ":::" + label;
         if(!rules.containsKey(rulekey)){
             rules.put(rulekey, 0);
         }
         rules.put(rulekey, rules.get(rulekey) + 1);
-        System.out.println(rules);
+        logger.debug(rules.toString());
 
         // spans is either the single span that was entered, or all matching spans.
         List<IntPair> spans;
@@ -500,7 +470,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta);
+        String out = this.getHTMLfromTA(ta, dict);
         return out;
 
     }
@@ -516,6 +486,8 @@ public class AnnotationController {
         Pair<Integer, Integer> tokspan = new Pair<>(tokint, tokint+1);
 
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        Dictionary dict = (Dictionary)hs.getAttribute("dict");
+        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
 
         TextAnnotation ta = tas.get(idstring);
 
@@ -544,7 +516,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta);
+        String out = this.getHTMLfromTA(ta, dict);
         return out;
     }
 
@@ -554,6 +526,8 @@ public class AnnotationController {
     public String removeall(@RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        Dictionary dict = (Dictionary)hs.getAttribute("dict");
+        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
         TextAnnotation ta = tas.get(idstring);
 
         View ner = ta.getView(ViewNames.NER_CONLL);
@@ -563,23 +537,80 @@ public class AnnotationController {
             ner.removeConstituent(c);
         }
 
-        String out = this.getHTMLfromTA(ta);
+        String out = this.getHTMLfromTA(ta, dict);
         return out;
     }
 
 
+    // not sure how to pass objects between controllers, so will hold off on this for now.
+
+    @RequestMapping(value="/updaterules", method= RequestMethod.GET)
+    @ResponseBody
+    public HashMap<String, Integer> update(@RequestParam(value="taid") String taid, HttpSession hs, Model model) {
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        TextAnnotation ta = tas.get(taid);
+        return getdocrules(ta, rules);
+    }
+
+
     /**
-     * This is called when the user clicks on the language button on the homepage.
-     * @param folder
-     * @param hs
+     * This finds rules which should fire in the current doc.
      * @return
-     * @throws IOException
      */
+    public HashMap<String, Integer> getdocrules(TextAnnotation ta, HashMap<String, Integer> rules){
+        // Find all rules that need to be applied in this document.
+        HashMap<String, Integer> docrules = new HashMap<>();
+        for(String rule : rules.keySet()){
+            String[] rs = rule.split(":::");
+            String text = rs[0];
+            String label = rs[1];
+
+            View ner = ta.getView(ViewNames.NER_CONLL);
+
+            // if even a single span is not fully labeled, then add the rule.
+            boolean addit = false;
+            for(IntPair span : ta.getSpansMatching(text)){
+
+                List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
+                // should not have more than one label...
+                if(cons.size() > 1){
+                    logger.error("text should not have multiple labels...");
+                }else if(cons.size() == 1){
+                    Constituent c = cons.get(0);
+
+                    // if c has different label, or does not cover span, then add it.
+
+                    IntPair cs = c.getSpan();
+                    boolean covering = span.getFirst() <= cs.getFirst() && span.getSecond() >= cs.getSecond();
+
+                    if(!c.getLabel().equals(label) || (!cs.equals(span) && covering)){
+                        addit = true;
+                    }
+                }else{
+                    // this means that the span is not labeled.
+                    addit = true;
+                }
+
+                // important to break because we only want to add the rule once.
+                if(addit){
+                    docrules.put(rule, rules.get(rule));
+                    break;
+                }
+            }
+        }
+
+        return docrules;
+    }
+
+
     @RequestMapping(value = "/applyrule", method=RequestMethod.GET)
     @ResponseBody
-    public String applyrule(@RequestParam(value="rule") String rule, @RequestParam(value="id") String idstring, HttpSession hs) throws Exception {
+    public String apply(@RequestParam(value="rule") String rule, @RequestParam(value="id") String idstring, HttpSession hs) throws Exception {
 
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        Dictionary dict = (Dictionary)hs.getAttribute("dict");
+        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
         TextAnnotation ta = tas.get(idstring);
 
         String[] rs = rule.split(":::");
@@ -609,8 +640,10 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta);
+        String out = this.getHTMLfromTA(ta, dict);
         return out;
     }
+
+
 
 }

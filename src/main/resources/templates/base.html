@@ -16,7 +16,7 @@
 
     <script   src="http://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-    <script th:src="@{/js/script.js}"></script>
+    <!--<script th:src="@{/js/script.js}"></script>-->
 </div>
 
 
@@ -41,7 +41,12 @@
                     <ul class="nav navbar-nav" id="pagesbar">
                         <li><a href="/">Home</a></li>
                         <li><a href="/annotation">All annotations</a></li>
-                        <li><a href="/showdict">Dictionary</a></li>
+                        <li th:if="${session.dict.isEmpty()}">
+                            <a href="/dict">Load Dictionary...</a>
+                        </li>
+                        <li th:unless="${session.dict.isEmpty()}">
+                            <a href="/dict" th:text="${'Dictionary: '+ session.dict.getName()}">Dictionary</a>
+                        </li>
                     </ul>
 
                     <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->

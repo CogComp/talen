@@ -1,5 +1,7 @@
 package io.github.mayhewsw;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -11,6 +13,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/rules")
 public class RuleController {
 
-    // not sure how to pass objects between controllers, so will hold off on this for now.
+    private static Logger logger = LoggerFactory.getLogger(RuleController.class);
+
+    public RuleController() {
+
+        // What do do here?
+        logger.error("LOADING THE RULE CONTROLLER!!!");
+
+    }
+
+
+
+
+
 
 }

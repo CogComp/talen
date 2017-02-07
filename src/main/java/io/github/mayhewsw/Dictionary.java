@@ -23,7 +23,8 @@ import static java.util.stream.Collectors.toList;
 public class Dictionary extends HashMap<String, List<String>> {
 
     private static Logger logger = LoggerFactory.getLogger(Dictionary.class);
-    private final String dictpath;
+    public String dictpath;
+    public String dictname;
     private List<Pair<String, String>> newpairs;
 
     /**
@@ -42,6 +43,14 @@ public class Dictionary extends HashMap<String, List<String>> {
             }
         }
         return prod;
+    }
+
+    public boolean isEmpty(){
+        return this.keySet().isEmpty();
+    }
+
+    public String getName(){
+        return this.dictname;
     }
 
     /**
@@ -76,26 +85,34 @@ public class Dictionary extends HashMap<String, List<String>> {
      * This saves the user-generated pairs to file.
      */
     public void save() throws IOException {
-        List<String> outlines = newpairs.stream().map(p -> p.getFirst() + "\t" + p.getSecond()).collect(toList());
-        LineIO.write(this.dictpath + ".user", outlines);
+        if(this.dictpath != null) {
+            List<String> outlines = newpairs.stream().map(p -> p.getFirst() + "\t" + p.getSecond()).collect(toList());
+            LineIO.write(this.dictpath + ".user", outlines);
+        }
     }
 
-    public Dictionary(String dictpath) throws IOException {
+    /**
+     * Just load an empty dictionary.
+     */
+    public Dictionary(){}
+
+    public Dictionary(String dictname, String dictpath) {
         // TODO: also read the user generated pairs.
 
         this.newpairs = new ArrayList<>();
 
         this.dictpath = dictpath;
+        this.dictname = dictname;
 
         ArrayList<String> dictlines = null;
-        File dictfile = new File(dictpath);
-        if(!dictfile.exists()){
+
+        try {
+            dictlines = LineIO.readGZip(dictpath);
+        } catch (IOException e) {
+            // an empty dictionary is a graceful failure.
             logger.info("Dictionary file not found: "+dictpath+". Dictionary is empty.");
             return;
         }
-
-        dictlines = LineIO.readGZip(dictpath);
-
 
         // I want a dictionary that maps from foreign->english.
 
@@ -156,7 +173,7 @@ public class Dictionary extends HashMap<String, List<String>> {
 
 
     public static void main(String[] args) throws IOException {
-        Dictionary d = new Dictionary("/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
+        Dictionary d = new Dictionary("whatevs", "/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
     }
 
 
