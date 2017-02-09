@@ -178,6 +178,14 @@ public class AnnotationController {
         return ret;
     }
 
+    /**
+     * THere must be some way to avoid this...
+     * @return
+     */
+    @RequestMapping(value="/instructions")
+    public String intr(){
+        return "instructions";
+    }
 
     /**
      * This is called when the user clicks on the language button on the homepage.
@@ -309,6 +317,23 @@ public class AnnotationController {
 
         // If there's no taid, then return the getstarted page (not a redirect).
         if(taid == null){
+            List<String> annotatedfiles = new ArrayList<>();
+
+            // Load all annotated files so far.
+            String folder = (String) hs.getAttribute("dataname");
+            String folderpath = folders.get(folder);
+            String username = (String) hs.getAttribute("username");
+
+            String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
+
+            logger.info("Now looking in user annotation folder: " + outfolder);
+
+            File f = new File(outfolder);
+            if(f.exists()) {
+                annotatedfiles.addAll(Arrays.asList(f.list()));
+            }
+
+            model.addAttribute("annotatedfiles", annotatedfiles);
             return "getstarted";
         }
 

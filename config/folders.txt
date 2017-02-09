@@ -18,3 +18,4 @@ EnglishConll   data/eng-conll/	conll
 Bengali        /shared/corpora/ner/human/bn/conll-anno.urom/ conll
 Tamil        /shared/corpora/ner/human/ta/conll-anno.urom/ conll
 #BengaliOrig        /shared/corpora/ner/human/bn/conll conll
+Tagalog             /shared/corpora/ner/lorelei/tl/All/ conll
