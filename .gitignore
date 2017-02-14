@@ -4,6 +4,10 @@ target/
 *.iml
 config/folders.txt
 .idea/
+annotation-cache/
+tas/
+config/myfolders.txt
+log-spring.out
 
 # automatically generated annotation folders
 *-annotation-*
