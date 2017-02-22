@@ -1,0 +1,7 @@
+name	EnglishConll
+path	data/eng-conll/
+type	conll
+# dictionary
+suffixes	ing ed tion es ed
+prefixes	pre un re
+labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral

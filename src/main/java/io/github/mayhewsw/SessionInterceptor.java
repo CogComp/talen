@@ -19,12 +19,13 @@ public class SessionInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-        HttpSession session = request.getSession();
+        // Don't create a new session if it doesn't not exist.
+        HttpSession session = request.getSession(false);
 
         logger.info("REQUESTURI: " + request.getRequestURI());
 
         if(!request.getRequestURI().startsWith("/setname") &&
-                !request.getRequestURI().equals("/") &&
+                !request.getRequestURI().equals("/") && session != null &&
                 session.getAttribute("username") == null) {
             logger.info("Username is null, redirecting to home page.");
             response.sendRedirect("/");

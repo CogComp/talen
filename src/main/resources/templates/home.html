@@ -30,7 +30,7 @@
             <span th:unless="${session.username} == null">
             <p>Please select an option:</p>
                 <div class="list-group">
-                    <a th:each="folder : ${folders}" href="#" th:href="@{/loaddata(folder=${folder})}" class="list-group-item"  th:text="${folder}"></a>
+                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
                 </div>
 
             </span>

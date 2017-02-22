@@ -1,3 +1,0 @@
-ORG lightblue
-LOC greenyellow
-PER yellow

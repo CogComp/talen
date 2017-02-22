@@ -42,12 +42,8 @@
                         <li><a href="/">Home</a></li>
                         <li><a href="/instructions">Instructions</a></li>
                         <li><a href="/annotation">All annotations</a></li>
-                        <li th:if="${session.dict.isEmpty()}">
-                            <a href="/dict">Load Dictionary...</a>
-                        </li>
-                        <li th:unless="${session.dict.isEmpty()}">
-                            <a href="/dict" th:text="${'Dictionary: '+ session.dict.getName()}">Dictionary</a>
-                        </li>
+                        <li><a href="/dict">Dictionary</a></li>
+
                     </ul>
 
                     <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->

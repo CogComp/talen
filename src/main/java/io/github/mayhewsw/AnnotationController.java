@@ -17,9 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -32,9 +30,11 @@ public class AnnotationController {
     private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
 
     // These are all common objects that don't change user by user.
-    private HashMap<String, String> folders;
+    private HashMap<String, Properties> datasets;
+
+    //private HashMap<String, String> folders;
     private List<String> labels;
-    private HashMap<String,String> foldertypes;
+    //private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
 
@@ -49,36 +49,61 @@ public class AnnotationController {
      */
     public AnnotationController() throws IOException {
 
-        logger.debug("Loading folders.txt");
-        List<String> lines = LineIO.read("config/folders.txt");
-        folders = new HashMap<String, String>();
-        foldertypes = new HashMap<>();
-        for(String line: lines){
-            if(line.length() == 0 || line.startsWith("#")){
-                continue;
+        File configfolder = new File("config2");
+
+        File[] configfiles = configfolder.listFiles();
+
+        datasets = new HashMap<>();
+
+        for(File f : configfiles){
+            System.out.println(f);
+            Properties prop = new Properties();
+
+            InputStream input = null;
+
+            try {
+
+                input = new FileInputStream(f);
+                // load a properties file
+                prop.load(input);
+
+                datasets.put(prop.getProperty("name"), prop);
+
+            }catch(IOException e){
+
             }
-            String[] sl = line.trim().split("\\s+");
-            logger.debug(line);
-            logger.debug(sl.length + "");
-            folders.put(sl[0], sl[1]);
-            foldertypes.put(sl[0], sl[2]);
         }
 
-        logger.debug("Loading labels.txt");
-        List<String> labellines = LineIO.read("config/labels.txt");
-        List<String> csslines = new ArrayList<String>();
-        labels = new ArrayList<>();
-        for(String line: labellines){
-            if(line.length() == 0 || line.startsWith("#")){
-                continue;
-            }
-            String[] sl = line.trim().split("\\s+");
-            labels.add(sl[0]);
-            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
-        }
-        logger.debug("using labels: " + labels.toString());
+//        logger.debug("Loading folders.txt");
+//        List<String> lines = LineIO.read("config/folders.txt");
+//        folders = new HashMap<String, String>();
+//        foldertypes = new HashMap<>();
+//        for(String line: lines){
+//            if(line.length() == 0 || line.startsWith("#")){
+//                continue;
+//            }
+//            String[] sl = line.trim().split("\\s+");
+//            logger.debug(line);
+//            logger.debug(sl.length + "");
+//            folders.put(sl[0], sl[1]);
+//            foldertypes.put(sl[0], sl[2]);
+//        }
 
-        LineIO.write("src/main/resources/static/css/labels.css", csslines);
+//        logger.debug("Loading labels.txt");
+//        List<String> labellines = LineIO.read("config/labels.txt");
+//        List<String> csslines = new ArrayList<String>();
+//        labels = new ArrayList<>();
+//        for(String line: labellines){
+//            if(line.length() == 0 || line.startsWith("#")){
+//                continue;
+//            }
+//            String[] sl = line.trim().split("\\s+");
+//            labels.add(sl[0]);
+//            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
+//        }
+//        logger.debug("using labels: " + labels.toString());
+//
+//        LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
     }
 
@@ -89,7 +114,7 @@ public class AnnotationController {
      */
     @RequestMapping("/")
     public String home(Model model, HttpSession hs){
-        model.addAttribute("folders", folders.keySet());
+        model.addAttribute("datasets", datasets.keySet());
         model.addAttribute("user", new User());
 
         if(hs.getAttribute("dict") == null) {
@@ -109,10 +134,11 @@ public class AnnotationController {
      * @return
      * @throws IOException
      */
-    public TreeMap<String, TextAnnotation> loadFolder(String folder, String username) throws Exception {
+    public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username) throws Exception {
 
-        String folderurl = folders.get(folder);
-        String foldertype = foldertypes.get(folder);
+        Properties props = datasets.get(dataname);
+        String folderurl = props.getProperty("path");
+        String foldertype = props.getProperty("type");
 
         File f = new File(folderurl);
 
@@ -196,14 +222,39 @@ public class AnnotationController {
      * @throws IOException
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
-    public String loaddata(@RequestParam(value="folder") String folder, HttpSession hs) throws Exception {
+    public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
         String username = (String) hs.getAttribute("username");
-        TreeMap<String, TextAnnotation> tas = loadFolder(folder, username);
+
+        Properties prop = datasets.get(dataname);
+
+        String labelsproperty = prop.getProperty("labels");
+        labels = new ArrayList<>();
+        List<String> csslines = new ArrayList<String>();
+        for(String labelandcolor: labelsproperty.split(" ")){
+            String[] sl = labelandcolor.split(":");
+            labels.add(sl[0]);
+            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
+        }
+        logger.debug("using labels: " + labels.toString());
+        LineIO.write("src/main/resources/static/css/labels.css", csslines);
+
+
+        String dictpath = prop.getProperty("dictionary");
+        if(dictpath != null){
+            logger.info("Loading dictionary: " + dictpath);
+            Dictionary dict = new Dictionary(dataname, dictpath);
+            hs.setAttribute("dict", dict);
+        }else{
+            logger.info("No dictionary specified.");
+        }
+
+
+        TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
         HashMap<String, Integer> rules = loadallrules(tas);
 
         hs.setAttribute("tas", tas);
-        hs.setAttribute("dataname", folder);
+        hs.setAttribute("dataname", dataname);
         hs.setAttribute("rules", rules);
 
         return "redirect:/annotation";
@@ -246,8 +297,10 @@ public class AnnotationController {
         // write out to
         String username = (String) hs.getAttribute("username");
         String folder = (String) hs.getAttribute("dataname");
-        String folderpath = folders.get(folder);
-        String foldertype = foldertypes.get(folder);
+
+        Properties props = datasets.get(folder);
+        String folderpath = props.getProperty("path");
+        String foldertype = props.getProperty("type");
 
         if(username != null && folderpath != null) {
 
@@ -327,8 +380,9 @@ public class AnnotationController {
             List<String> annotatedfiles = new ArrayList<>();
 
             // Load all annotated files so far.
-            String folder = (String) hs.getAttribute("dataname");
-            String folderpath = folders.get(folder);
+            String dataname = (String) hs.getAttribute("dataname");
+            Properties props = datasets.get(dataname);
+            String folderpath = props.getProperty("path");
             String username = (String) hs.getAttribute("username");
 
             String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
@@ -403,12 +457,24 @@ public class AnnotationController {
                 def = dict.get(text[t]).get(0);
             }
 
+            List<String> suffixes = new ArrayList<>();
+            suffixes.add("ed");
+            suffixes.add("ing");
+
+
+            for(String suffix : suffixes){
+                if(text[t].endsWith(suffix)){
+                    System.out.println(text[t] + " ends with " + suffix);
+                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span style='color:lightgrey'>" + suffix + "</span>";
+                    break;
+                }
+            }
+
             if(showdefs && def != null) {
                 text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
             }else{
                 text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
             }
-
         }
 
         for(Constituent c : ner.getConstituents()){

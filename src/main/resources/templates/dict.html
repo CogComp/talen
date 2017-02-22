@@ -11,12 +11,14 @@
 
     <div th:if="${session.dict.isEmpty()}">
 
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
-            <p>Please select a dictionary:</p>
-            <div class="list-group">
-                <a th:each="name : ${dictnames}" href="#" th:href="@{/dict/load(dictname=${name})}" class="list-group-item"  th:text="${name}"></a>
-            </div>
+        <div class="col-md-12">
+
+            <h3>No dictionary</h3>
+
+            <p>No dictionary has been loaded. To include a dictionary, your properties file needs to include a <code>dictionary</code> property. </p>
+
+            <pre>dictionary	/path/to/dict/file</pre>
+
         </div>
 
     </div>

@@ -30,44 +30,42 @@ public class DictionaryController {
     private HashMap<String, String> dictpaths;
 
     public DictionaryController() throws FileNotFoundException {
-        logger.info("Loading dictionary.txt");
-        List<String> dictlines = LineIO.read("config/dictionary.txt");
-        dictpaths = new HashMap<>();
-
-        for(String line : dictlines){
-            String[] sl = line.trim().split("\\s+");
-            String dictname = sl[0];
-            String dictpath = sl[1];
-            dictpaths.put(dictname, dictpath);
-        }
+//        logger.info("Loading dictionary.txt");
+//        List<String> dictlines = LineIO.read("config/dictionary.txt");
+//        dictpaths = new HashMap<>();
+//
+//        for(String line : dictlines){
+//            String[] sl = line.trim().split("\\s+");
+//            String dictname = sl[0];
+//            String dictpath = sl[1];
+//            dictpaths.put(dictname, dictpath);
+//        }
     }
 
-    @RequestMapping(value = "load", method=RequestMethod.GET)
-    public String loaddict(@RequestParam(value="dictname") String dictname, HttpSession hs) {
-        String dictpath = dictpaths.get(dictname);
-        Dictionary dict = new Dictionary(dictname, dictpath);
-
-        hs.setAttribute("dict", dict);
-
-        return "redirect:/dict";
-    }
-
+//    @RequestMapping(value = "load", method=RequestMethod.GET)
+//    public String loaddict(@RequestParam(value="dictname") String dictname, HttpSession hs) {
+//        String dictpath = dictpaths.get(dictname);
+//        Dictionary dict = new Dictionary(dictname, dictpath);
+//
+//        hs.setAttribute("dict", dict);
+//
+//        return "redirect:/dict";
+//    }
+//
     @RequestMapping(value="", method=RequestMethod.GET)
-    public String showdict(HttpSession hs, Model model) {
-
-        model.addAttribute("dictnames", dictpaths.keySet());
+    public String showdict() {
 
         return "dict";
     }
-
-    @RequestMapping(value="unload", method=RequestMethod.GET)
-    public String unload(HttpSession hs, Model model) {
-
-        model.addAttribute("dictnames", dictpaths.keySet());
-        hs.setAttribute("dict", new Dictionary());
-
-        return "dict";
-    }
+//
+//    @RequestMapping(value="unload", method=RequestMethod.GET)
+//    public String unload(HttpSession hs, Model model) {
+//
+//        model.addAttribute("dictnames", dictpaths.keySet());
+//        hs.setAttribute("dict", new Dictionary());
+//
+//        return "dict";
+//    }
 
     @RequestMapping(value="lookup", method=RequestMethod.GET)
     @ResponseBody
