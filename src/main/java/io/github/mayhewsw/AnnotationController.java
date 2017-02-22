@@ -142,6 +142,7 @@ public class AnnotationController {
             CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
             while(cnl.hasNext()){
                 TextAnnotation ta = cnl.next();
+                System.out.println(ta.getTokenizedText());
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
             }
@@ -283,7 +284,8 @@ public class AnnotationController {
 
         hs.setAttribute("username", user.getName());
 
-        // set an empty placeholder.
+        // session variable that controls whethor not to show word definitions.
+        hs.setAttribute("showdefs", true);
 
 
         return "redirect:/";
@@ -309,6 +311,11 @@ public class AnnotationController {
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
         Dictionary dict = (Dictionary) hs.getAttribute("dict");
         HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+
+        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
+        if(showdefs == null){
+            showdefs = false;
+        }
 
         // Go to the homepage.
         if(tas == null){
@@ -354,7 +361,7 @@ public class AnnotationController {
         logger.info("Constituents: " + ner.getConstituents());
 
         // set up the html string.
-        String out = this.getHTMLfromTA(ta, dict);
+        String out = this.getHTMLfromTA(ta, dict, showdefs);
         model.addAttribute("htmlstring", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -383,7 +390,7 @@ public class AnnotationController {
      * @param
      * @return
      */
-    public String getHTMLfromTA(TextAnnotation ta, Dictionary dict){
+    public String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs){
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
 
@@ -395,7 +402,13 @@ public class AnnotationController {
             if(dict.containsKey(text[t])){
                 def = dict.get(text[t]).get(0);
             }
-            text[t] = "<span class='token pointer' def='<i>"+ def +"</i>' id='tok-" + t + "'>" + text[t] + "</span>";
+
+            if(showdefs && def != null) {
+                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
+            }else{
+                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+            }
+
         }
 
         for(Constituent c : ner.getConstituents()){
@@ -445,13 +458,18 @@ public class AnnotationController {
         Dictionary dict = (Dictionary)hs.getAttribute("dict");
         HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
 
+        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
+        if(showdefs == null){
+            showdefs = false;
+        }
+
         TextAnnotation ta = tas.get(idstring);
 
         // cannot annotate across sentence boundaries. Return with no changes if this happens.
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = this.getHTMLfromTA(ta, dict);
+            String out = this.getHTMLfromTA(ta, dict, showdefs);
             return out;
         }
 
@@ -495,7 +513,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta, dict);
+        String out = this.getHTMLfromTA(ta, dict, showdefs);
         return out;
 
     }
@@ -513,6 +531,11 @@ public class AnnotationController {
         TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
         Dictionary dict = (Dictionary)hs.getAttribute("dict");
         HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+
+        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
+        if(showdefs == null){
+            showdefs = false;
+        }
 
         TextAnnotation ta = tas.get(idstring);
 
@@ -541,7 +564,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta, dict);
+        String out = this.getHTMLfromTA(ta, dict, showdefs);
         return out;
     }
 
@@ -555,6 +578,11 @@ public class AnnotationController {
         HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
         TextAnnotation ta = tas.get(idstring);
 
+        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
+        if(showdefs == null){
+            showdefs = false;
+        }
+
         View ner = ta.getView(ViewNames.NER_CONLL);
         //ner.removeAllConsituents();
 
@@ -562,7 +590,7 @@ public class AnnotationController {
             ner.removeConstituent(c);
         }
 
-        String out = this.getHTMLfromTA(ta, dict);
+        String out = this.getHTMLfromTA(ta, dict, showdefs);
         return out;
     }
 
@@ -577,6 +605,27 @@ public class AnnotationController {
         TextAnnotation ta = tas.get(taid);
         return getdocrules(ta, rules);
     }
+
+
+    @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
+    @ResponseBody
+    public String toggledefs(@RequestParam(value="taid") String taid, HttpSession hs) {
+
+        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+        Dictionary dict = (Dictionary)hs.getAttribute("dict");
+        TextAnnotation ta = tas.get(taid);
+
+        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
+        if(showdefs == null){
+            showdefs = false;
+        }else{
+            showdefs = !showdefs;
+            hs.setAttribute("showdefs", showdefs);
+        }
+
+        return this.getHTMLfromTA(ta, dict, showdefs);
+    }
+
 
 
     /**
@@ -638,6 +687,11 @@ public class AnnotationController {
         HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
         TextAnnotation ta = tas.get(idstring);
 
+        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
+        if(showdefs == null){
+            showdefs = false;
+        }
+
         String[] rs = rule.split(":::");
         String text = rs[0];
         String label = rs[1];
@@ -665,10 +719,16 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta, dict);
+        String out = this.getHTMLfromTA(ta, dict, showdefs);
         return out;
     }
 
+    public static void main(String[] args) throws Exception {
+        AnnotationController c = new AnnotationController();
+
+        c.loadFolder("Amharic", "test");
+
+    }
 
 
 }

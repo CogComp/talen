@@ -40,7 +40,9 @@
     border-radius: 2px;
 }
 
-
+.def {
+    font-style: italic;
+}
 
 /*** Works on common browsers ***/
 ::selection {

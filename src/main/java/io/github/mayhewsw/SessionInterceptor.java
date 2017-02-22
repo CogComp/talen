@@ -23,7 +23,7 @@ public class SessionInterceptor implements HandlerInterceptor {
 
         logger.info("REQUESTURI: " + request.getRequestURI());
 
-        if(!request.getRequestURI().equals("/setname") &&
+        if(!request.getRequestURI().startsWith("/setname") &&
                 !request.getRequestURI().equals("/") &&
                 session.getAttribute("username") == null) {
             logger.info("Username is null, redirecting to home page.");

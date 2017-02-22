@@ -111,14 +111,16 @@
 
 
         $("#dictbutton").click(function(){
-            $.each($("[id^=tok]"), function(i, v){
-                var def = v.getAttribute("def");
-                var txt = $(v).html();
-                if(def != "<i>null</i>") {
-                    $(v).html(def);
-                    v.setAttribute("def", txt);
-                }
+            $.ajax({
+                method: "GET",
+                url: "/toggledefs",
+                data: {taid: getParameterByName("taid")}
+            }).done(function (msg) {
+                console.log("successful toggle");
+                $("#text").html(msg);
+                loadtok();
             });
+
         });
 
         $("#defsubmit").click(function(){
@@ -136,9 +138,6 @@
                 loadtok();
             });
         });
-
-
-
 
 
         $("#removebutton").click(function(){
@@ -165,7 +164,7 @@
                 url: "/applyrule",
                 data: {rule: this.id, id: getParameterByName("taid")},
                 success: function (msg) {
-                    console.log("successful additionsss");
+                    console.log("successful additions");
                     $("#text").html(msg);
                     loadtok();
 

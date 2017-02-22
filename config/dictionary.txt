@@ -2,3 +2,4 @@ Tamil	/shared/experiments/mayhew2/lexicons/tam-urom-eng.masterlex.txt.gz
 Bengali	/shared/experiments/mayhew2/lexicons/ben-urom-eng.masterlex.txt.gz
 Thai	/shared/experiments/mayhew2/lexicons/tha-urom-eng.masterlex.txt.gz
 Tagalog /shared/experiments/mayhew2/lexicons/tgl-eng.masterlex.txt.gz
+Amharic /shared/experiments/mayhew2/lexicons-v2-urom/amh-eng.masterlex.txt.gz
