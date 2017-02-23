@@ -21,15 +21,15 @@ public class Application extends WebMvcConfigurerAdapter {
         //SpringApplication.run(Application.class, args);
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new SessionInterceptor());
-    }
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        registry.addInterceptor(new SessionInterceptor());
+//    }
 
 
-    @Bean
-    public HttpSessionListener httpSessionListener(){
-        return new SessionListener();
-    }
+//    @Bean
+//    public HttpSessionListener httpSessionListener(){
+//        return new SessionListener();
+//    }
 
 }
