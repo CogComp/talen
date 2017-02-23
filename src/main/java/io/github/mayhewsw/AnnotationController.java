@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This contains the main logic of the whole thing.
@@ -32,9 +33,7 @@ public class AnnotationController {
     // These are all common objects that don't change user by user.
     private HashMap<String, Properties> datasets;
 
-    //private HashMap<String, String> folders;
     private List<String> labels;
-    //private HashMap<String,String> foldertypes;
     private final String FOLDERTA = "ta";
     private final String FOLDERCONLL = "conll";
 
@@ -73,38 +72,6 @@ public class AnnotationController {
 
             }
         }
-
-//        logger.debug("Loading folders.txt");
-//        List<String> lines = LineIO.read("config/folders.txt");
-//        folders = new HashMap<String, String>();
-//        foldertypes = new HashMap<>();
-//        for(String line: lines){
-//            if(line.length() == 0 || line.startsWith("#")){
-//                continue;
-//            }
-//            String[] sl = line.trim().split("\\s+");
-//            logger.debug(line);
-//            logger.debug(sl.length + "");
-//            folders.put(sl[0], sl[1]);
-//            foldertypes.put(sl[0], sl[2]);
-//        }
-
-//        logger.debug("Loading labels.txt");
-//        List<String> labellines = LineIO.read("config/labels.txt");
-//        List<String> csslines = new ArrayList<String>();
-//        labels = new ArrayList<>();
-//        for(String line: labellines){
-//            if(line.length() == 0 || line.startsWith("#")){
-//                continue;
-//            }
-//            String[] sl = line.trim().split("\\s+");
-//            labels.add(sl[0]);
-//            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
-//        }
-//        logger.debug("using labels: " + labels.toString());
-//
-//        LineIO.write("src/main/resources/static/css/labels.css", csslines);
-
     }
 
     /**
@@ -168,7 +135,6 @@ public class AnnotationController {
             CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
             while(cnl.hasNext()){
                 TextAnnotation ta = cnl.next();
-                System.out.println(ta.getTokenizedText());
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
             }
@@ -223,9 +189,11 @@ public class AnnotationController {
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
     public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
-        String username = (String) hs.getAttribute("username");
+        SessionData sd = new SessionData(hs);
+        String username = sd.username;
 
         Properties prop = datasets.get(dataname);
+        String folderpath = prop.getProperty("path");
 
         String labelsproperty = prop.getProperty("labels");
         labels = new ArrayList<>();
@@ -249,6 +217,33 @@ public class AnnotationController {
         }
 
 
+        // this ensures that the suffixes item is never null.
+        String suffixlist = prop.getProperty("suffixes");
+        ArrayList<String> suffixes = new ArrayList<>();
+        if(suffixlist != null){
+            logger.info("Loading suffixes...");
+
+            for(String suff : suffixlist.split(" ")){
+                suffixes.add(suff);
+            }
+        }
+
+        // check to see if there are suffixes created by the user, in file suffixes-username.txt.
+        String folderparent = (new File(folderpath)).getParent();
+        File suffixfile = new File(folderparent, "suffixes-" + username + ".txt");
+        if(suffixfile.exists()){
+            // open and read
+            String suffixline = LineIO.read(suffixfile.getAbsolutePath()).get(0).trim();
+            for(String suff : suffixline.split(" ")){
+                suffixes.add(suff);
+            }
+        }else{
+            logger.error("COULD NOT FIND SUFFIX FILE: " + suffixfile.getAbsolutePath());
+        }
+
+        suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
+
+
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
         HashMap<String, Integer> rules = loadallrules(tas);
@@ -256,6 +251,9 @@ public class AnnotationController {
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("rules", rules);
+
+        hs.setAttribute("suffixes", suffixes);
+
 
         return "redirect:/annotation";
     }
@@ -294,9 +292,11 @@ public class AnnotationController {
     @RequestMapping(value = "/save", method=RequestMethod.GET)
     public String save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException {
 
+        SessionData sd = new SessionData(hs);
+
         // write out to
-        String username = (String) hs.getAttribute("username");
-        String folder = (String) hs.getAttribute("dataname");
+        String username = sd.username;
+        String folder = sd.dataname;
 
         Properties props = datasets.get(folder);
         String folderpath = props.getProperty("path");
@@ -309,7 +309,7 @@ public class AnnotationController {
             logger.info("Writing out to: " + outpath);
             logger.info("id is: " + taid);
 
-            TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
+            TreeMap<String, TextAnnotation> tas = sd.tas;
             TextAnnotation taToSave = tas.get(taid);
             String savepath = outpath + taid;
 
@@ -361,14 +361,13 @@ public class AnnotationController {
     @RequestMapping(value="/annotation", method=RequestMethod.GET)
     public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) {
 
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        Dictionary dict = (Dictionary) hs.getAttribute("dict");
-        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        SessionData sd = new SessionData(hs);
 
-        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
-        if(showdefs == null){
-            showdefs = false;
-        }
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        Dictionary dict = sd.dict;
+        HashMap<String, Integer> rules = sd.rules;
+
+        Boolean showdefs = sd.showdefs;
 
         // Go to the homepage.
         if(tas == null){
@@ -380,10 +379,10 @@ public class AnnotationController {
             List<String> annotatedfiles = new ArrayList<>();
 
             // Load all annotated files so far.
-            String dataname = (String) hs.getAttribute("dataname");
+            String dataname = sd.dataname;
             Properties props = datasets.get(dataname);
             String folderpath = props.getProperty("path");
-            String username = (String) hs.getAttribute("username");
+            String username = sd.username;
 
             String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
 
@@ -415,7 +414,7 @@ public class AnnotationController {
         logger.info("Constituents: " + ner.getConstituents());
 
         // set up the html string.
-        String out = this.getHTMLfromTA(ta, dict, showdefs);
+        String out = this.getHTMLfromTA(ta, sd);
         model.addAttribute("htmlstring", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -444,33 +443,35 @@ public class AnnotationController {
      * @param
      * @return
      */
-    public String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs){
+    public String getHTMLfromTA(TextAnnotation ta, SessionData sd){
+
+
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
 
         String[] text = ta.getTokenizedText().split(" ");
 
+        ArrayList<String> suffixes = sd.suffixes;
+
+        suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
+
+
         // add spans to every word that is not a constituent.
         for(int t = 0; t < text.length; t++){
             String def = null;
-            if(dict.containsKey(text[t])){
-                def = dict.get(text[t]).get(0);
+            if(sd.dict.containsKey(text[t])){
+                def = sd.dict.get(text[t]).get(0);
             }
-
-            List<String> suffixes = new ArrayList<>();
-//            suffixes.add("ed");
-//            suffixes.add("ing");
-
 
             for(String suffix : suffixes){
                 if(text[t].endsWith(suffix)){
-                    System.out.println(text[t] + " ends with " + suffix);
+                    //System.out.println(text[t] + " ends with " + suffix);
                     text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span style='color:lightgrey'>" + suffix + "</span>";
                     break;
                 }
             }
 
-            if(showdefs && def != null) {
+            if(sd.showdefs && def != null) {
                 text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
             }else{
                 text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
@@ -520,14 +521,9 @@ public class AnnotationController {
         int starttokint= Integer.parseInt(starttokid);
         int endtokint = Integer.parseInt(endtokid);
 
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        Dictionary dict = (Dictionary)hs.getAttribute("dict");
-        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
-
-        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
-        if(showdefs == null){
-            showdefs = false;
-        }
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        HashMap<String, Integer> rules = sd.rules;
 
         TextAnnotation ta = tas.get(idstring);
 
@@ -535,7 +531,7 @@ public class AnnotationController {
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = this.getHTMLfromTA(ta, dict, showdefs);
+            String out = this.getHTMLfromTA(ta, sd);
             return out;
         }
 
@@ -579,7 +575,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta, dict, showdefs);
+        String out = this.getHTMLfromTA(ta, sd);
         return out;
 
     }
@@ -594,14 +590,13 @@ public class AnnotationController {
         int tokint= Integer.parseInt(tokid);
         Pair<Integer, Integer> tokspan = new Pair<>(tokint, tokint+1);
 
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        Dictionary dict = (Dictionary)hs.getAttribute("dict");
-        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        Dictionary dict = sd.dict;
+        HashMap<String, Integer> rules = sd.rules;
 
-        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
-        if(showdefs == null){
-            showdefs = false;
-        }
+        Boolean showdefs = sd.showdefs;
+
 
         TextAnnotation ta = tas.get(idstring);
 
@@ -630,7 +625,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta, dict, showdefs);
+        String out = this.getHTMLfromTA(ta, sd);
         return out;
     }
 
@@ -639,15 +634,13 @@ public class AnnotationController {
     @ResponseBody
     public String removeall(@RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        Dictionary dict = (Dictionary)hs.getAttribute("dict");
-        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        Dictionary dict = sd.dict;
+        HashMap<String, Integer> rules = sd.rules;
         TextAnnotation ta = tas.get(idstring);
 
-        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
-        if(showdefs == null){
-            showdefs = false;
-        }
+        Boolean showdefs = sd.showdefs;
 
         View ner = ta.getView(ViewNames.NER_CONLL);
         //ner.removeAllConsituents();
@@ -656,7 +649,7 @@ public class AnnotationController {
             ner.removeConstituent(c);
         }
 
-        String out = this.getHTMLfromTA(ta, dict, showdefs);
+        String out = this.getHTMLfromTA(ta, sd);
         return out;
     }
 
@@ -666,32 +659,72 @@ public class AnnotationController {
     @RequestMapping(value="/updaterules", method= RequestMethod.GET)
     @ResponseBody
     public HashMap<String, Integer> update(@RequestParam(value="taid") String taid, HttpSession hs, Model model) {
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        HashMap<String, Integer> rules = sd.rules;
         TextAnnotation ta = tas.get(taid);
         return getdocrules(ta, rules);
     }
+
+
 
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
     public String toggledefs(@RequestParam(value="taid") String taid, HttpSession hs) {
 
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        Dictionary dict = (Dictionary)hs.getAttribute("dict");
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
         TextAnnotation ta = tas.get(taid);
 
-        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
-        if(showdefs == null){
-            showdefs = false;
-        }else{
-            showdefs = !showdefs;
-            hs.setAttribute("showdefs", showdefs);
-        }
+        Boolean showdefs = sd.showdefs;
+        showdefs = !showdefs;
+        hs.setAttribute("showdefs", showdefs);
 
-        return this.getHTMLfromTA(ta, dict, showdefs);
+        return this.getHTMLfromTA(ta, sd);
     }
 
+    @RequestMapping(value="/addsuffix", method= RequestMethod.GET)
+    @ResponseBody
+    public String addsuffix(@RequestParam(value="suffix") String suffix, @RequestParam(value="taid") String taid, HttpSession hs) {
+
+        SessionData sd = new SessionData(hs);
+        Properties prop = datasets.get(sd.dataname);
+        String folderpath = prop.getProperty("path");
+
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        TextAnnotation ta = tas.get(taid);
+
+        logger.info(sd.suffixes.toString());
+        logger.info(suffix);
+
+        // in case the user starts the string with a dash
+        if(suffix.startsWith("-")){
+            suffix = suffix.substring(1);
+        }
+
+        // if it's not there, add it, and save it.
+        if(!sd.suffixes.contains(suffix)) {
+            sd.suffixes.add(suffix);
+            // sort it
+            sd.suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
+
+            // write it out to file. Don't care if the file is clobbered...
+            String folderparent = (new File(folderpath)).getParent();
+            File suffixfile = new File(folderparent, "suffixes-" + sd.username + ".txt");
+
+            try {
+                LineIO.write(suffixfile.getAbsolutePath(), Collections.singletonList(StringUtils.join(" ", sd.suffixes)));
+            } catch (IOException e) {
+                logger.error("Could not save suffix file: " + suffixfile.getAbsolutePath());
+            }
+
+        }
+
+
+
+        return this.getHTMLfromTA(ta, sd);
+    }
 
 
     /**
@@ -748,15 +781,9 @@ public class AnnotationController {
     @ResponseBody
     public String apply(@RequestParam(value="rule") String rule, @RequestParam(value="id") String idstring, HttpSession hs) throws Exception {
 
-        TreeMap<String, TextAnnotation> tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        Dictionary dict = (Dictionary)hs.getAttribute("dict");
-        HashMap<String, Integer> rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
         TextAnnotation ta = tas.get(idstring);
-
-        Boolean showdefs = (Boolean) hs.getAttribute("showdefs");
-        if(showdefs == null){
-            showdefs = false;
-        }
 
         String[] rs = rule.split(":::");
         String text = rs[0];
@@ -785,7 +812,7 @@ public class AnnotationController {
             }
         }
 
-        String out = this.getHTMLfromTA(ta, dict, showdefs);
+        String out = this.getHTMLfromTA(ta, sd);
         return out;
     }
 

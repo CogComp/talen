@@ -38,17 +38,17 @@
 
 
               <!--<div class="form-group">-->
-                  <!--<form class="form-inline">-->
-                      <!--<div class="form-group">-->
-                          <!--<label for="key">Foreign</label>-->
-                          <!--<input type="text" class="form-control" id="key" placeholder="Foreign word" />-->
-                      <!--</div>-->
-                      <!--<div class="form-group">-->
-                          <!--<label for="def">English</label>-->
-                          <!--<input type="text" class="form-control" id="def" placeholder="English word" />-->
-                      <!--</div>-->
-                      <!--<button type="button" id="defsubmit" class="btn btn-default">Submit</button>-->
-                  <!--</form>-->
+              <!--<form class="form-inline">-->
+              <!--<div class="form-group">-->
+              <!--<label for="key">Foreign</label>-->
+              <!--<input type="text" class="form-control" id="key" placeholder="Foreign word" />-->
+              <!--</div>-->
+              <!--<div class="form-group">-->
+              <!--<label for="def">English</label>-->
+              <!--<input type="text" class="form-control" id="def" placeholder="English word" />-->
+              <!--</div>-->
+              <!--<button type="button" id="defsubmit" class="btn btn-default">Submit</button>-->
+              <!--</form>-->
               <!--</div>-->
 
               <div class="form-group">
@@ -99,30 +99,25 @@
                       </div>
                       <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
                           <div class="panel-body">
-                              Empty for now.
+                              <span th:each="suffix : ${session.suffixes}" th:text="'-' + ${suffix} + ', '"></span>
+
+                              <div style="height: 20px"></div>
+
+                              <form class="form-inline">
+                                  <div class="form-group">
+
+                                      <div class="form-group">
+                                          <label for="newsuffix">Suffix</label>
+                                          <input type="text" class="form-control" id="newsuffix" />
+                                      </div>
+                                      <button type="button" id="suffixsubmit" class="btn btn-default">Add</button>
+                                  </div>
+                              </form>
+
                           </div>
                       </div>
                   </div>
               </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           </div>
       </div>
 
@@ -184,18 +179,16 @@
 
         });
 
-        $("#defsubmit").click(function(){
-            var def = $("#def").val();
-            var key = $("#key").val();
+        $("#suffixsubmit").click(function(){
+            var suff = $("#newsuffix").val();
             $.ajax({
                 method: "GET",
-                url: "/dict/addword",
-                data: {key: key, def: def, id: getParameterByName("taid")}
+                url: "/addsuffix",
+                data: {suffix: suff, taid: getParameterByName("taid")}
             }).done(function (msg) {
                 console.log("successful addition");
-                $("#def").val("");
-                $("#key").val("");
                 $("#text").html(msg);
+                $("#newsuffix").val("");
                 loadtok();
             });
         });
