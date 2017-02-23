@@ -49,7 +49,7 @@ public class AnnotationController {
      */
     public AnnotationController() throws IOException {
 
-        File configfolder = new File("config2");
+        File configfolder = new File("config");
 
         File[] configfiles = configfolder.listFiles();
 
@@ -458,8 +458,8 @@ public class AnnotationController {
             }
 
             List<String> suffixes = new ArrayList<>();
-            suffixes.add("ed");
-            suffixes.add("ing");
+//            suffixes.add("ed");
+//            suffixes.add("ing");
 
 
             for(String suffix : suffixes){

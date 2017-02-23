@@ -19,7 +19,7 @@ public class SessionInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
-        // Don't create a new session if it doesn't not exist.
+        // Don't create a new session if it doesn't exist.
         HttpSession session = request.getSession(false);
 
         logger.info("REQUESTURI: " + request.getRequestURI());
