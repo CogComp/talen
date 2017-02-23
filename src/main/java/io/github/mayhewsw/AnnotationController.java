@@ -667,8 +667,6 @@ public class AnnotationController {
     }
 
 
-
-
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
     public String toggledefs(@RequestParam(value="taid") String taid, HttpSession hs) {
@@ -680,6 +678,7 @@ public class AnnotationController {
         Boolean showdefs = sd.showdefs;
         showdefs = !showdefs;
         hs.setAttribute("showdefs", showdefs);
+        sd.showdefs = showdefs;
 
         return this.getHTMLfromTA(ta, sd);
     }
