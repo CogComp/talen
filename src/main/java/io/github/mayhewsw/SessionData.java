@@ -4,10 +4,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.TextAnnotationReader;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  *
@@ -24,6 +21,7 @@ public class SessionData {
     String dataname;
     HashMap<String, Integer> rules;
     ArrayList<String> suffixes;
+    Properties prop;
 
     public SessionData(HttpSession hs){
 
@@ -41,6 +39,7 @@ public class SessionData {
 
         suffixes = (ArrayList<String>) hs.getAttribute("suffixes");
 
+        prop = (Properties) hs.getAttribute("prop");
 
     }
 

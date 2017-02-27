@@ -140,13 +140,19 @@ public class Dictionary extends HashMap<String, List<String>> {
             if(!this.containsKey(f)){
                 this.put(f, new ArrayList<>());
             }
-            this.get(f).add(e);
+            // don't include duplicates.
+            if(!this.get(f).contains(e)) {
+                this.get(f).add(e);
+            }
 
             // and the lowercase version. this is tedious.
             if(!this.containsKey(f.toLowerCase())){
                 this.put(f.toLowerCase(), new ArrayList<>());
             }
-            this.get(f.toLowerCase()).add(e.toLowerCase());
+            // don't include duplicates
+            if(!this.get(f.toLowerCase()).contains(e.toLowerCase())) {
+                this.get(f.toLowerCase()).add(e.toLowerCase());
+            }
 
         }
 

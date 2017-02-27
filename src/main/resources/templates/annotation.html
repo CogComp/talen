@@ -36,21 +36,6 @@
                   <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dictionary</a>
               </div>
 
-
-              <!--<div class="form-group">-->
-              <!--<form class="form-inline">-->
-              <!--<div class="form-group">-->
-              <!--<label for="key">Foreign</label>-->
-              <!--<input type="text" class="form-control" id="key" placeholder="Foreign word" />-->
-              <!--</div>-->
-              <!--<div class="form-group">-->
-              <!--<label for="def">English</label>-->
-              <!--<input type="text" class="form-control" id="def" placeholder="English word" />-->
-              <!--</div>-->
-              <!--<button type="button" id="defsubmit" class="btn btn-default">Submit</button>-->
-              <!--</form>-->
-              <!--</div>-->
-
               <div class="form-group">
                   <div class="btn-group" role="group" aria-label="Next and previous">
                       <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
@@ -84,9 +69,35 @@
                           </h4>
                       </div>
                       <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                          <div class="panel-body">
-                            Empty for now.
-                          </div>
+                          <ul class="list-group">
+                              <li class="list-group-item">
+                                  <div class="row">
+                                      <div class="col-lg-4">
+                                          <strong>Word</strong>
+                                      </div>
+                                      <div class="col-lg-8">
+                                          <strong>Translation</strong>
+                                      </div>
+                                  </div>
+                              </li>
+
+                              <li th:each="word : ${docwords}" class="list-group-item">
+                                  <div class="row">
+                                      <div class="col-lg-4" th:text="${word}">Word</div>
+                                      <div class="col-lg-8" th:if="${session.dict.containsKey(word)}" th:text="${session.dict.get(word)}" th:id="'div-'+${word}">
+                                      </div>
+
+                                      <div class="col-lg-8" th:unless="${session.dict.containsKey(word)}" th:id="'div-'+${word}">
+                                          <div class="input-group">
+                                              <input type="text" th:id="'def-'+${word}" class="form-control" placeholder="English" />
+                                              <span class="input-group-btn">
+                                                  <button class="btn btn-default" th:id="'submit-'+${word}" type="button">Add!</button>
+                                              </span>
+                                          </div><!-- /input-group -->
+                                      </div>
+                                  </div>
+                              </li>
+                          </ul>
                       </div>
                   </div>
                   <div class="panel panel-default">
@@ -105,12 +116,12 @@
 
                               <form class="form-inline">
                                   <div class="form-group">
-
-                                      <div class="form-group">
-                                          <label for="newsuffix">Suffix</label>
-                                          <input type="text" class="form-control" id="newsuffix" />
-                                      </div>
-                                      <button type="button" id="suffixsubmit" class="btn btn-default">Add</button>
+                                      <div class="input-group input-group-sm">
+                                          <input type="text" class="form-control" id="newsuffix" placeholder="Suffix" />
+                                          <span class="input-group-btn">
+                                              <button class="btn btn-default" id="suffixsubmit" type="button">Add!</button>
+                                          </span>
+                                      </div><!-- /input-group -->
                                   </div>
                               </form>
 
@@ -165,7 +176,6 @@
 
         loadtok();
 
-
         $("#dictbutton").click(function(){
             $.ajax({
                 method: "GET",
@@ -179,6 +189,26 @@
 
         });
 
+        $("[id^=submit-]").click(function(){
+            console.log("Clicked on:" + this.id)
+            var key = this.id.split("-")[1];
+            var val = $("#def-" + key).val();
+            console.log("you want to submit: " + key + ", " + val);
+            $.ajax({
+                method: "GET",
+                url: "/dict/add",
+                data: {key:key, val:val, taid: getParameterByName("taid")}
+            }).done(function (msg) {
+                console.log("successful addition");
+                $("#text").html(msg);
+                loadtok();
+
+                // this is the simplest option... although it is something of a hack.
+                $("#div-" + key).html("[" + val + "]");
+
+            });
+        });
+
         $("#suffixsubmit").click(function(){
             var suff = $("#newsuffix").val();
             $.ajax({
@@ -190,6 +220,9 @@
                 $("#text").html(msg);
                 $("#newsuffix").val("");
                 loadtok();
+
+                // somehow refresh just the suffix part.
+
             });
         });
 
@@ -211,7 +244,8 @@
         });
 
         $(".ruleitem").click(function(){
-            console.log(this);
+            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+            $("#savebutton").css({"border-color" : "#c00"});
             var ruleobj = this;
             $.ajax({
                 method: "GET",
@@ -300,21 +334,6 @@
             return p.hasClass("cons");
         }
 
-//        $.fn.removeText = function() {
-//            for (var i=this.length-1; i>=0; --i) removeText(this[i]);
-//        };
-//
-//        function removeText(node) {
-//            console.log(node.childNodes);
-//            if (!node || !node.childNodes || !node.childNodes.length) return;
-//            for (var i=node.childNodes.length-1; i>=0; --i) {
-//                var childNode = node.childNodes[i];
-//                console.log(childNode + " " + i);
-//                if (childNode.nodeType === 3 && (i == 0 || i == node.childNodes.length-1))
-//                    node.removeChild(childNode);
-//                //else if (childNode.nodeType === 1) removeText(childNode);
-//            }
-//        }
 
         // Given a span, remove the label.
         function removelabel(spanid) {
@@ -408,5 +427,6 @@
 
     </div>
 </template>
+
 
 </html>

@@ -208,13 +208,32 @@ public class AnnotationController {
 
 
         String dictpath = prop.getProperty("dictionary");
+        Dictionary dict;
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
-            Dictionary dict = new Dictionary(dataname, dictpath);
+            dict = new Dictionary(dataname, dictpath);
             hs.setAttribute("dict", dict);
+
+            // TODO: also load the user dictionary.
+
         }else{
             logger.info("No dictionary specified.");
+            dict = new Dictionary();
         }
+
+        // check to see if there are dictionary created by the user, in file suffixes-username.txt.
+        String folderparent = (new File(folderpath)).getParent();
+        File dictfile = new File(folderparent, "dict-" + dataname + "-" + username + ".txt");
+        if(dictfile.exists()){
+            // open and read
+            for(String dictline : LineIO.read(dictfile.getAbsolutePath())){
+                String[] kv = dictline.split("\t");
+                dict.add(kv[0], kv[1]);
+            }
+        }else{
+            logger.error("COULD NOT FIND DICT FILE: " + dictfile.getAbsolutePath());
+        }
+
 
 
         // this ensures that the suffixes item is never null.
@@ -229,7 +248,6 @@ public class AnnotationController {
         }
 
         // check to see if there are suffixes created by the user, in file suffixes-username.txt.
-        String folderparent = (new File(folderpath)).getParent();
         File suffixfile = new File(folderparent, "suffixes-" + username + ".txt");
         if(suffixfile.exists()){
             // open and read
@@ -251,6 +269,7 @@ public class AnnotationController {
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("rules", rules);
+        hs.setAttribute("prop", prop);
 
         hs.setAttribute("suffixes", suffixes);
 
@@ -339,7 +358,6 @@ public class AnnotationController {
 
         // session variable that controls whethor not to show word definitions.
         hs.setAttribute("showdefs", true);
-
 
         return "redirect:/";
     }
@@ -434,6 +452,25 @@ public class AnnotationController {
         HashMap<String, Integer> docrules = getdocrules(ta, rules);
         model.addAttribute("docrules", docrules.keySet());
 
+
+        HashMap<String, Integer> freqs = new HashMap<>();
+        for(String word : ta.getTokens()){
+            // ignore punctuation, and single length words.
+            if(word.length() <= 1) continue;
+            if(!freqs.containsKey(word)){
+                freqs.put(word, 0);
+            }
+            freqs.put(word, freqs.get(word) + 1);
+        }
+
+        List<String> docwords = new ArrayList<>();
+
+        freqs.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .forEachOrdered(x -> docwords.add(x.getKey()));
+
+        model.addAttribute("docwords", docwords.subList(0, Math.min(10, docwords.size())));
+
         return "annotation";
     }
 
@@ -443,7 +480,7 @@ public class AnnotationController {
      * @param
      * @return
      */
-    public String getHTMLfromTA(TextAnnotation ta, SessionData sd){
+    public static String getHTMLfromTA(TextAnnotation ta, SessionData sd){
 
 
         View ner = ta.getView(ViewNames.NER_CONLL);
