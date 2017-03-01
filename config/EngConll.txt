@@ -1,7 +1,7 @@
 name	EnglishConll
-path	data/eng-conll/
+path	data/train-short/
 type	conll
 # dictionary
-suffixes	ing ed tion es ed
+suffixes	ing
 prefixes	pre un re
-labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
+labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral

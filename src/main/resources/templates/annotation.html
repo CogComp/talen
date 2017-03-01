@@ -141,6 +141,12 @@
     $(document).ready(function() {
 
         function loadtok(){
+
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+
+
             $("[id^=tok]").popover({
                 placement: "bottom",
                 content: function () {

@@ -163,6 +163,7 @@ public class AnnotationController {
                 while (cnl.hasNext()) {
                     TextAnnotation ta = cnl.next();
                     logger.info("Loading: " + ta.getId());
+
                     ret.put(ta.getId(), ta);
                 }
             }
@@ -170,6 +171,39 @@ public class AnnotationController {
 
         return ret;
     }
+
+    /**
+     * Update all the patterns. This is expensive... probably best to not use this.
+     * @param sd
+     */
+    public void updateallpatterns(SessionData sd){
+        // update all patterns all the time.
+        logger.info("Updating all patterns...");
+        sd.patterns.clear();
+        for(String newtaid : sd.tas.keySet()) {
+            updatepatterns(sd.tas.get(newtaid), sd.patterns);
+        }
+        logger.info("Done updating patterns.");
+    }
+
+
+    public void updatepatterns(TextAnnotation ta, HashMap<String, Integer> patterns){
+        View ner = ta.getView(ViewNames.NER_CONLL);
+        for(Constituent c : ner.getConstituents()){
+            int start = c.getStartSpan();
+
+            if(start > 0) {
+                String prevtoken = ta.getToken(start - 1);
+                String type = "token-1-" + prevtoken + "-" + c.getLabel();
+
+                if(!patterns.containsKey(type)){
+                    patterns.put(type, 0);
+                }
+                patterns.put(type, patterns.get(type) + 1);
+            }
+        }
+    }
+
 
     /**
      * THere must be some way to avoid this...
@@ -261,15 +295,24 @@ public class AnnotationController {
 
         suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
 
+        HashMap<String, Integer> patterns = new HashMap<>();
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
         HashMap<String, Integer> rules = loadallrules(tas);
 
+        // update patterns from all tas.
+        for(String taid : tas.keySet()) {
+            updatepatterns(tas.get(taid), patterns);
+        }
+
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("rules", rules);
         hs.setAttribute("prop", prop);
+        hs.setAttribute("patterns", patterns);
+
+        // TODO: rules and patterns should probably be the same thing.
 
         hs.setAttribute("suffixes", suffixes);
 
@@ -337,6 +380,7 @@ public class AnnotationController {
             }else if(foldertype.equals(FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
+
         }
         // nothing happens to this...
         return "redirect:/";
@@ -431,6 +475,10 @@ public class AnnotationController {
         logger.info("Num Constituents: " + ner.getConstituents().size());
         logger.info("Constituents: " + ner.getConstituents());
 
+        // get the rules that apply
+        HashMap<String, Integer> docrules = getdocrules(ta, rules);
+        model.addAttribute("docrules", docrules.keySet());
+
         // set up the html string.
         String out = this.getHTMLfromTA(ta, sd);
         model.addAttribute("htmlstring", out);
@@ -448,9 +496,6 @@ public class AnnotationController {
         }
 
         model.addAttribute("labels", labels);
-
-        HashMap<String, Integer> docrules = getdocrules(ta, rules);
-        model.addAttribute("docrules", docrules.keySet());
 
 
         HashMap<String, Integer> freqs = new HashMap<>();
@@ -503,7 +548,7 @@ public class AnnotationController {
             for(String suffix : suffixes){
                 if(text[t].endsWith(suffix)){
                     //System.out.println(text[t] + " ends with " + suffix);
-                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span style='color:lightgrey'>" + suffix + "</span>";
+                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span class='suffix'>" + suffix + "</span>";
                     break;
                 }
             }
@@ -523,7 +568,21 @@ public class AnnotationController {
             // important to also include 'cons' class, as it is a keyword in the html
             text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
             text[end-1] += "</span>";
+        }
 
+        List<Suggestion> suggestions = getdocsuggestions(ta, sd);
+
+        for(Suggestion s : suggestions){
+
+            int start = s.getStartSpan();
+            int end = s.getEndSpan();
+
+            // don't suggest spans that cover already tagged areas.
+            if(ner.getConstituentsCoveringSpan(start, end).size() > 0) continue;
+
+            // important to also include 'cons' class, as it is a keyword in the html
+            text[start] = String.format("<span class='pointer suggestion' data-toggle=\"tooltip\" title='%s' id='cons-%d-%d'>%s", s.reason, start, end, text[start]);
+            text[end-1] += "</span>";
         }
 
         for(Constituent c : sents.getConstituents()){
@@ -612,6 +671,9 @@ public class AnnotationController {
             }
         }
 
+        // TODO: remove this because it is slow!!!
+        updateallpatterns(sd);
+
         String out = this.getHTMLfromTA(ta, sd);
         return out;
 
@@ -661,6 +723,9 @@ public class AnnotationController {
                 ner.addConstituent(newc);
             }
         }
+
+        // TODO: remove this because it is slow!!!
+        updateallpatterns(sd);
 
         String out = this.getHTMLfromTA(ta, sd);
         return out;
@@ -781,6 +846,8 @@ public class AnnotationController {
             boolean addit = false;
             for(IntPair span : ta.getSpansMatching(text)){
 
+
+
                 List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
                 // should not have more than one label...
                 if(cons.size() > 1){
@@ -810,6 +877,53 @@ public class AnnotationController {
         }
 
         return docrules;
+    }
+
+    /**
+     * Uses the rules and patterns collections to give suggestions inline.
+     *
+     * @param ta
+     * @param rules
+     * @return
+     */
+    public static List<Suggestion> getdocsuggestions(TextAnnotation ta, SessionData sd){
+        // Find all rules that need to be applied in this document.
+        List<Suggestion> suggestions = new ArrayList<>();
+        for(String rule : sd.rules.keySet()){
+            String[] rs = rule.split(":::");
+            String text = rs[0];
+            String label = rs[1];
+
+            View ner = ta.getView(ViewNames.NER_CONLL);
+
+            // if even a single span is not fully labeled, then add the rule.
+            boolean addit = false;
+            for(IntPair span : ta.getSpansMatching(text)){
+                Suggestion s = new Suggestion(span, label, String.format("dataset rule: %s, seen %s times", label, sd.rules.get(rule)));
+                suggestions.add(s);
+            }
+        }
+
+        for(String pattern : sd.patterns.keySet()){
+            String[] ps = pattern.split("-");
+            String prevtoken = ps[2];
+            String label = ps[3];
+
+            int freq = sd.patterns.get(pattern);
+
+            // TODO: this will need to be more sophisticated... should use probability.
+            if(freq < 2) continue;
+
+            for(IntPair span : ta.getSpansMatching(prevtoken)){
+                IntPair nextspan = new IntPair(span.getFirst()+1, span.getSecond()+1);
+                Suggestion s = new Suggestion(nextspan, label, String.format("context rule %s for %s, seen %d times", pattern, label, sd.patterns.get(pattern)));
+                suggestions.add(s);
+            }
+        }
+
+
+
+        return suggestions;
     }
 
 
@@ -854,8 +968,6 @@ public class AnnotationController {
 
     public static void main(String[] args) throws Exception {
         AnnotationController c = new AnnotationController();
-
-        c.loadFolder("Amharic", "test");
 
     }
 

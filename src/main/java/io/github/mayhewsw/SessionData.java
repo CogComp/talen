@@ -20,14 +20,18 @@ public class SessionData {
     TreeMap<String, TextAnnotation> tas;
     String dataname;
     HashMap<String, Integer> rules;
+    HashMap<String, Integer> patterns;
+
     ArrayList<String> suffixes;
     Properties prop;
+
 
     public SessionData(HttpSession hs){
 
         tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
         dict = (Dictionary)hs.getAttribute("dict");
         rules = (HashMap<String, Integer>) hs.getAttribute("rules");
+        patterns = (HashMap<String, Integer>) hs.getAttribute("patterns");
 
         username = (String) hs.getAttribute("username");
         dataname = (String) hs.getAttribute("dataname");
