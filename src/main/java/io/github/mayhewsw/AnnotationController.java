@@ -9,6 +9,21 @@ import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.core.WhitespaceTokenizer;
+import org.apache.lucene.analysis.shingle.ShingleFilter;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -352,7 +368,7 @@ public class AnnotationController {
 
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
-    public String save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException {
+    public String save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException, ParseException {
 
         SessionData sd = new SessionData(hs);
 
@@ -382,9 +398,83 @@ public class AnnotationController {
             }
 
         }
+
+        String indexDir = "/tmp/index";
+
+        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
+        IndexSearcher searcher = new IndexSearcher(reader);
+
+        HashMap<String, Double> docstosee = new HashMap<>();
+
+        // when the doc is saved, then we want to look at high-weight patterns, and spellings and
+        // select a doc with high score.
+        // look through rules first.
+        for(String rule : sd.rules.keySet()){
+            // search for this rule, and if the top 5 docs are all fully annotated, then get the next rule.
+            String[] rs = rule.split(":::");
+            String text = rs[0];
+            String label = rs[1];
+            // parse exact matches.
+            Query q = new QueryParser("body", analyzer).parse( "\"" + text + "\"");
+            System.out.println(q);
+            TopScoreDocCollector collector = TopScoreDocCollector.create(5);
+            searcher.search(q, collector);
+            ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+
+
+            // 4. display results
+            System.out.println("Found " + hits.length + " hits.");
+            for(int i=0; i<hits.length; ++i) {
+                int docId = hits[i].doc;
+                Document d = searcher.doc(docId);
+
+                System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
+                String docid = d.get("filename");
+
+                if(!sd.tas.containsKey(docid)) continue;
+
+                TextAnnotation docta = sd.tas.get(docid);
+                View ner = docta.getView(ViewNames.NER_CONLL);
+
+                for(IntPair span : docta.getSpansMatching(text)){
+                    List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
+                    if(cons.size() == 0){
+                        // then annotator needs to see this!
+
+                        double currscore = docstosee.getOrDefault(docid, 0.0);
+                        docstosee.put(docid, currscore + hits[i].score);
+                        break;
+                    }
+                }
+            }
+
+
+
+        }
+        System.out.println("Check out these docs:");
+        
+        Map<String, Double> result = new LinkedHashMap<>();
+        docstosee.entrySet().stream()
+                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                .forEachOrdered(x -> result.put(x.getKey(), x.getValue()));
+        System.out.println(result);
+
+        reader.close();
+
+
         // nothing happens to this...
         return "redirect:/";
     }
+
+    private static Analyzer analyzer = new Analyzer() {
+        @Override
+        protected TokenStreamComponents createComponents(String fieldName) {
+            Tokenizer source = new WhitespaceTokenizer();
+            TokenStream filter = new ShingleFilter(source);
+            return new TokenStreamComponents(source, filter);
+        }
+    };
 
     @RequestMapping(value="/setname")
     public String setname(@ModelAttribute User user, HttpSession hs){
