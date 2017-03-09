@@ -1,5 +1,6 @@
 package io.github.mayhewsw;
 
+import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.TextAnnotationReader;
 
@@ -20,7 +21,7 @@ public class SessionData {
     TreeMap<String, TextAnnotation> tas;
     String dataname;
     HashMap<String, Integer> rules;
-    HashMap<String, Integer> patterns;
+    HashMap<Pair<String, String>, Double> patterns;
 
     ArrayList<String> suffixes;
     Properties prop;
@@ -31,7 +32,7 @@ public class SessionData {
         tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
         dict = (Dictionary)hs.getAttribute("dict");
         rules = (HashMap<String, Integer>) hs.getAttribute("rules");
-        patterns = (HashMap<String, Integer>) hs.getAttribute("patterns");
+        patterns = (HashMap<Pair<String, String>, Double>) hs.getAttribute("patterns");
 
         username = (String) hs.getAttribute("username");
         dataname = (String) hs.getAttribute("dataname");

@@ -42,7 +42,13 @@ public class TextFileIndexer {
 
     };
 
-    public static void buildindex(String indexDir) throws IOException {
+    /**
+     * Filedir holds the conll files that are to be indexed.
+     * @param filedir
+     * @param indexDir
+     * @throws IOException
+     */
+    public static void buildindex(String filedir, String indexDir) throws IOException {
 
         FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
 
@@ -50,13 +56,12 @@ public class TextFileIndexer {
 
         IndexWriter writer = new IndexWriter(dir, config);
 
-        // this directory holds conll files
-        String filedir = "/shared/corpora/ner/wikifier-features/en/train-camera/";
-
-        CoNLLNerReader cnr = new CoNLLNerReader(filedir);
-
         TextAnnotation ta;
-        while(cnr.hasNext()){
+        File file = new File(filedir);
+
+        for(File fname : file.listFiles()){
+            // read each file separately...
+            CoNLLNerReader cnr = new CoNLLNerReader(fname.getAbsolutePath());
             ta = cnr.next();
 
             StringReader sr = new StringReader(ta.getTokenizedText());
@@ -67,19 +72,21 @@ public class TextFileIndexer {
             writer.addDocument(d);
         }
 
+
         writer.close();
 
     }
 
 
     public static void main(String[] args) throws IOException {
-        String indexDir = "/tmp/index";
-        //buildindex(indexDir);
+        String indexdir = "/tmp/uyghurindex";
+        String filedir = "/shared/corpora/ner/human/ug/conll-uly/";
+//        buildindex(filedir, indexdir);
 
         //=========================================================
         // Now search
         //=========================================================
-        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
+        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
         IndexSearcher searcher = new IndexSearcher(reader);
 
 

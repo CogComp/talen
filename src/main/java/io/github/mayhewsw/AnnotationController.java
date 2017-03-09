@@ -196,28 +196,64 @@ public class AnnotationController {
         // update all patterns all the time.
         logger.info("Updating all patterns...");
         sd.patterns.clear();
-        for(String newtaid : sd.tas.keySet()) {
-            updatepatterns(sd.tas.get(newtaid), sd.patterns);
+
+        // this maps label -> {prevword: count, prevword: count, ...}
+        HashMap<String, HashMap<String, Double>> labelcounts = new HashMap<>();
+
+        // Initialize
+        for(String label : labels){
+            labelcounts.put(label, new HashMap<>());
         }
-        logger.info("Done updating patterns.");
-    }
 
+        HashMap<Pair<String, String>, Double> counts = new HashMap<>();
+        HashMap<String, Integer> featcounts = new HashMap<>();
 
-    public void updatepatterns(TextAnnotation ta, HashMap<String, Integer> patterns){
-        View ner = ta.getView(ViewNames.NER_CONLL);
-        for(Constituent c : ner.getConstituents()){
-            int start = c.getStartSpan();
+        for(String newtaid : sd.tas.keySet()) {
+            TextAnnotation ta = sd.tas.get(newtaid);
 
-            if(start > 0) {
-                String prevtoken = ta.getToken(start - 1);
-                String type = "token-1-" + prevtoken + "-" + c.getLabel();
+            // this adds a new view called "feats"
+            FeatureExtractor.extract(ta);
 
-                if(!patterns.containsKey(type)){
-                    patterns.put(type, 0);
+            View feats = ta.getView("feats");
+            View ner = ta.getView(ViewNames.NER_CONLL);
+            for(Constituent f : feats.getConstituents()){
+                List<Constituent> nercs = ner.getConstituentsCoveringSpan(f.getStartSpan(), f.getEndSpan());
+
+                // assume that is length 1
+                if(nercs.size() > 0) {
+                    String label = nercs.get(0).getLabel();
+
+                    // incrememt the count for this (feature, label) combination.
+                    counts.merge(new Pair<>(f.getLabel(), label), 1., (oldValue, one) -> oldValue + one);
+                    // incrememt the count for this feature
+                    featcounts.merge(f.getLabel(), 1, (oldValue, one) -> oldValue + one);
                 }
-                patterns.put(type, patterns.get(type) + 1);
             }
         }
+
+        int k = labels.size();
+        // these values come directly from collins and singer paper.
+        double alpha = 0.1;
+        double threshold = 0.95;
+
+        for(Pair<String, String> fp : counts.keySet()){
+            String feat = fp.getFirst();
+            int featoccurrences = featcounts.get(feat);
+
+            double newvalue = (counts.get(fp) + alpha) / (featoccurrences + k*alpha);
+
+            if(feat.contains("resident")){
+                System.out.println(fp + ":" + newvalue);
+            }
+
+            if(newvalue > threshold){
+                sd.patterns.put(fp, newvalue);
+            }
+        }
+
+        System.out.println(sd.patterns);
+
+        logger.info("Done updating patterns.");
     }
 
 
@@ -311,16 +347,13 @@ public class AnnotationController {
 
         suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
 
-        HashMap<String, Integer> patterns = new HashMap<>();
+        HashMap<Pair<String, String>, Integer> patterns = new HashMap<>();
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
         HashMap<String, Integer> rules = loadallrules(tas);
 
-        // update patterns from all tas.
-        for(String taid : tas.keySet()) {
-            updatepatterns(tas.get(taid), patterns);
-        }
+
 
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
@@ -330,8 +363,11 @@ public class AnnotationController {
 
         // TODO: rules and patterns should probably be the same thing.
 
+
         hs.setAttribute("suffixes", suffixes);
 
+        sd = new SessionData(hs);
+        updateallpatterns(sd);
 
         return "redirect:/annotation";
     }
@@ -368,7 +404,8 @@ public class AnnotationController {
 
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
-    public String save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException, ParseException {
+    @ResponseBody
+    public HashMap<String, Double> save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException, ParseException {
 
         SessionData sd = new SessionData(hs);
 
@@ -399,72 +436,75 @@ public class AnnotationController {
 
         }
 
-        String indexDir = "/tmp/index";
+        String indexDir = sd.prop.getProperty("indexDir");
+        HashMap<String, Double> result = new LinkedHashMap<>();
 
-        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
-        IndexSearcher searcher = new IndexSearcher(reader);
+        // only do this if the property is not null!
+        if(indexDir != null) {
 
-        HashMap<String, Double> docstosee = new HashMap<>();
+            IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexDir)));
+            IndexSearcher searcher = new IndexSearcher(reader);
 
-        // when the doc is saved, then we want to look at high-weight patterns, and spellings and
-        // select a doc with high score.
-        // look through rules first.
-        for(String rule : sd.rules.keySet()){
-            // search for this rule, and if the top 5 docs are all fully annotated, then get the next rule.
-            String[] rs = rule.split(":::");
-            String text = rs[0];
-            String label = rs[1];
-            // parse exact matches.
-            Query q = new QueryParser("body", analyzer).parse( "\"" + text + "\"");
-            System.out.println(q);
-            TopScoreDocCollector collector = TopScoreDocCollector.create(5);
-            searcher.search(q, collector);
-            ScoreDoc[] hits = collector.topDocs().scoreDocs;
+            HashMap<String, Double> docstosee = new HashMap<>();
 
+            // when the doc is saved, then we want to look at high-weight patterns, and spellings and
+            // select a doc with high score.
+            // look through rules first.
+            for (String rule : sd.rules.keySet()) {
+                // search for this rule, and if the top 5 docs are all fully annotated, then get the next rule.
+                String[] rs = rule.split(":::");
+                String text = rs[0];
+                String label = rs[1];
+                // parse exact matches.
+                Query q = new QueryParser("body", analyzer).parse("\"" + text + "\"");
+                System.out.println(q);
+                TopScoreDocCollector collector = TopScoreDocCollector.create(5);
+                searcher.search(q, collector);
+                ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
+                // 4. display results
+                System.out.println("Found " + hits.length + " hits.");
+                for (int i = 0; i < hits.length; ++i) {
+                    int docId = hits[i].doc;
+                    Document d = searcher.doc(docId);
 
-            // 4. display results
-            System.out.println("Found " + hits.length + " hits.");
-            for(int i=0; i<hits.length; ++i) {
-                int docId = hits[i].doc;
-                Document d = searcher.doc(docId);
+                    System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
+                    String docid = d.get("filename");
 
-                System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
-                String docid = d.get("filename");
+                    if (!sd.tas.containsKey(docid)) continue;
 
-                if(!sd.tas.containsKey(docid)) continue;
+                    TextAnnotation docta = sd.tas.get(docid);
+                    View ner = docta.getView(ViewNames.NER_CONLL);
 
-                TextAnnotation docta = sd.tas.get(docid);
-                View ner = docta.getView(ViewNames.NER_CONLL);
+                    double currscore = docstosee.getOrDefault(docid, 0.0);
+                    docstosee.put(docid, currscore + hits[i].score);
 
-                for(IntPair span : docta.getSpansMatching(text)){
-                    List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
-                    if(cons.size() == 0){
-                        // then annotator needs to see this!
-
-                        double currscore = docstosee.getOrDefault(docid, 0.0);
-                        docstosee.put(docid, currscore + hits[i].score);
-                        break;
-                    }
+                    // TODO: This is very slow, but the functionality is important.
+                    
+//                    for (IntPair span : docta.getSpansMatching(text)) {
+//                        List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
+//                        if (cons.size() == 0) {
+//                            // then annotator needs to see this!
+//
+//                            double currscore = docstosee.getOrDefault(docid, 0.0);
+//                            docstosee.put(docid, currscore + hits[i].score);
+//                            break;
+//                        }
+//                    }
                 }
+
+
             }
+            System.out.println("Check out these docs:");
+            docstosee.entrySet().stream()
+                    .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                    .forEachOrdered(x -> result.put(x.getKey(), x.getValue()));
+            System.out.println(result);
 
-
-
+            reader.close();
         }
-        System.out.println("Check out these docs:");
-        
-        Map<String, Double> result = new LinkedHashMap<>();
-        docstosee.entrySet().stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-                .forEachOrdered(x -> result.put(x.getKey(), x.getValue()));
-        System.out.println(result);
 
-        reader.close();
-
-
-        // nothing happens to this...
-        return "redirect:/";
+        return result;
     }
 
     private static Analyzer analyzer = new Analyzer() {
@@ -748,7 +788,11 @@ public class AnnotationController {
 
             if (lc.size() > 0) {
                 for (Constituent oldc : lc) {
-                    ner.removeConstituent(oldc);
+                    // TODO: consider not removing labels at all.
+                    // remove only if the label clash is a different label.
+                    if(!oldc.getLabel().equals(label)) {
+                        ner.removeConstituent(oldc);
+                    }
                 }
             }
 
@@ -994,22 +1038,25 @@ public class AnnotationController {
             }
         }
 
-        for(String pattern : sd.patterns.keySet()){
-            String[] ps = pattern.split("-");
-            String prevtoken = ps[2];
-            String label = ps[3];
+        List<Suggestion> contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
+        suggestions.addAll(contextsuggestions);
 
-            int freq = sd.patterns.get(pattern);
-
-            // TODO: this will need to be more sophisticated... should use probability.
-            if(freq < 2) continue;
-
-            for(IntPair span : ta.getSpansMatching(prevtoken)){
-                IntPair nextspan = new IntPair(span.getFirst()+1, span.getSecond()+1);
-                Suggestion s = new Suggestion(nextspan, label, String.format("context rule %s for %s, seen %d times", pattern, label, sd.patterns.get(pattern)));
-                suggestions.add(s);
-            }
-        }
+//        for(String pattern : sd.patterns.keySet()){
+//            String[] ps = pattern.split("-");
+//            String prevtoken = ps[2];
+//            String label = ps[3];
+//
+//            int freq = sd.patterns.get(pattern);
+//
+//            // TODO: this will need to be more sophisticated... should use probability.
+//            if(freq < 2) continue;
+//
+//            for(IntPair span : ta.getSpansMatching(prevtoken)){
+//                IntPair nextspan = new IntPair(span.getFirst()+1, span.getSecond()+1);
+//                Suggestion s = new Suggestion(nextspan, label, String.format("context rule %s for %s, seen %d times", pattern, label, sd.patterns.get(pattern)));
+//                suggestions.add(s);
+//            }
+//        }
 
 
 

@@ -128,6 +128,19 @@
                           </div>
                       </div>
                   </div>
+                  <div class="panel panel-default">
+                      <div class="panel-heading" role="tab" id="headingFour">
+                          <h4 class="panel-title">
+                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                  Next Docs
+                              </a>
+                          </h4>
+                      </div>
+                      <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                          <div id="nextdocs">
+                          </div>
+                      </div>
+                  </div>
               </div>
           </div>
       </div>
@@ -394,10 +407,24 @@
                     // setting a timeout
                     $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");
                 }
-            }).done(function () {
+            }).done(function (msg) {
                 console.log("finished saving!");
                 $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
                 $("#savebutton").css({"border-color" : ""});
+
+                console.log(msg);
+
+
+
+                for(var fileid in msg){
+                    console.log(fileid);
+                    $("#nextdocs").append("<a href='/annotation?taid=" + fileid + "' class='list-group-item' role='button'>"+fileid+ ": " + msg[fileid] + "</a>");
+                }
+
+                $('[id^=collapse]').collapse('hide');
+                $('#collapseFour').collapse('show');
+
+
             });
 
         }
