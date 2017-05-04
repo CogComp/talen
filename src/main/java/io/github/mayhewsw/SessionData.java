@@ -30,7 +30,7 @@ public class SessionData {
     public SessionData(HttpSession hs){
 
         tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
-        dict = (Dictionary)hs.getAttribute("dict");
+        dict = (Dictionary) hs.getAttribute("dict");
         rules = (HashMap<String, Integer>) hs.getAttribute("rules");
         patterns = (HashMap<Pair<String, String>, Double>) hs.getAttribute("patterns");
 

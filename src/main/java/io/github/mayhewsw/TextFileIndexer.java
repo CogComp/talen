@@ -79,7 +79,7 @@ public class TextFileIndexer {
 
 
     public static void main(String[] args) throws IOException {
-        String indexdir = "/tmp/uyghurindex";
+        String indexdir = "/tmp/nytindex";
         String filedir = "/shared/corpora/ner/human/ug/conll-uly/";
 //        buildindex(filedir, indexdir);
 

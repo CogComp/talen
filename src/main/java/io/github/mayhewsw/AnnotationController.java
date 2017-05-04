@@ -71,6 +71,7 @@ public class AnnotationController {
         datasets = new HashMap<>();
 
         for(File f : configfiles){
+            if(f.getName().endsWith("~")) continue;
             System.out.println(f);
             Properties prop = new Properties();
 
@@ -208,24 +209,27 @@ public class AnnotationController {
         HashMap<Pair<String, String>, Double> counts = new HashMap<>();
         HashMap<String, Integer> featcounts = new HashMap<>();
 
+        // loop over all TAs.
         for(String newtaid : sd.tas.keySet()) {
             TextAnnotation ta = sd.tas.get(newtaid);
 
-            // this adds a new view called "feats"
+            // Extract features from this TA. This adds a new view called "feats"
             FeatureExtractor.extract(ta);
 
             View feats = ta.getView("feats");
             View ner = ta.getView(ViewNames.NER_CONLL);
             for(Constituent f : feats.getConstituents()){
+                // All features have exactly the same span as the NER constituent. This may be inefficient.
                 List<Constituent> nercs = ner.getConstituentsCoveringSpan(f.getStartSpan(), f.getEndSpan());
 
                 // assume that is length 1
+                // (should be by definition?)
                 if(nercs.size() > 0) {
                     String label = nercs.get(0).getLabel();
 
-                    // incrememt the count for this (feature, label) combination.
+                    // increment the count for this (feature, label) combination.
                     counts.merge(new Pair<>(f.getLabel(), label), 1., (oldValue, one) -> oldValue + one);
-                    // incrememt the count for this feature
+                    // increment the count for this feature
                     featcounts.merge(f.getLabel(), 1, (oldValue, one) -> oldValue + one);
                 }
             }
@@ -235,6 +239,7 @@ public class AnnotationController {
         // these values come directly from collins and singer paper.
         double alpha = 0.1;
         double threshold = 0.95;
+        double fullstringthreshold = 0.8;
 
         for(Pair<String, String> fp : counts.keySet()){
             String feat = fp.getFirst();
@@ -242,11 +247,11 @@ public class AnnotationController {
 
             double newvalue = (counts.get(fp) + alpha) / (featoccurrences + k*alpha);
 
-            if(feat.contains("resident")){
-                System.out.println(fp + ":" + newvalue);
+            // this allows that full-strings need only appear 2 or 3 times.
+            if(feat.startsWith("full-string") && newvalue > fullstringthreshold){
+                sd.patterns.put(fp, newvalue);
             }
-
-            if(newvalue > threshold){
+            else if(newvalue > threshold){
                 sd.patterns.put(fp, newvalue);
             }
         }
@@ -307,14 +312,16 @@ public class AnnotationController {
             dict = new Dictionary();
         }
 
-        // check to see if there are dictionary created by the user, in file suffixes-username.txt.
+        // check to see if there are dictionary created by the user, in file dict-dataname-username.txt.
         String folderparent = (new File(folderpath)).getParent();
         File dictfile = new File(folderparent, "dict-" + dataname + "-" + username + ".txt");
         if(dictfile.exists()){
             // open and read
             for(String dictline : LineIO.read(dictfile.getAbsolutePath())){
                 String[] kv = dictline.split("\t");
-                dict.add(kv[0], kv[1]);
+                if(kv.length == 2) {
+                    dict.add(kv[0], kv[1]);
+                }
             }
         }else{
             logger.error("COULD NOT FIND DICT FILE: " + dictfile.getAbsolutePath());
@@ -471,33 +478,46 @@ public class AnnotationController {
                     System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
                     String docid = d.get("filename");
 
+                    // don't include docs that don't exist.
                     if (!sd.tas.containsKey(docid)) continue;
+
+                    // don't include the current doc.
+                    if(docid.equals(taid)) continue;
 
                     TextAnnotation docta = sd.tas.get(docid);
                     View ner = docta.getView(ViewNames.NER_CONLL);
 
-                    double currscore = docstosee.getOrDefault(docid, 0.0);
-                    docstosee.put(docid, currscore + hits[i].score);
+                    boolean add = true;
+                    for(Constituent c : ner.getConstituents()){
+                        // there exists at least one labeled form of this text in this document.
+                        // therefore: don't look at this document.
+                        if(c.getTokenizedSurfaceForm().equals(text)){
+                            add = false;
+                             break;
+                        }
+                    }
+
+                    if(add) {
+                        double currscore = docstosee.getOrDefault(docid, 0.0);
+                        docstosee.put(docid, currscore + hits[i].score);
+                    }
 
                     // TODO: This is very slow, but the functionality is important.
-                    
 //                    for (IntPair span : docta.getSpansMatching(text)) {
 //                        List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 //                        if (cons.size() == 0) {
 //                            // then annotator needs to see this!
-//
 //                            double currscore = docstosee.getOrDefault(docid, 0.0);
 //                            docstosee.put(docid, currscore + hits[i].score);
 //                            break;
 //                        }
 //                    }
                 }
-
-
             }
+
             System.out.println("Check out these docs:");
             docstosee.entrySet().stream()
-                    .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+                    .sorted(Map.Entry.<String, Double>comparingByValue().reversed()).limit(5)
                     .forEachOrdered(x -> result.put(x.getKey(), x.getValue()));
             System.out.println(result);
 
@@ -524,6 +544,10 @@ public class AnnotationController {
         hs.removeAttribute("username");
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
+        hs.removeAttribute("dict");
+        hs.removeAttribute("rules");
+        hs.removeAttribute("suffixes");
+        hs.removeAttribute("prop");
 
         //hs.setMaxInactiveInterval(10);
         //System.out.println("Setting timeout interval to 10 seconds.");
@@ -531,7 +555,7 @@ public class AnnotationController {
         hs.setAttribute("username", user.getName());
 
         // session variable that controls whethor not to show word definitions.
-        hs.setAttribute("showdefs", true);
+        hs.setAttribute("showdefs", false);
 
         return "redirect:/";
     }
@@ -644,7 +668,7 @@ public class AnnotationController {
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .forEachOrdered(x -> docwords.add(x.getKey()));
 
-        model.addAttribute("docwords", docwords.subList(0, Math.min(10, docwords.size())));
+        model.addAttribute("docwords", docwords.subList(0, Math.min(50, docwords.size())));
 
         return "annotation";
     }
@@ -710,6 +734,8 @@ public class AnnotationController {
             // don't suggest spans that cover already tagged areas.
             if(ner.getConstituentsCoveringSpan(start, end).size() > 0) continue;
 
+            System.out.println(start + " " + end + ": " + s.reason + " " + s);
+
             // important to also include 'cons' class, as it is a keyword in the html
             text[start] = String.format("<span class='pointer suggestion' data-toggle=\"tooltip\" title='%s' id='cons-%d-%d'>%s", s.reason, start, end, text[start]);
             text[end-1] += "</span>";
@@ -769,7 +795,7 @@ public class AnnotationController {
             rules.put(rulekey, 0);
         }
         rules.put(rulekey, rules.get(rulekey) + 1);
-        logger.debug(rules.toString());
+        System.out.println(rules);
 
         // spans is either the single span that was entered, or all matching spans.
         List<IntPair> spans;
@@ -786,20 +812,39 @@ public class AnnotationController {
         for(IntPair span : spans) {
             List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
+
+            // this span is already labeled!
             if (lc.size() > 0) {
+                boolean removed = false;
                 for (Constituent oldc : lc) {
-                    // TODO: consider not removing labels at all.
-                    // remove only if the label clash is a different label.
-                    if(!oldc.getLabel().equals(label)) {
+                    IntPair oldspan = oldc.getSpan();
+
+                    int a = span.getFirst();
+                    int b = span.getSecond();
+                    int c = oldspan.getFirst();
+                    int d = oldspan.getSecond();
+
+                    if(a == c && b >= d){
                         ner.removeConstituent(oldc);
+                        removed = true;
+                    }else if(a <= c && b == d){
+                        ner.removeConstituent(oldc);
+                        removed = true;
                     }
                 }
+
+                // if we did not remove the constituent on this span, then don't add another one!
+                // just skip this span.
+                if(!removed){
+                    continue;
+                }
+
             }
 
             // an O label means don't add the constituent.
             if (label.equals("O")) {
                 System.err.println("Should never happen: label is O");
-            } else {
+            } else{
                 Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
                 ner.addConstituent(newc);
             }
@@ -980,8 +1025,6 @@ public class AnnotationController {
             boolean addit = false;
             for(IntPair span : ta.getSpansMatching(text)){
 
-
-
                 List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
                 // should not have more than one label...
                 if(cons.size() > 1){
@@ -1021,22 +1064,41 @@ public class AnnotationController {
      * @return
      */
     public static List<Suggestion> getdocsuggestions(TextAnnotation ta, SessionData sd){
+
         // Find all rules that need to be applied in this document.
         List<Suggestion> suggestions = new ArrayList<>();
-        for(String rule : sd.rules.keySet()){
-            String[] rs = rule.split(":::");
-            String text = rs[0];
-            String label = rs[1];
-
-            View ner = ta.getView(ViewNames.NER_CONLL);
-
-            // if even a single span is not fully labeled, then add the rule.
-            boolean addit = false;
-            for(IntPair span : ta.getSpansMatching(text)){
-                Suggestion s = new Suggestion(span, label, String.format("dataset rule: %s, seen %s times", label, sd.rules.get(rule)));
-                suggestions.add(s);
-            }
-        }
+//        for(String rule : sd.rules.keySet()){
+//            String[] rs = rule.split(":::");
+//            String text = rs[0];
+//            String label = rs[1];
+//
+//            View ner = ta.getView(ViewNames.NER_CONLL);
+//
+//            // if even a single span is not fully labeled, then add the rule.
+//            boolean addit = false;
+//            int count = sd.rules.get(rule);
+//            // just to avoid spurious counts.
+//            // TODO: consider using TfIDF instead of frequency. This way non-frequent words can have lower threshold
+//            if(count > 1) {
+//                for (IntPair span : ta.getSpansMatching(text)) {
+//                    Suggestion s = new Suggestion(span, label, String.format("dataset rule: %s, seen %s times", label, count));
+//                    suggestions.add(s);
+//
+//                }
+//
+//                int i = 0;
+//                for(String token : ta.getTokens()){
+//                    if(!text.equals(token) &&
+//                            (text.startsWith(token)|| token.startsWith(text))){
+//                        Suggestion s = new Suggestion(new IntPair(i, i+1), label, String.format("dataset partial rule (%s): %s, seen %s times", text, label, count));
+//                        suggestions.add(s);
+//                    }
+//                    i++;
+//                }
+//            }
+//
+//
+//        }
 
         List<Suggestion> contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
         suggestions.addAll(contextsuggestions);

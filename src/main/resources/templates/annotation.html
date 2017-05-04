@@ -11,8 +11,9 @@
   <div class="container">
 
       <div class="page-header">
-          <h1>Annotation <small th:text="${taid}"></small></h1>
+          <h2 th:text="${taid}"></h2>
           <a target="_blank" th:href="${'http://www.' + taid.replace('_','/').replace('.conll', '.html')}">Link</a>
+
       </div>
 
       <div id="tagdescriptions">
@@ -24,124 +25,132 @@
       <div class="row">
           <div class="col-md-8">
 
-                  <div class="panel panel-default">
-                      <div class="panel-body" >
-                          <div th:utext="${htmlstring}" id="text" />
-                      </div>
-                  </div>
-
-              <div class="form-group">
-                  <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
-                  <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Remove All Labels</a>
-                  <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dictionary</a>
-              </div>
-
-              <div class="form-group">
-                  <div class="btn-group" role="group" aria-label="Next and previous">
-                      <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
-                      <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+              <div class="panel panel-default">
+                  <div class="panel-body" >
+                      <div th:utext="${htmlstring}" id="text" />
                   </div>
               </div>
+
           </div>
-          <div class="col-md-4">
+          <div class="col-md-4" >
 
-              <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-                  <div class="panel panel-default">
-                      <div class="panel-heading" role="tab" id="headingOne">
-                          <h4 class="panel-title">
-                              <a role="button" data-toggle="collapse" th:text="'Rules (' + ${docrules.size()} + ')'" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                  Rules
-                              </a>
-                          </h4>
+           <!--<div data-spy="affix" data-offset-top="0" data-offset-bottom="20">-->
+           <div>
+             <!-- Save, dictionary button group -->
+                  <div class="form-group">
+                      <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+                      <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Clear All</a>
+                      <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dict.</a>
+                  </div>
+
+                  <div class="form-group">
+                      <div class="btn-group" role="group" aria-label="Next and previous">
+                          <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+                          <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
                       </div>
-                      <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
-                          <div id="rulelist" class="list-group">
-                              <a href="#" th:each="rule : ${docrules}" th:id="${rule}" th:text="${rule}" class="ruleitem list-group-item"></a>
+                  </div>
+
+
+                  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                      <div class="panel panel-default">
+                          <div class="panel-heading" role="tab" id="headingOne">
+                              <h4 class="panel-title">
+                                  <a role="button" data-toggle="collapse" th:text="'Rules (' + ${docrules.size()} + ')'" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                      Rules
+                                  </a>
+                              </h4>
+                          </div>
+                          <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                              <div id="rulelist" class="list-group">
+                                  <a href="#" th:each="rule : ${docrules}" th:id="${rule}" th:text="${rule}" class="ruleitem list-group-item"></a>
+                              </div>
                           </div>
                       </div>
-                  </div>
-                  <div class="panel panel-default">
-                      <div class="panel-heading" role="tab" id="headingTwo">
-                          <h4 class="panel-title">
-                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                  Dictionary
-                              </a>
-                          </h4>
+                      <div class="panel panel-default">
+                          <div class="panel-heading" role="tab" id="headingTwo">
+                              <h4 class="panel-title">
+                                  <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                      Dictionary
+                                  </a>
+                              </h4>
+                          </div>
+                          <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                              <ul class="list-group">
+                                  <li class="list-group-item">
+                                      <div class="row">
+                                          <div class="col-lg-4">
+                                              <strong>Word</strong>
+                                          </div>
+                                          <div class="col-lg-8">
+                                              <strong>Translation</strong>
+                                          </div>
+                                      </div>
+                                  </li>
+
+                                  <li th:each="word : ${docwords}" class="list-group-item">
+                                      <div class="row">
+                                          <div class="col-lg-4" th:text="${word}">Word</div>
+                                          <div class="col-lg-8" th:if="${session.dict.containsKey(word)}" th:text="${session.dict.get(word)}" th:id="'div-'+${word}">
+                                          </div>
+
+                                          <div class="col-lg-8" th:unless="${session.dict.containsKey(word)}" th:id="'div-'+${word}">
+                                              <div class="input-group">
+                                                  <input type="text" th:id="'def-'+${word}" class="form-control" placeholder="English" />
+                                                  <span class="input-group-btn">
+                                                      <button class="btn btn-default" th:id="'submit-'+${word}" type="button">Add!</button>
+                                                  </span>
+                                              </div><!-- /input-group -->
+                                          </div>
+                                      </div>
+                                  </li>
+                              </ul>
+                          </div>
                       </div>
-                      <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
-                          <ul class="list-group">
-                              <li class="list-group-item">
-                                  <div class="row">
-                                      <div class="col-lg-4">
-                                          <strong>Word</strong>
-                                      </div>
-                                      <div class="col-lg-8">
-                                          <strong>Translation</strong>
-                                      </div>
-                                  </div>
-                              </li>
+                      <div class="panel panel-default">
+                          <div class="panel-heading" role="tab" id="headingThree">
+                              <h4 class="panel-title">
+                                  <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                      Affixes
+                                  </a>
+                              </h4>
+                          </div>
+                          <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                              <div class="panel-body">
+                                  <span th:each="suffix : ${session.suffixes}" th:text="'-' + ${suffix} + ', '"></span>
 
-                              <li th:each="word : ${docwords}" class="list-group-item">
-                                  <div class="row">
-                                      <div class="col-lg-4" th:text="${word}">Word</div>
-                                      <div class="col-lg-8" th:if="${session.dict.containsKey(word)}" th:text="${session.dict.get(word)}" th:id="'div-'+${word}">
-                                      </div>
+                                  <div style="height: 20px"></div>
 
-                                      <div class="col-lg-8" th:unless="${session.dict.containsKey(word)}" th:id="'div-'+${word}">
-                                          <div class="input-group">
-                                              <input type="text" th:id="'def-'+${word}" class="form-control" placeholder="English" />
+                                  <form class="form-inline">
+                                      <div class="form-group">
+                                          <div class="input-group input-group-sm">
+                                              <input type="text" class="form-control" id="newsuffix" placeholder="Suffix" />
                                               <span class="input-group-btn">
-                                                  <button class="btn btn-default" th:id="'submit-'+${word}" type="button">Add!</button>
+                                                  <button class="btn btn-default" id="suffixsubmit" type="button">Add!</button>
                                               </span>
                                           </div><!-- /input-group -->
                                       </div>
-                                  </div>
-                              </li>
-                          </ul>
-                      </div>
-                  </div>
-                  <div class="panel panel-default">
-                      <div class="panel-heading" role="tab" id="headingThree">
-                          <h4 class="panel-title">
-                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                  Affixes
-                              </a>
-                          </h4>
-                      </div>
-                      <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                          <div class="panel-body">
-                              <span th:each="suffix : ${session.suffixes}" th:text="'-' + ${suffix} + ', '"></span>
+                                  </form>
 
-                              <div style="height: 20px"></div>
-
-                              <form class="form-inline">
-                                  <div class="form-group">
-                                      <div class="input-group input-group-sm">
-                                          <input type="text" class="form-control" id="newsuffix" placeholder="Suffix" />
-                                          <span class="input-group-btn">
-                                              <button class="btn btn-default" id="suffixsubmit" type="button">Add!</button>
-                                          </span>
-                                      </div><!-- /input-group -->
-                                  </div>
-                              </form>
-
+                              </div>
                           </div>
                       </div>
-                  </div>
-                  <div class="panel panel-default">
-                      <div class="panel-heading" role="tab" id="headingFour">
-                          <h4 class="panel-title">
-                              <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                  Next Docs
-                              </a>
-                          </h4>
-                      </div>
-                      <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
-                          <div id="nextdocs">
+                      <div class="panel panel-default">
+                          <div class="panel-heading" role="tab" id="headingFour">
+                              <h4 class="panel-title">
+                                  <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                      Next Docs
+                                  </a>
+                              </h4>
+                          </div>
+                          <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                              <div id="nextdocs">
+                              </div>
                           </div>
                       </div>
                   </div>
               </div>
+
+
           </div>
       </div>
 
@@ -414,14 +423,18 @@
 
                 console.log(msg);
 
-
+                $("#nextdocs").empty();
 
                 for(var fileid in msg){
                     console.log(fileid);
-                    $("#nextdocs").append("<a href='/annotation?taid=" + fileid + "' class='list-group-item' role='button'>"+fileid+ ": " + msg[fileid] + "</a>");
+                    var score = msg[fileid].toFixed(2);
+                    $("#nextdocs").append("<a href='/annotation?taid=" + fileid + "' class='list-group-item' role='button'>"+fileid+ ": " + score + "</a>");
                 }
 
+                // collapse all
                 $('[id^=collapse]').collapse('hide');
+
+                // show just the necessary one.
                 $('#collapseFour').collapse('show');
 
 

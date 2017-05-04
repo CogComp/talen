@@ -65,18 +65,18 @@ public class DictionaryController {
         String folderparent = (new File(folderpath)).getParent();
         File dictfile = new File(folderparent, "dict-" + sd.dataname + "-" + sd.username + ".txt");
 
-        try {
-            if(dictfile.exists()) {
-                LineIO.append(dictfile.getAbsolutePath(), Collections.singletonList(key + "\t" + val));
-            }else{
-                LineIO.write(dictfile.getAbsolutePath(), Collections.singletonList(key + "\t" + val));
+        if(val.length() > 0) {
+            try {
+                if (dictfile.exists()) {
+                    LineIO.append(dictfile.getAbsolutePath(), Collections.singletonList(key + "\t" + val));
+                } else {
+                    LineIO.write(dictfile.getAbsolutePath(), Collections.singletonList(key + "\t" + val));
+                }
+            } catch (IOException e) {
+                logger.error("Could not save dict file: " + dictfile.getAbsolutePath());
             }
-        } catch (IOException e) {
-            logger.error("Could not save dict file: " + dictfile.getAbsolutePath());
+            sd.dict.add(key, val);
         }
-
-
-        sd.dict.add(key, val);
 
         return AnnotationController.getHTMLfromTA(ta, sd);
     }
