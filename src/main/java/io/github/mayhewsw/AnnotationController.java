@@ -358,18 +358,10 @@ public class AnnotationController {
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
-        HashMap<String, Integer> rules = loadallrules(tas);
-
-
-
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
-        hs.setAttribute("rules", rules);
         hs.setAttribute("prop", prop);
         hs.setAttribute("patterns", patterns);
-
-        // TODO: rules and patterns should probably be the same thing.
-
 
         hs.setAttribute("suffixes", suffixes);
 
@@ -378,37 +370,6 @@ public class AnnotationController {
 
         return "redirect:/annotation";
     }
-
-    /**
-     * The rules object is fully defined by the TAs.
-     * TODO: this may change if we allow probabilistic context-type rules.
-     * @param tas
-     * @return
-     */
-    public HashMap<String, Integer> loadallrules(TreeMap<String, TextAnnotation> tas){
-        HashMap<String, Integer> rules = new HashMap<>();
-
-        for(String taid : tas.keySet()){
-            TextAnnotation ta = tas.get(taid);
-            View ner = ta.getView(ViewNames.NER_CONLL);
-
-            // count each annotation just once per document.
-            HashSet<String> set = new HashSet<>();
-            for(Constituent c : ner.getConstituents()){
-                String rulekey = c.getTokenizedSurfaceForm() + ":::" + c.getLabel();
-                set.add(rulekey);
-            }
-
-            for(String rulekey : set) {
-                if (!rules.containsKey(rulekey)) {
-                    rules.put(rulekey, 0);
-                }
-                rules.put(rulekey, rules.get(rulekey) + 1);
-            }
-        }
-        return rules;
-    }
-
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
     @ResponseBody
@@ -456,12 +417,17 @@ public class AnnotationController {
 
             // when the doc is saved, then we want to look at high-weight patterns, and spellings and
             // select a doc with high score.
-            // look through rules first.
-            for (String rule : sd.rules.keySet()) {
+
+            for (Pair<String, String> featpair : sd.patterns.keySet()) {
                 // search for this rule, and if the top 5 docs are all fully annotated, then get the next rule.
-                String[] rs = rule.split(":::");
-                String text = rs[0];
-                String label = rs[1];
+                String feat = featpair.getFirst();
+                if(!feat.startsWith("full-string")){
+                    continue;
+                }
+
+                String text = feat.split("=")[1];
+                String label = featpair.getSecond();
+
                 // parse exact matches.
                 Query q = new QueryParser("body", analyzer).parse("\"" + text + "\"");
                 System.out.println(q);
@@ -545,7 +511,6 @@ public class AnnotationController {
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
         hs.removeAttribute("dict");
-        hs.removeAttribute("rules");
         hs.removeAttribute("suffixes");
         hs.removeAttribute("prop");
 
@@ -581,7 +546,6 @@ public class AnnotationController {
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
         Dictionary dict = sd.dict;
-        HashMap<String, Integer> rules = sd.rules;
 
         Boolean showdefs = sd.showdefs;
 
@@ -628,10 +592,6 @@ public class AnnotationController {
         logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
         logger.info("Num Constituents: " + ner.getConstituents().size());
         logger.info("Constituents: " + ner.getConstituents());
-
-        // get the rules that apply
-        HashMap<String, Integer> docrules = getdocrules(ta, rules);
-        model.addAttribute("docrules", docrules.keySet());
 
         // set up the html string.
         String out = this.getHTMLfromTA(ta, sd);
@@ -775,7 +735,6 @@ public class AnnotationController {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        HashMap<String, Integer> rules = sd.rules;
 
         TextAnnotation ta = tas.get(idstring);
 
@@ -788,14 +747,6 @@ public class AnnotationController {
         }
 
         String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
-
-        // TODO: there's really no reason to add this rule immediately. Add rules when the TA is saved.
-        String rulekey = text + ":::" + label;
-        if(!rules.containsKey(rulekey)){
-            rules.put(rulekey, 0);
-        }
-        rules.put(rulekey, rules.get(rulekey) + 1);
-        System.out.println(rules);
 
         // spans is either the single span that was entered, or all matching spans.
         List<IntPair> spans;
@@ -871,7 +822,6 @@ public class AnnotationController {
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
         Dictionary dict = sd.dict;
-        HashMap<String, Integer> rules = sd.rules;
 
         Boolean showdefs = sd.showdefs;
 
@@ -918,7 +868,6 @@ public class AnnotationController {
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
         Dictionary dict = sd.dict;
-        HashMap<String, Integer> rules = sd.rules;
         TextAnnotation ta = tas.get(idstring);
 
         Boolean showdefs = sd.showdefs;
@@ -933,20 +882,6 @@ public class AnnotationController {
         String out = this.getHTMLfromTA(ta, sd);
         return out;
     }
-
-
-    // not sure how to pass objects between controllers, so will hold off on this for now.
-
-    @RequestMapping(value="/updaterules", method= RequestMethod.GET)
-    @ResponseBody
-    public HashMap<String, Integer> update(@RequestParam(value="taid") String taid, HttpSession hs, Model model) {
-        SessionData sd = new SessionData(hs);
-        TreeMap<String, TextAnnotation> tas = sd.tas;
-        HashMap<String, Integer> rules = sd.rules;
-        TextAnnotation ta = tas.get(taid);
-        return getdocrules(ta, rules);
-    }
-
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
@@ -1001,169 +936,26 @@ public class AnnotationController {
 
         }
 
-
-
         return this.getHTMLfromTA(ta, sd);
     }
 
 
     /**
-     * This finds rules which should fire in the current doc.
-     * @return
-     */
-    public HashMap<String, Integer> getdocrules(TextAnnotation ta, HashMap<String, Integer> rules){
-        // Find all rules that need to be applied in this document.
-        HashMap<String, Integer> docrules = new HashMap<>();
-        for(String rule : rules.keySet()){
-            String[] rs = rule.split(":::");
-            String text = rs[0];
-            String label = rs[1];
-
-            View ner = ta.getView(ViewNames.NER_CONLL);
-
-            // if even a single span is not fully labeled, then add the rule.
-            boolean addit = false;
-            for(IntPair span : ta.getSpansMatching(text)){
-
-                List<Constituent> cons = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
-                // should not have more than one label...
-                if(cons.size() > 1){
-                    logger.error("text should not have multiple labels...");
-                }else if(cons.size() == 1){
-                    Constituent c = cons.get(0);
-
-                    // if c has different label, or does not cover span, then add it.
-
-                    IntPair cs = c.getSpan();
-                    boolean covering = span.getFirst() <= cs.getFirst() && span.getSecond() >= cs.getSecond();
-
-                    if(!c.getLabel().equals(label) || (!cs.equals(span) && covering)){
-                        addit = true;
-                    }
-                }else{
-                    // this means that the span is not labeled.
-                    addit = true;
-                }
-
-                // important to break because we only want to add the rule once.
-                if(addit){
-                    docrules.put(rule, rules.get(rule));
-                    break;
-                }
-            }
-        }
-
-        return docrules;
-    }
-
-    /**
-     * Uses the rules and patterns collections to give suggestions inline.
+     * Uses the patterns collections to give suggestions inline.
      *
      * @param ta
-     * @param rules
      * @return
      */
     public static List<Suggestion> getdocsuggestions(TextAnnotation ta, SessionData sd){
 
-        // Find all rules that need to be applied in this document.
         List<Suggestion> suggestions = new ArrayList<>();
-//        for(String rule : sd.rules.keySet()){
-//            String[] rs = rule.split(":::");
-//            String text = rs[0];
-//            String label = rs[1];
-//
-//            View ner = ta.getView(ViewNames.NER_CONLL);
-//
-//            // if even a single span is not fully labeled, then add the rule.
-//            boolean addit = false;
-//            int count = sd.rules.get(rule);
-//            // just to avoid spurious counts.
-//            // TODO: consider using TfIDF instead of frequency. This way non-frequent words can have lower threshold
-//            if(count > 1) {
-//                for (IntPair span : ta.getSpansMatching(text)) {
-//                    Suggestion s = new Suggestion(span, label, String.format("dataset rule: %s, seen %s times", label, count));
-//                    suggestions.add(s);
-//
-//                }
-//
-//                int i = 0;
-//                for(String token : ta.getTokens()){
-//                    if(!text.equals(token) &&
-//                            (text.startsWith(token)|| token.startsWith(text))){
-//                        Suggestion s = new Suggestion(new IntPair(i, i+1), label, String.format("dataset partial rule (%s): %s, seen %s times", text, label, count));
-//                        suggestions.add(s);
-//                    }
-//                    i++;
-//                }
-//            }
-//
-//
-//        }
 
         List<Suggestion> contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
         suggestions.addAll(contextsuggestions);
 
-//        for(String pattern : sd.patterns.keySet()){
-//            String[] ps = pattern.split("-");
-//            String prevtoken = ps[2];
-//            String label = ps[3];
-//
-//            int freq = sd.patterns.get(pattern);
-//
-//            // TODO: this will need to be more sophisticated... should use probability.
-//            if(freq < 2) continue;
-//
-//            for(IntPair span : ta.getSpansMatching(prevtoken)){
-//                IntPair nextspan = new IntPair(span.getFirst()+1, span.getSecond()+1);
-//                Suggestion s = new Suggestion(nextspan, label, String.format("context rule %s for %s, seen %d times", pattern, label, sd.patterns.get(pattern)));
-//                suggestions.add(s);
-//            }
-//        }
-
-
-
         return suggestions;
     }
 
-
-    @RequestMapping(value = "/applyrule", method=RequestMethod.GET)
-    @ResponseBody
-    public String apply(@RequestParam(value="rule") String rule, @RequestParam(value="id") String idstring, HttpSession hs) throws Exception {
-
-        SessionData sd = new SessionData(hs);
-        TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(idstring);
-
-        String[] rs = rule.split(":::");
-        String text = rs[0];
-        String label = rs[1];
-
-        // spans is either the single span that was entered, or all matching spans.
-        List<IntPair> spans = ta.getSpansMatching(text);
-
-        View ner = ta.getView(ViewNames.NER_CONLL);
-
-        for(IntPair span : spans) {
-            List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
-
-            if (lc.size() > 0) {
-                for (Constituent oldc : lc) {
-                    ner.removeConstituent(oldc);
-                }
-            }
-
-            // an O label means don't add the constituent.
-            if (label.equals("O")) {
-                System.err.println("Should never happen: label is O");
-            } else {
-                Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
-                ner.addConstituent(newc);
-            }
-        }
-
-        String out = this.getHTMLfromTA(ta, sd);
-        return out;
-    }
 
     public static void main(String[] args) throws Exception {
         AnnotationController c = new AnnotationController();

@@ -20,7 +20,6 @@ public class SessionData {
     Boolean showdefs;
     TreeMap<String, TextAnnotation> tas;
     String dataname;
-    HashMap<String, Integer> rules;
     HashMap<Pair<String, String>, Double> patterns;
 
     ArrayList<String> suffixes;
@@ -31,7 +30,6 @@ public class SessionData {
 
         tas = (TreeMap<String, TextAnnotation>) hs.getAttribute("tas");
         dict = (Dictionary) hs.getAttribute("dict");
-        rules = (HashMap<String, Integer>) hs.getAttribute("rules");
         patterns = (HashMap<Pair<String, String>, Double>) hs.getAttribute("patterns");
 
         username = (String) hs.getAttribute("username");
