@@ -20,10 +20,10 @@
             <th>Num Labels</th>
             <th>Text annotation</th>
         </tr>
-        <tr th:each="key : ${session.tas.keySet()}" class="" th:classappend="${annotatedfiles.contains(key)} ? success : none">
+        <tr th:each="key : ${tamap.keySet()}" class="" th:classappend="${annotatedfiles.contains(key)} ? success : none">
             <td th:text="${key}"></td>
-            <td th:text="${session.tas.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
-            <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${session.tas.get(key).getText().substring(0,10)}"></a></td>
+            <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
+            <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${tamap.get(key).getText().substring(0,10)}"></a></td>
         </tr>
     </table>
 

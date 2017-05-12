@@ -35,16 +35,24 @@
                 <a class="navbar-brand" href="/">NER Annotator</a>
             </div>
 
-
                 <div class="navbar-collapse navbar-ex1-collapse">
 
                     <ul class="nav navbar-nav" id="pagesbar">
                         <li><a href="/">Home</a></li>
-                        <li><a href="/instructions">Instructions</a></li>
                         <li><a href="/annotation">All annotations</a></li>
                         <li><a href="/dict">Dictionary</a></li>
 
                     </ul>
+
+                    <form class="navbar-form navbar-right" action="search" method="get">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="query" placeholder="Search for..." />
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" id="searchbutton" type="submit">Go!</button>
+                            </span>
+                        </div><!-- /input-group -->
+
+                    </form>
 
                     <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->
                         <ul class="nav navbar-nav navbar-right">

@@ -429,6 +429,13 @@
         }
         $( ".saveclass" ).click(save);
         $( "#savebutton" ).click(save);
+
+        $(window).on('beforeunload', function() {
+            //return 'you are an idiot!';
+            save()
+        });
+
+
     });
 
 

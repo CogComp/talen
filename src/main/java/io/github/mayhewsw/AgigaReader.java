@@ -3,10 +3,10 @@ package io.github.mayhewsw;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import edu.illinois.cs.cogcomp.nlp.tokenizer.Tokenizer;
 import edu.jhu.agiga.*;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
@@ -14,16 +14,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -185,12 +180,75 @@ public class AgigaReader {
         }
     }
 
+    public static void lucenetest() throws IOException {
+        // we write to this open file object.
+        RAMDirectory rd = new RAMDirectory();
+        Analyzer analyzer =
+                new Analyzer() {
+            @Override
+            protected TokenStreamComponents createComponents(String fieldName) {
+                Tokenizer source = new WhitespaceTokenizer();
+                TokenStream filter = new ShingleFilter(source);
+                //TokenStream filter2 = new NGramTokenFilter(filter, 1, 4);
+                return new TokenStreamComponents(source, filter);
+            }
+        };
+
+
+        IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
+
+        IndexWriter writer = new IndexWriter(rd, cfg);
+
+        List<String> strings = new ArrayList<>();
+        strings.add("i am a monster from venezuela");
+        strings.add("Britain is my hobby i'm victoria");
+        strings.add("unconcerned and unashamed");
+        strings.add("does anybody hear me?");
+        strings.add("i like sugar and other things related to John Smith");
+
+        for(String s : strings){
+
+            StringReader sr = new StringReader(s);
+
+            Document d = new Document();
+            TextField tf = new TextField("body", sr);
+
+            d.add(tf);
+            d.add(new StringField("filename", s.substring(0,4), Field.Store.YES));
+            writer.addDocument(d);
+        }
+        writer.close();
+
+        IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(rd));
+
+        String query = "like sug";
+
+        //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
+        Query q = new PrefixQuery(new Term("body", query));
+        System.out.println("query is " + q);
+
+        TopScoreDocCollector collector = TopScoreDocCollector.create(20);
+        searcher.search(q, collector);
+
+        ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+        System.out.println("Found " + hits.length + " hits.");
+        for (int i = 0; i < hits.length; ++i) {
+            int luceneId = hits[i].doc;
+            Document d = searcher.doc(luceneId);
+
+            System.out.println(d);
+
+        }
+
+    }
 
 
     public static void main(String[] args) throws IOException {
 
-        getnerdocs();
+        //getnerdocs();
 
+        lucenetest();
     }
 
 

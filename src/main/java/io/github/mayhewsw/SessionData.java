@@ -3,6 +3,7 @@ package io.github.mayhewsw;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.TextAnnotationReader;
+import org.apache.lucene.store.RAMDirectory;
 
 import javax.servlet.http.HttpSession;
 import java.util.*;
@@ -21,6 +22,7 @@ public class SessionData {
     TreeMap<String, TextAnnotation> tas;
     String dataname;
     HashMap<Pair<String, String>, Double> patterns;
+    RAMDirectory ramDirectory;
 
     ArrayList<String> suffixes;
     Properties prop;
@@ -43,6 +45,8 @@ public class SessionData {
         suffixes = (ArrayList<String>) hs.getAttribute("suffixes");
 
         prop = (Properties) hs.getAttribute("prop");
+
+        ramDirectory = (RAMDirectory) hs.getAttribute("ramdirectory");
 
     }
 

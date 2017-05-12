@@ -5,6 +5,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.core.datastructures.trees.Tree;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
@@ -12,18 +13,21 @@ import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
+import org.apache.lucene.analysis.ngram.NGramTokenFilter;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.RAMDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -127,18 +131,7 @@ public class AnnotationController {
         File f = new File(folderurl);
 
         // This will be ordered by it's keys.
-        TreeMap<String, TextAnnotation> ret = new TreeMap<>(new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                int retval;
-                try{
-                    retval = Integer.compare(Integer.parseInt(o1), Integer.parseInt(o2));
-                }catch(NumberFormatException e){
-                    retval = o1.compareTo(o2);
-                }
-                return retval;
-            }
-        });
+        TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
 
         if(foldertype.equals(FOLDERTA)) {
             String[] files = f.list();
@@ -261,16 +254,6 @@ public class AnnotationController {
         logger.info("Done updating patterns.");
     }
 
-
-    /**
-     * THere must be some way to avoid this...
-     * @return
-     */
-    @RequestMapping(value="/instructions")
-    public String intr(){
-        return "instructions";
-    }
-
     /**
      * This is called when the user clicks on the language button on the homepage.
      * @param folder
@@ -358,6 +341,7 @@ public class AnnotationController {
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
+        hs.setAttribute("ramdirectory", new RAMDirectory());
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("prop", prop);
@@ -366,7 +350,10 @@ public class AnnotationController {
         hs.setAttribute("suffixes", suffixes);
 
         sd = new SessionData(hs);
+
+        // not sure there is any point to this??
         updateallpatterns(sd);
+        buildmemoryindex(sd);
 
         return "redirect:/annotation";
     }
@@ -493,14 +480,16 @@ public class AnnotationController {
         return result;
     }
 
-    private static Analyzer analyzer = new Analyzer() {
-        @Override
-        protected TokenStreamComponents createComponents(String fieldName) {
-            Tokenizer source = new WhitespaceTokenizer();
-            TokenStream filter = new ShingleFilter(source);
-            return new TokenStreamComponents(source, filter);
-        }
-    };
+    private static Analyzer analyzer =
+                new Analyzer() {
+            @Override
+            protected TokenStreamComponents createComponents(String fieldName) {
+                Tokenizer source = new WhitespaceTokenizer();
+                TokenStream filter = new ShingleFilter(source);
+                //TokenStream filter2 = new NGramTokenFilter(filter, 1, 4);
+                return new TokenStreamComponents(source, filter);
+            }
+        };
 
     @RequestMapping(value="/setname")
     public String setname(@ModelAttribute User user, HttpSession hs){
@@ -538,6 +527,104 @@ public class AnnotationController {
         return "redirect:/";
     }
 
+    @RequestMapping(value="/search", method=RequestMethod.GET)
+    public String search(@RequestParam(value="query", required=true) String query, HttpSession hs, Model model) throws IOException, ParseException {
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+
+        List<String> annotatedfiles = new ArrayList<>();
+
+        // Load all annotated files so far.
+        String dataname = sd.dataname;
+        Properties props = datasets.get(dataname);
+        String folderpath = props.getProperty("path");
+        String username = sd.username;
+
+        String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
+
+        logger.info("Now looking in user annotation folder: " + outfolder);
+
+        File f = new File(outfolder);
+        if(f.exists()) {
+            annotatedfiles.addAll(Arrays.asList(f.list()));
+        }
+
+        TreeMap<String, TextAnnotation> newtas = filterTA(query, sd);
+
+        model.addAttribute("tamap", newtas);
+        model.addAttribute("annotatedfiles", annotatedfiles);
+        return "getstarted";
+
+    }
+
+
+    /**
+     * This is done before anything else...
+     * @param sd
+     * @throws IOException
+     */
+    public void buildmemoryindex(SessionData sd) throws IOException {
+
+        // we write to this open file object.
+        RAMDirectory rd = sd.ramDirectory;
+
+        IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
+
+        IndexWriter writer = new IndexWriter(rd, cfg);
+
+        for(String taid : sd.tas.keySet()){
+            TextAnnotation ta = sd.tas.get(taid);
+
+            StringReader sr = new StringReader(ta.getTokenizedText());
+
+            Document d = new Document();
+            TextField tf = new TextField("body", sr);
+            System.out.println(tf);
+            d.add(tf);
+            d.add(new StringField("filename", ta.getId(), Field.Store.YES));
+            writer.addDocument(d);
+        }
+        writer.close();
+
+    }
+
+    /**
+     * Given a string query and treemap of tas, return only those matching some criteria in the filter.
+     * @param s
+     * @param sd
+     * @return
+     */
+    public TreeMap<String, TextAnnotation> filterTA(String query, SessionData sd) throws IOException, ParseException {
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
+
+        System.out.println("Using ramdirectory: " + sd.ramDirectory);
+        IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(sd.ramDirectory));
+
+        //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
+        Query q = new PrefixQuery(new Term("body", query));
+        System.out.println("query is " + q);
+
+        TopScoreDocCollector collector = TopScoreDocCollector.create(20);
+        searcher.search(q, collector);
+
+        ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+        System.out.println("Found " + hits.length + " hits.");
+        for (int i = 0; i < hits.length; ++i) {
+            int luceneId = hits[i].doc;
+            Document d = searcher.doc(luceneId);
+
+            String docid = d.get("filename");
+
+            TextAnnotation docta = sd.tas.get(docid);
+            ret.put(docid, docta);
+        }
+
+        return ret;
+
+    }
+
 
     @RequestMapping(value="/annotation", method=RequestMethod.GET)
     public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) {
@@ -573,6 +660,7 @@ public class AnnotationController {
                 annotatedfiles.addAll(Arrays.asList(f.list()));
             }
 
+            model.addAttribute("tamap", sd.tas);
             model.addAttribute("annotatedfiles", annotatedfiles);
             return "getstarted";
         }
