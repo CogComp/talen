@@ -1,6 +1,5 @@
 .pointer {
     cursor: pointer;
-
 }
 
 .cons {
@@ -37,7 +36,7 @@
     border-radius: 3px;
 }
 
-#text {
+.text {
     font-size: 14pt;
 }
 

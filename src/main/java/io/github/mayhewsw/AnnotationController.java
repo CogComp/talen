@@ -481,15 +481,15 @@ public class AnnotationController {
     }
 
     private static Analyzer analyzer =
-                new Analyzer() {
-            @Override
-            protected TokenStreamComponents createComponents(String fieldName) {
-                Tokenizer source = new WhitespaceTokenizer();
-                TokenStream filter = new ShingleFilter(source);
-                //TokenStream filter2 = new NGramTokenFilter(filter, 1, 4);
-                return new TokenStreamComponents(source, filter);
-            }
-        };
+            new Analyzer() {
+                @Override
+                protected TokenStreamComponents createComponents(String fieldName) {
+                    Tokenizer source = new WhitespaceTokenizer();
+                    TokenStream filter = new ShingleFilter(source);
+                    //TokenStream filter2 = new NGramTokenFilter(filter, 1, 4);
+                    return new TokenStreamComponents(source, filter);
+                }
+            };
 
     @RequestMapping(value="/setname")
     public String setname(@ModelAttribute User user, HttpSession hs){
@@ -729,7 +729,6 @@ public class AnnotationController {
      */
     public static String getHTMLfromTA(TextAnnotation ta, SessionData sd){
 
-
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
 
@@ -737,13 +736,16 @@ public class AnnotationController {
 
         ArrayList<String> suffixes = sd.suffixes;
 
-        suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
-
+        if(suffixes == null){
+            new ArrayList<>();
+        }else{
+            suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
+        }
 
         // add spans to every word that is not a constituent.
         for(int t = 0; t < text.length; t++){
             String def = null;
-            if(sd.dict.containsKey(text[t])){
+            if(sd.dict != null && sd.dict.containsKey(text[t])){
                 def = sd.dict.get(text[t]).get(0);
             }
 
@@ -1038,8 +1040,11 @@ public class AnnotationController {
 
         List<Suggestion> suggestions = new ArrayList<>();
 
-        List<Suggestion> contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
-        suggestions.addAll(contextsuggestions);
+        List<Suggestion> contextsuggestions = new ArrayList<>();
+        if(sd.patterns != null) {
+             contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
+            suggestions.addAll(contextsuggestions);
+        }
 
         return suggestions;
     }

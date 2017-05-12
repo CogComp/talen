@@ -13,12 +13,11 @@
 
     <div class="row">
 
-        <div class="col-md-4"></div>
-        <div class="col-md-4">
-            HELLO HELLO!
-        </div>
+        <div th:each="groupid : ${groups.keySet()}" class="list-group-item">
+            <h3 th:text="'Group ' + ${groupid} + ' (' + ${groups.get(groupid).size()} + ' sentences)'"></h3>
 
-        <div class="col-md-4"></div>
+            <a th:href="'/bootstrap/sents?groupid=' + ${groupid}" th:text="${groups.get(groupid).get(0).getSurfaceForm()}"></a>
+        </div>
 
     </div>
 </div>
