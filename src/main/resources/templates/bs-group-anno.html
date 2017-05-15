@@ -19,7 +19,7 @@
         </div>
         </div>
         <div class="col-md-4">
-
+            <button class="btn btn-default" type="button" id="loadtokbutton">Button</button>
         </div>
 
     </div>
@@ -33,17 +33,22 @@
     $(document).ready(function() {
 
         function loadtok(){
+            console.log("loadtok called...");
+
 
             $(function () {
                 $('[data-toggle="tooltip"]').tooltip()
             })
 
 
+            // just clean everything out first...
+            //$("[id^=tok]").popover('destroy');
+
             $("[id^=tok]").popover({
                 placement: "bottom",
                 content: function () {
                     var html = $("#buttons").html();
-                    var out = "<div id='popover" + $(this)[0].id + "'>" + html + "</div>";
+                    var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                     return out;
                 },
                 title: function () {
@@ -107,6 +112,9 @@
             });
         });
 
+        $("#loadtokbutton").click(function(){
+            loadtok();
+        });
 
         $("#removebutton").click(function(){
             if (confirm('Are you sure you want to remove all?')) {
@@ -139,8 +147,6 @@
             console.log("Clicked on a button..." + buttonvalue);
             console.log("refers to: " + spanid);
 
-            $("#" + spanid).popover("hide");
-
             var sel = document.getSelection();
 
             var fid = sel.anchorNode.parentElement.id;
@@ -151,11 +157,11 @@
                 console.log(this);
                 console.log("Showing popover for span: " + fid + "-" + lid)
                 var startid = fid;
-                var endid = "tok-" + (getnum(lid) + 1);
+                var endid = "tok:" + (getnum(lid) + 1);
 
             }else{
                 var startid = $(this).parents("[id^=popovertok]")[0].id;
-                var endid = "tok-" + (getnum(startid) + 1);
+                var endid = "tok:" + (getnum(startid) + 1);
             }
 
             addlabel(sentid, startid, endid, buttonvalue);
@@ -169,7 +175,7 @@
 
         // given a span id (e.g. tok-4), return the integer
         function getnum(spanid){
-            return parseInt(spanid.split("-")[1]);
+            return parseInt(spanid.split(":").slice(-1)[0]);
         }
 
         // check if s is labeled...
@@ -210,38 +216,37 @@
 
         // run this function when you click on a token.
         function addlabel(sentid, starttokid, endtokid, newclass) {
-            console.log("Adding " + newclass + " to " + starttokid + ":" + endtokid + ", sentid=" + sentid);
-
-            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
-            $("#savebutton").css({"border-color" : "#c00"});
+            console.log("Adding " + newclass + " to " + starttokid + "---" + endtokid + ", sentid=" + sentid);
 
             $.ajax({
                 method: "POST",
                 url: "/bootstrap/addspan",
                 data: {label: newclass, starttokid: getnum(starttokid), endtokid:getnum(endtokid), sentid: sentid, groupid: getParameterByName("groupid")}
-            }).done(function (msg) {
+            }).then(function (msg) {
                 console.log(msg);
-                refreshsents();
+                var ret = refreshsents();
+                return ret
+            }).done(function(f){
+                console.log(f);
                 loadtok();
             });
         };
 
         function refreshsents(){
             $(".text").each(function() {
-                console.log(this.id)
-
                 var sentid = this.id;
 
                 $.ajax({
                     method: "POST",
+                    async: false,
                     url: "/bootstrap/gethtml",
                     data: {sentid: sentid}
                 }).done(function (msg) {
                     var panel = $(document.getElementById(sentid));
                     panel.html(msg);
-                    loadtok();
                 });
             });
+            return "Finished with refresh...";
         };
 
     });

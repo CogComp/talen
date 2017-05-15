@@ -94,7 +94,7 @@ public class BootstrapController {
 
     }
 
-    public String getSentId(Constituent sent){
+    public static String getSentId(Constituent sent){
         return sent.getTextAnnotation().getId() + ":" + sent.getSentenceId();
     }
 
@@ -109,7 +109,7 @@ public class BootstrapController {
         SessionData sd = new SessionData(hs);
 
         // TODO: abstract this to file.
-        String folderurl = "data/train-short2";
+        String folderurl = "data/train-short";
 
         HashMap<String, Constituent> allsents = new HashMap<>();
         CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
@@ -134,6 +134,8 @@ public class BootstrapController {
         terms.add("Sampras");
         terms.add("Greece");
         terms.add("Britain");
+        terms.add("Tritan Shehu");
+
 
         HashMap<String, List<Constituent>> groups = buildgroups(sd, terms, allsents);
 
@@ -227,9 +229,6 @@ public class BootstrapController {
         // TODO: add this to SessionData??
         HashMap<String, List<Constituent>> groups = (HashMap<String, List<Constituent>>) hs.getAttribute("groups");
 
-        System.out.println(groups);
-        System.out.println(groupid);
-
         List<Constituent> sents = groups.get(groupid);
 
         for(Constituent sent : sents) {
@@ -267,7 +266,8 @@ public class BootstrapController {
 
         // add spans to every word that is not a constituent.
         for(int t = 0; t < text.length; t++){
-            text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+            String id = getSentId(sent);
+            text[t] = "<span class='token pointer' id='tok-" + id + ":" + t + "'>" + text[t] + "</span>";
         }
 
         List<Constituent> sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
@@ -282,7 +282,7 @@ public class BootstrapController {
             text[end-1] += "</span>";
         }
 
-        String out = StringUtils.join(" ", text);
+        String out = StringUtils.join("&nbsp;", text);
         return out;
     }
 

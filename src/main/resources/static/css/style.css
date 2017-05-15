@@ -1,5 +1,7 @@
 .pointer {
     cursor: pointer;
+    /*margin-right: 3px;*/
+    display: inline-block;
 }
 
 .cons {
@@ -37,7 +39,11 @@
 }
 
 .text {
-    font-size: 14pt;
+    font-size: 12pt;
+}
+
+#text {
+    font-size: 12pt;
 }
 
 .popover{
