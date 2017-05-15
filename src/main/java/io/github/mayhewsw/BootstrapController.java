@@ -6,8 +6,8 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
-import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -31,12 +31,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 /**
  * Created by mayhew2 on 5/10/17.
@@ -46,11 +42,40 @@ import java.util.List;
 @RequestMapping("/bootstrap")
 public class BootstrapController {
 
+    // These are all common objects that don't change user by user.
+    private HashMap<String, Properties> datasets;
+
     private static Logger logger = LoggerFactory.getLogger(BootstrapController.class);
 
-    private List<String> labels;
-
     public BootstrapController() {
+        File configfolder = new File("config");
+
+        File[] configfiles = configfolder.listFiles();
+
+        datasets = new HashMap<>();
+
+        for(File f : configfiles){
+            if(f.getName().endsWith("~")) continue;
+            if(!f.getName().startsWith("bs-")) continue;
+
+            System.out.println(f);
+            Properties prop = new Properties();
+
+            InputStream input = null;
+
+            try {
+
+                input = new FileInputStream(f);
+                // load a properties file
+                prop.load(input);
+
+                datasets.put(prop.getProperty("name"), prop);
+
+            }catch(IOException e){
+
+            }
+        }
+
     }
 
     private static Analyzer analyzer =
@@ -71,7 +96,7 @@ public class BootstrapController {
      * @param allsents
      * @throws IOException
      */
-    public void buildmemoryindex(SessionData sd, HashMap<String, Constituent> allsents) throws IOException {
+    public void buildmemoryindex(SessionData sd) throws IOException {
 
         // we write to this open file object.
         RAMDirectory rd = sd.ramDirectory;
@@ -80,7 +105,7 @@ public class BootstrapController {
 
         IndexWriter writer = new IndexWriter(rd, cfg);
 
-        for(Constituent sent : allsents.values()){
+        for(Constituent sent : sd.allsents.values()){
             StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
 
             Document d = new Document();
@@ -99,49 +124,46 @@ public class BootstrapController {
     }
 
 
-    /**
-     * Important to add folders and user to the model.
-     * @param model
-     * @return
-     */
-    @RequestMapping("/")
-    public String home(Model model, HttpSession hs) throws IOException {
-        SessionData sd = new SessionData(hs);
+    @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
+    public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
 
-        // TODO: abstract this to file.
-        String folderurl = "data/train-short";
+        hs.setAttribute("ramdirectory", new RAMDirectory());
 
+
+
+        Properties prop = datasets.get(dataname);
+        String folderpath = prop.getProperty("path");
+
+        // Add allsents to the session
         HashMap<String, Constituent> allsents = new HashMap<>();
-        CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
+        CoNLLNerReader cnl = new CoNLLNerReader(folderpath);
 
         while(cnl.hasNext()) {
             TextAnnotation ta = cnl.next();
             View sents = ta.getView(ViewNames.SENTENCE);
 
             for (Constituent sent : sents.getConstituents()) {
-
                 allsents.put(getSentId(sent), sent);
             }
         }
-
         hs.setAttribute("allsents", allsents);
-        hs.setAttribute("ramdirectory", new RAMDirectory());
 
-        sd = new SessionData(hs);
-        buildmemoryindex(sd, allsents);
-
-        List<String> terms = new ArrayList<>();
-        terms.add("Sampras");
-        terms.add("Greece");
-        terms.add("Britain");
-        terms.add("Tritan Shehu");
+        // Add terms to the session
+        HashSet<String> terms = new HashSet<>();
+        String[] termarray = prop.getProperty("terms").split(",");
+        for(String term : termarray){
+            terms.add(term);
+        }
+        hs.setAttribute("terms", terms);
 
 
-        HashMap<String, List<Constituent>> groups = buildgroups(sd, terms, allsents);
+        SessionData sd = new SessionData(hs);
+        buildmemoryindex(sd);
+
 
         // TODO: abstract to config.
-        String labelsproperty = "ORG:lightblue LOC:greenyellow PER:yellow MISC:coral";
-        labels = new ArrayList<>();
+        String labelsproperty = prop.getProperty("labels");
+        List<String> labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
         for(String labelandcolor: labelsproperty.split(" ")){
             String[] sl = labelandcolor.split(":");
@@ -151,20 +173,50 @@ public class BootstrapController {
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
-        model.addAttribute("groups", groups);
-        hs.setAttribute("groups", groups);
+        hs.setAttribute("labels", labels);
+
+        return "redirect:/bootstrap/sents";
+    }
+
+    @RequestMapping("/")
+    public String home(Model model, HttpSession hs) throws IOException {
+        model.addAttribute("datasets", datasets.keySet());
+        model.addAttribute("user", new User());
 
         return "bs-home";
     }
 
-    public static HashMap<String, List<Constituent>> buildgroups(SessionData sd, List<String> terms, HashMap<String,Constituent> allsents) throws IOException {
+    @RequestMapping(value="/setname")
+    public String setname(@ModelAttribute User user, HttpSession hs){
+        logger.info("Setting name to: " + user.getName());
+        // Just make sure everything is clear first... just in case.
+        logger.info("Logging in!");
+        hs.removeAttribute("username");
+        hs.removeAttribute("dataname");
+        hs.removeAttribute("tas");
+        hs.removeAttribute("dict");
+        hs.removeAttribute("suffixes");
+        hs.removeAttribute("prop");
+
+        //hs.setMaxInactiveInterval(10);
+        //System.out.println("Setting timeout interval to 10 seconds.");
+
+        hs.setAttribute("username", user.getName());
+
+
+        return "redirect:/bootstrap/";
+    }
+
+
+
+    public static HashMap<String, List<Constituent>> buildgroups(SessionData sd) throws IOException {
         // just for run!
         System.out.println("Using ramdirectory: " + sd.ramDirectory);
         IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(sd.ramDirectory));
 
         HashMap<String, List<Constituent>> groups = new HashMap<>();
 
-        for(String query : terms) {
+        for(String query : sd.terms) {
 
             //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
             Query q = new PrefixQuery(new Term("body", query));
@@ -184,7 +236,7 @@ public class BootstrapController {
                 Document d = searcher.doc(luceneId);
 
                 String sentid = d.get("filename");
-                Constituent sent = allsents.get(sentid);
+                Constituent sent = sd.allsents.get(sentid);
                 querygroup.add(sent);
             }
 
@@ -199,11 +251,15 @@ public class BootstrapController {
     @ResponseBody
     public String addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="groupid") String groupid, @RequestParam(value="sentid") String sentid, HttpSession hs, Model model) throws Exception {
 
+        SessionData sd = new SessionData(hs);
+
         HashMap<String, List<Constituent>> groups = (HashMap<String, List<Constituent>>) hs.getAttribute("groups");
         List<Constituent> group = groups.get(groupid);
 
         int start = Integer.parseInt(starttokid);
         int end = Integer.parseInt(endtokid);
+
+        String text = null;
 
         // TODO: inefficient b/c two loops
         for(Constituent sent : group){
@@ -216,28 +272,77 @@ public class BootstrapController {
                 Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, sentstart + start, sentstart + end);
                 ner.addConstituent(newc);
 
+                text = newc.getTokenizedSurfaceForm();
+
                 break;
             }
         }
+
+        for(Constituent sent : group){
+            String surf = sent.getTokenizedSurfaceForm();
+            if(surf.contains(text)){
+
+                // need to find index of tokens into sentence (could be multiple indices).
+
+                TextAnnotation ta = sent.getTextAnnotation();
+                View sents = sent.getView();
+                View ner = ta.getView(ViewNames.NER_CONLL);
+
+                int sentstart = sent.getStartSpan();
+
+                int i = 0;
+                int ind;
+                while((ind = surf.indexOf(text, i)) != -1){
+
+                    // ind is a character offset into the surface string.
+                    // I want to convert this to a token offset.
+                    int startind = StringUtils.countMatches(surf.substring(0, ind), " ");
+                    int endind = startind + text.split(" ").length;
+
+                    Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, sentstart + startind, sentstart + endind);
+
+                    // it may already be there...
+                    // TODO: how does this work? I hope it defines equality by content.
+                    if(!ner.containsConstituent(newc)) {
+                        ner.addConstituent(newc);
+                    }
+
+                    i += text.length() + ind;
+                }
+
+            }
+        }
+
+        // update the terms
+        // TODO: should really be done when saving.
+        sd.terms.add(text);
 
         return label + starttokid + endtokid + groupid + sentid;
     }
 
 
+
     @RequestMapping(value="/sents", method= RequestMethod.GET)
-    public String annotation(@RequestParam(value="groupid", required=true) String groupid, Model model, HttpSession hs){
-        // TODO: add this to SessionData??
-        HashMap<String, List<Constituent>> groups = (HashMap<String, List<Constituent>>) hs.getAttribute("groups");
+    public String annotation(@RequestParam(value="groupid", required=false) String groupid, Model model, HttpSession hs) throws IOException {
+        SessionData sd = new SessionData(hs);
 
-        List<Constituent> sents = groups.get(groupid);
+        HashMap<String, List<Constituent>> groups = buildgroups(sd);
+        hs.setAttribute("groups", groups);
 
-        for(Constituent sent : sents) {
-            sent.addAttribute("html", getHTMLfromSent(sent));
+        if(groupid != null) {
+
+            List<Constituent> sents = groups.get(groupid);
+
+            for (Constituent sent : sents) {
+                sent.addAttribute("html", getHTMLfromSent(sent));
+            }
+
+            model.addAttribute("groupid", groupid);
+            model.addAttribute("sents", sents);
+            model.addAttribute("labels", hs.getAttribute("labels"));
+        }else{
+            model.addAttribute("groups", groups);
         }
-
-        model.addAttribute("groupid", groupid);
-        model.addAttribute("sents", sents);
-        model.addAttribute("labels", labels);
 
         return "bs-group-anno";
     }
@@ -246,10 +351,9 @@ public class BootstrapController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String gethtml(@RequestParam(value="sentid", required=true) String sentid, Model model, HttpSession hs){
+        SessionData sd = new SessionData(hs);
 
-        HashMap<String, Constituent> allsents = (HashMap<String, Constituent>) hs.getAttribute("allsents");
-
-        return getHTMLfromSent(allsents.get(sentid));
+        return getHTMLfromSent(sd.allsents.get(sentid));
     }
 
 
@@ -282,7 +386,8 @@ public class BootstrapController {
             text[end-1] += "</span>";
         }
 
-        String out = StringUtils.join("&nbsp;", text);
+
+        String out = StringUtils.join(text, "&nbsp;");
         return out;
     }
 

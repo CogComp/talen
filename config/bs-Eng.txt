@@ -1,0 +1,6 @@
+name	EnglishConll
+path	data/train-short/
+type	conll
+# dictionary
+labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral
+terms   Sampras,Britain,Greece,Tritan Shehu

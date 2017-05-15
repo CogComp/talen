@@ -2,22 +2,45 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Bootstrap Home</title>
-    <div th:include="base :: head"></div>
+    <div th:include="bs-base :: bs-head"></div>
 
 </head>
 <body>
-<div th:include="base :: nav"></div>
+<div th:include="bs-base :: bs-nav"></div>
 <div class="container">
     <h3>Bootstrap home</h3>
 
 
     <div class="row">
 
-        <div th:each="groupid : ${groups.keySet()}" class="list-group-item">
-            <h3 th:text="'Group ' + ${groupid} + ' (' + ${groups.get(groupid).size()} + ' sentences)'"></h3>
 
-            <a th:href="'/bootstrap/sents?groupid=' + ${groupid}" th:text="${groups.get(groupid).get(0).getSurfaceForm()}"></a>
+        <div class="col-md-4"></div>
+        <div class="col-md-4">
+            <span th:if="${session.username} == null"> <!-- if customer is anonymous-->
+
+                <form th:action="@{/bootstrap/setname}" th:object="${user}" method="post">
+                    <div class="form-group">
+                        <label for="namefield">Please enter a username:</label>
+                        <input type="text" class="form-control" id="namefield" th:field="*{name}" placeholder="Your name" />
+                    </div>
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </form>
+
+            </span>
+
+            <span th:unless="${session.username} == null">
+            <p>Please select an option:</p>
+                <div class="list-group">
+                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/bootstrap/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
+                </div>
+
+            </span>
         </div>
+
+        <div class="col-md-4"></div>
+
+
+
 
     </div>
 </div>

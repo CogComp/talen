@@ -1,6 +1,7 @@
 package io.github.mayhewsw;
 
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.TextAnnotationReader;
 import org.apache.lucene.store.RAMDirectory;
@@ -26,7 +27,8 @@ public class SessionData {
 
     ArrayList<String> suffixes;
     Properties prop;
-
+    HashMap<String, Constituent> allsents;
+    HashSet<String> terms;
 
     public SessionData(HttpSession hs){
 
@@ -47,6 +49,9 @@ public class SessionData {
         prop = (Properties) hs.getAttribute("prop");
 
         ramDirectory = (RAMDirectory) hs.getAttribute("ramdirectory");
+        terms = (HashSet<String>) hs.getAttribute("terms");
+
+        allsents = (HashMap<String, Constituent>) hs.getAttribute("allsents");
 
     }
 

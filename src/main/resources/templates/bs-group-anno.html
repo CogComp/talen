@@ -2,27 +2,41 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Bootstrap Home</title>
-    <div th:include="base :: head"></div>
+    <div th:include="bs-base :: bs-head"></div>
 
 </head>
 <body>
-<div th:include="base :: nav"></div>
+<div th:include="bs-base :: bs-nav"></div>
 <div class="container">
-    <h3 th:text="'Group: ' + ${groupid}"></h3>
 
-    <div class="row">
-        <div class="col-md-8">
-        <div th:each="sent : ${sents}" class="panel panel-default">
-            <div  th:text="${sent.getTextAnnotation().getId() + ':' + sent.getSentenceId()}" class="panel-heading"></div>
-            <div class="panel-body text" th:id="${sent.getTextAnnotation().getId() + ':' + sent.getSentenceId()}" th:utext="${sent.getAttribute('html')}">
+
+    <div th:if="${groupid} == null">
+        <div th:each="groupid : ${groups.keySet()}" class="list-group-item">
+            <h3 th:text="'Group ' + ${groupid} + ' (' + ${groups.get(groupid).size()} + ' sentences)'"></h3>
+            <a th:href="'/bootstrap/sents?groupid=' + ${groupid}">Hopefully related to the group...</a>
+        </div>
+    </div>
+
+
+    <div th:unless="${groupid} == null">
+        <h3 th:text="'Group: ' + ${groupid}"></h3>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div th:each="sent : ${sents}" class="panel panel-default">
+                    <div  th:text="${sent.getTextAnnotation().getId() + ':' + sent.getSentenceId()}" class="panel-heading"></div>
+                    <div class="panel-body text" th:id="${sent.getTextAnnotation().getId() + ':' + sent.getSentenceId()}" th:utext="${sent.getAttribute('html')}">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-default" type="button" id="loadtokbutton">Button</button>
             </div>
         </div>
-        </div>
-        <div class="col-md-4">
-            <button class="btn btn-default" type="button" id="loadtokbutton">Button</button>
-        </div>
-
     </div>
+
+
+
 </div>
 </body>
 
