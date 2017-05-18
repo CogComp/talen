@@ -4,6 +4,10 @@
     display: inline-block;
 }
 
+.spacer {
+    height: 15px;
+}
+
 .cons {
     padding: 3px;
     border-radius: 5px;

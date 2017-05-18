@@ -10,15 +10,95 @@
 <div class="container">
 
 
+
     <div th:if="${groupid} == null">
-        <div th:each="groupid : ${groups.keySet()}" class="list-group-item">
-            <h3 th:text="'Group ' + ${groupid} + ' (' + ${groups.get(groupid).size()} + ' sentences)'"></h3>
-            <a th:href="'/bootstrap/sents?groupid=' + ${groupid}">Hopefully related to the group...</a>
+
+
+        <div>
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#unanno" aria-controls="unanno" role="tab" data-toggle="tab">Unannotated</a></li>
+                <li role="presentation"><a href="#anno" aria-controls="anno" role="tab" data-toggle="tab">Annotated</a></li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <!-- This set of sentences is all unannotated -->
+                <div role="tabpanel" class="tab-pane active" id="unanno">
+
+                    <div class="spacer"></div>
+
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="list-group">
+                                <div th:each="groupid : ${unannogroups.keySet()}" class="list-group-item">
+
+                                    <a th:each="label : ${labels}" th:href="@{/bootstrap/addtext(text=${groupid},label=${label},groupid=${groupid})}" th:class="${label} + ' badge'" th:text="${label}"></a>
+
+                                    <a th:href="'/bootstrap/sents?groupid=' + ${groupid}"><h4 th:text="'Group: ' + ${groupid} + ' (' + ${unannogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h4></a>
+                                    <p th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></p>
+                                    <!--<p th:text="${unannogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" value="" />
+                                    Select only from annotated sentences
+                                </label>
+                            </div>
+
+                            <div class="spacer"></div>
+                            <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
+                            <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
+                            <p th:text="'Num anno sents: ' + ${annosents.size()}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- This set of sentences is all annotated -->
+                <div role="tabpanel" class="tab-pane" id="anno">
+
+                    <div class="spacer"></div>
+
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="list-group">
+                                <a th:each="groupid : ${annogroups.keySet()}" th:href="'/bootstrap/sents?groupid=' + ${groupid}" class="list-group-item">
+                                    <h4 th:text="'Group: ' + ${groupid} + ' (' + ${annogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h4>
+                                    <!--<p th:text="${annogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
+
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-default">Write out to file</button>
+                            <div class="spacer"></div>
+                            <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
+                            <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
+                            <p th:text="'Num anno sents: ' + ${annosents.size()}"></p>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
         </div>
+
+
+
+
+
     </div>
 
-
     <div th:unless="${groupid} == null">
+
         <h3 th:text="'Group: ' + ${groupid}"></h3>
 
         <div class="row">
@@ -30,12 +110,16 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <button class="btn btn-default" type="button" id="loadtokbutton">Button</button>
+                <div class="form-group">
+                    <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+                </div>
+
             </div>
         </div>
+
+
+
     </div>
-
-
 
 </div>
 </body>
@@ -72,6 +156,8 @@
                 html: true,
                 trigger: "manual"
             });
+
+            $("[id^=tok]").off("mouseup");
 
             $("[id^=tok]").mouseup(function(event){
                 // only toggle on the left click.
@@ -192,45 +278,39 @@
             return parseInt(spanid.split(":").slice(-1)[0]);
         }
 
-        // check if s is labeled...
-        // this expects a string.
-        function isLabeled(spanid){
-            if(!spanid.startsWith("#")){
-                spanid = "#" + spanid;
-            }
-            var p = $(spanid).parent();
-            return p.hasClass("cons");
-        }
-
-
         // Given a span, remove the label.
         function removelabel(spanid) {
 
-            // not sure if this check is necessary?
-            if (isLabeled(spanid)) {
-                $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
-                $("#savebutton").css({"border-color" : "#c00"});
+            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+            $("#savebutton").css({"border-color" : "#c00"});
 
-                console.log("Removing label from: " + spanid);
+            console.log("Removing label from: " + spanid);
+            var tok = $(document.getElementById(spanid));
 
-                // returns just the number of the token. tok-4, returns 4.
-                var tokid = getnum(spanid);
+            var sentid = tok.parents(".panel-body")[0].id;
+            console.log(sentid);
 
-                $.ajax({
-                    method: "POST",
-                    url: "/removetoken",
-                    data: {tokid: tokid, id: getParameterByName("taid")}
-                }).done(function (msg) {
-                    console.log("successful removal.");
-                    $("#text").html(msg);
-                    loadtok();
-                });
-            }
+            // returns just the number of the token. tok-4, returns 4.
+            var tokid = getnum(spanid);
+
+            $.ajax({
+                method: "POST",
+                url: "/bootstrap/removetoken",
+                data: {sentid: sentid, tokid: tokid}
+            }).done(function (msg) {
+                console.log("successful removal.");
+                $(document.getElementById(sentid)).html(msg);
+                loadtok();
+            });
+
         }
 
         // run this function when you click on a token.
         function addlabel(sentid, starttokid, endtokid, newclass) {
             console.log("Adding " + newclass + " to " + starttokid + "---" + endtokid + ", sentid=" + sentid);
+
+            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+            $("#savebutton").css({"border-color" : "#c00"});
 
             $.ajax({
                 method: "POST",
@@ -262,6 +342,29 @@
             });
             return "Finished with refresh...";
         };
+
+        function save(){
+            var groupid = getParameterByName("groupid");
+            console.log("saving group: " + groupid);
+
+            $.ajax({
+                url: "/bootstrap/save",
+                data: {groupid: groupid},
+                beforeSend: function() {
+                    // setting a timeout
+                    $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");
+                }
+            }).done(function (msg) {
+                console.log("finished saving!");
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
+                $("#savebutton").css({"border-color" : ""});
+
+
+
+            });
+
+        };
+        $( "#savebutton" ).click(save);
 
     });
 

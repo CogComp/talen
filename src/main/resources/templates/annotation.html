@@ -37,11 +37,11 @@
            <!--<div data-spy="affix" data-offset-top="0" data-offset-bottom="20">-->
            <div>
              <!-- Save, dictionary button group -->
-                  <div class="form-group">
-                      <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
-                      <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Clear All</a>
-                      <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dict.</a>
-                  </div>
+               <div class="form-group">
+                   <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+                   <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Clear All</a>
+                   <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dict.</a>
+               </div>
 
                   <div class="form-group">
                       <div class="btn-group" role="group" aria-label="Next and previous">

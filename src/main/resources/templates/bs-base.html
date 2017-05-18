@@ -21,7 +21,7 @@
 
 
 <div th:fragment="bs-nav">
-    <div class="navbar navbar-default">
+    <div class="navbar navbar-inverse">
         <div class="container">
 
             <div class="navbar-header">
@@ -39,6 +39,7 @@
 
                 <ul class="nav navbar-nav" id="pagesbar">
                     <li><a href="/bootstrap/">Bootstrap</a></li>
+                    <li><a href="/bootstrap/sents">Groups</a></li>
 
                 </ul>
 
@@ -56,7 +57,7 @@
                         <ul class="nav navbar-nav navbar-right">
                             <li><span class="navbar-text" th:text="${'Hi there ' + session.username + '!'}">Hi there</span></li>
                             <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
-                            <li><a href="/logout" id="logoutlink" th:text="Logout">Logout</a></li>
+                            <li><a href="/bootstrap/logout" id="logoutlink" th:text="Logout">Logout</a></li>
                         </ul>
                     </span>
 

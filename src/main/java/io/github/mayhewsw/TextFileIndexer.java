@@ -1,21 +1,18 @@
 package io.github.mayhewsw;
 
+import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopScoreDocCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper;
 import org.apache.lucene.analysis.*;
@@ -25,6 +22,7 @@ import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This terminal application creates an Apache Lucene index in a folder and adds files into this index
@@ -78,10 +76,47 @@ public class TextFileIndexer {
     }
 
 
+    public static void buildsentenceindex(String conlldir, String indexDir) throws IOException {
+        // we write to this open file object.
+
+        FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
+
+        IndexWriterConfig config = new IndexWriterConfig(analyzer);
+
+        IndexWriter writer = new IndexWriter(dir, config);
+
+        TextAnnotation ta;
+        File file = new File(conlldir);
+
+        for(File fname : file.listFiles()){
+            CoNLLNerReader cnr = new CoNLLNerReader(fname.getAbsolutePath());
+
+            ta = cnr.next();
+            View sentview = ta.getView(ViewNames.SENTENCE);
+            List<Constituent> sentences = sentview.getConstituents();
+
+            for(Constituent sent : sentences){
+                StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
+
+                Document d = new Document();
+                TextField tf = new TextField("body", sr);
+                d.add(tf);
+                d.add(new StringField("filename", BootstrapController.getSentId(sent), Field.Store.YES));
+                writer.addDocument(d);
+            }
+        }
+
+        writer.close();
+    }
+
+
     public static void main(String[] args) throws IOException {
-        String indexdir = "/tmp/nytindex";
-        String filedir = "/shared/corpora/ner/human/ug/conll-uly/";
-//        buildindex(filedir, indexdir);
+        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly/";
+        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent/";
+
+//        buildsentenceindex(filedir, indexdir);
+//
+//        if(true) return;
 
         //=========================================================
         // Now search
@@ -101,12 +136,16 @@ public class TextFileIndexer {
                 if (s.equalsIgnoreCase("q")) {
                     break;
                 }
-                Query q = new QueryParser("body", analyzer).parse(s);
+//                Query q = new QueryParser("body", analyzer).parse(s);
+
+                Query q = new PrefixQuery(new Term("body", s));
 
                 System.out.println(q);
                 TopScoreDocCollector collector = TopScoreDocCollector.create(5);
                 searcher.search(q, collector);
                 ScoreDoc[] hits = collector.topDocs().scoreDocs;
+
+                System.out.println("There are total of: " + searcher.count(q) + " hits.");
 
                 // 4. display results
                 System.out.println("Found " + hits.length + " hits.");

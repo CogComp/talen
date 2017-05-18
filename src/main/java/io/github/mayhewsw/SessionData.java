@@ -3,7 +3,7 @@ package io.github.mayhewsw;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
-import edu.illinois.cs.cogcomp.nlp.corpusreaders.TextAnnotationReader;
+import io.github.mayhewsw.utils.SentenceCache;
 import org.apache.lucene.store.RAMDirectory;
 
 import javax.servlet.http.HttpSession;
@@ -27,8 +27,15 @@ public class SessionData {
 
     ArrayList<String> suffixes;
     Properties prop;
-    HashMap<String, Constituent> allsents;
+
+    SentenceCache cache;
+    HashMap<String, Constituent> annosents;
+
     HashSet<String> terms;
+//    String folderpath;
+    String indexpath;
+
+    HashMap<String, HashSet<Constituent>> groups;
 
     public SessionData(HttpSession hs){
 
@@ -38,6 +45,8 @@ public class SessionData {
 
         username = (String) hs.getAttribute("username");
         dataname = (String) hs.getAttribute("dataname");
+//        folderpath = (String) hs.getAttribute("folderpath");
+        indexpath = (String) hs.getAttribute("indexpath");
 
         showdefs = (Boolean) hs.getAttribute("showdefs");
         if(showdefs == null){
@@ -51,7 +60,10 @@ public class SessionData {
         ramDirectory = (RAMDirectory) hs.getAttribute("ramdirectory");
         terms = (HashSet<String>) hs.getAttribute("terms");
 
-        allsents = (HashMap<String, Constituent>) hs.getAttribute("allsents");
+        cache = (SentenceCache) hs.getAttribute("cache");
+        annosents = (HashMap<String, Constituent>) hs.getAttribute("annosents");
+
+        groups = (HashMap<String, HashSet<Constituent>>) hs.getAttribute("groups");
 
     }
 

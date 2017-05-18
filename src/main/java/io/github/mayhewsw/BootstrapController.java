@@ -1,12 +1,14 @@
 package io.github.mayhewsw;
 
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
+import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Sentence;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
-import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import io.github.mayhewsw.utils.SentenceCache;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -17,11 +19,9 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by mayhew2 on 5/10/17.
@@ -47,6 +50,11 @@ public class BootstrapController {
 
     private static Logger logger = LoggerFactory.getLogger(BootstrapController.class);
 
+    /**
+     * Load config files before anything else. This is the only object shared among user sessions.
+     *
+     * This only loads config files with the prefix 'bs-' (for bootstrap)
+     */
     public BootstrapController() {
         File configfolder = new File("config");
 
@@ -58,13 +66,11 @@ public class BootstrapController {
             if(f.getName().endsWith("~")) continue;
             if(!f.getName().startsWith("bs-")) continue;
 
-            System.out.println(f);
             Properties prop = new Properties();
 
             InputStream input = null;
 
             try {
-
                 input = new FileInputStream(f);
                 // load a properties file
                 prop.load(input);
@@ -75,7 +81,6 @@ public class BootstrapController {
 
             }
         }
-
     }
 
     private static Analyzer analyzer =
@@ -90,35 +95,38 @@ public class BootstrapController {
             };
 
 
+//    /**
+//     * This is done before anything else...
+//     * @param sd
+//     * @throws IOException
+//     */
+//    public void buildmemoryindex(SessionData sd) throws IOException {
+//
+//        // we write to this open file object.
+//        RAMDirectory rd = sd.ramDirectory;
+//
+//        IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
+//
+//        IndexWriter writer = new IndexWriter(rd, cfg);
+//
+//        for(Constituent sent : sd.allsents.values()){
+//            StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
+//
+//            Document d = new Document();
+//            TextField tf = new TextField("body", sr);
+//            d.add(tf);
+//            d.add(new StringField("filename", getSentId(sent), Field.Store.YES));
+//            writer.addDocument(d);
+//        }
+//        writer.close();
+//
+//    }
+
     /**
-     * This is done before anything else...
-     * @param sd
-     * @param allsents
-     * @throws IOException
+     * A little convenience function.
+     * @param sent
+     * @return
      */
-    public void buildmemoryindex(SessionData sd) throws IOException {
-
-        // we write to this open file object.
-        RAMDirectory rd = sd.ramDirectory;
-
-        IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
-
-        IndexWriter writer = new IndexWriter(rd, cfg);
-
-        for(Constituent sent : sd.allsents.values()){
-            StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
-
-            Document d = new Document();
-            TextField tf = new TextField("body", sr);
-            System.out.println(tf);
-            d.add(tf);
-            d.add(new StringField("filename", getSentId(sent), Field.Store.YES));
-            writer.addDocument(d);
-        }
-        writer.close();
-
-    }
-
     public static String getSentId(Constituent sent){
         return sent.getTextAnnotation().getId() + ":" + sent.getSentenceId();
     }
@@ -127,41 +135,73 @@ public class BootstrapController {
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
     public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
 
-        hs.setAttribute("ramdirectory", new RAMDirectory());
-
-
-
         Properties prop = datasets.get(dataname);
-        String folderpath = prop.getProperty("path");
+        // this refers to a folder containing a large number of conll files.
+        String folderpath = prop.getProperty("folderpath");
 
-        // Add allsents to the session
-        HashMap<String, Constituent> allsents = new HashMap<>();
-        CoNLLNerReader cnl = new CoNLLNerReader(folderpath);
+        SentenceCache cache = new SentenceCache(folderpath);
 
-        while(cnl.hasNext()) {
-            TextAnnotation ta = cnl.next();
-            View sents = ta.getView(ViewNames.SENTENCE);
+        // this refers to the index made by lucene (probably of the folder)
+        String indexpath = prop.getProperty("indexpath");
+        hs.setAttribute("indexpath", indexpath);
 
-            for (Constituent sent : sents.getConstituents()) {
-                allsents.put(getSentId(sent), sent);
-            }
-        }
-        hs.setAttribute("allsents", allsents);
+        SessionData sd = new SessionData(hs);
 
         // Add terms to the session
+        // FIXME: don't add term prefixes.
         HashSet<String> terms = new HashSet<>();
         String[] termarray = prop.getProperty("terms").split(",");
         for(String term : termarray){
             terms.add(term);
         }
+
+        // FIXME: this folder contains entire files, many sentences of which are not annotated. When they are read back in, we will incorrectly mark sentences as annotated.
+
+        // now check the annotation folder to see what this user has already annotated.
+        // if there is anything, load it here.
+        String outfolder = folderpath.replaceAll("/$","") + "-sentanno-" + sd.username + "/";
+
+        logger.info("Now looking in user annotation folder: " + outfolder);
+        HashMap<String, Constituent> annosents = new HashMap<>();
+
+        if((new File(outfolder)).exists()) {
+            TempConllReader cnl = new TempConllReader(outfolder);
+            while (cnl.hasNext()) {
+                TextAnnotation ta = cnl.next();
+                View sents = ta.getView(ViewNames.SENTENCE);
+
+                // this will overwrite whatever was previously there.
+                for (Constituent sent : sents.getConstituents()) {
+                    String sentid = getSentId(sent);
+                    annosents.put(sentid, sent);
+
+                    // this just to cache the sentence.
+                    cache.put(sentid, sent);
+
+                    View ner = ta.getView(ViewNames.NER_CONLL);
+                    for(Constituent name : ner.getConstituentsCovering(sent)){
+                        terms.add(name.getTokenizedSurfaceForm());
+                    };
+                }
+            }
+        }
+
+        hs.setAttribute("cache", cache);
+        hs.setAttribute("annosents", annosents);
         hs.setAttribute("terms", terms);
 
+        sd = new SessionData(hs);
 
-        SessionData sd = new SessionData(hs);
-        buildmemoryindex(sd);
+        // build groups here.
+        HashMap<String, HashSet<Constituent>> groups = new HashMap<>();
+        updategroups(sd.indexpath, terms, cache, sd.annosents, groups);
+        hs.setAttribute("groups", groups);
 
+        // use only if you have want an in-memory index (as opposed to a disk index)
+        // it's important to load this again because of all the attributes added to hs.
+        //sd = new SessionData(hs);
+        //buildmemoryindex(sd);
 
-        // TODO: abstract to config.
         String labelsproperty = prop.getProperty("labels");
         List<String> labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
@@ -174,6 +214,8 @@ public class BootstrapController {
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
         hs.setAttribute("labels", labels);
+        hs.setAttribute("dataname", dataname);
+        hs.setAttribute("prop", prop);
 
         return "redirect:/bootstrap/sents";
     }
@@ -208,60 +250,168 @@ public class BootstrapController {
     }
 
 
+    /**
+     * This uses the terms variable inside SessionData object to query the index for matching sentences.
+     * @param sd
+     * @return
+     * @throws IOException
+     */
+    public static void updategroups(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, Constituent> annosents, HashMap<String, HashSet<Constituent>> groups) throws IOException {
+        logger.info("Updating groups... ({})", cache.size());
 
-    public static HashMap<String, List<Constituent>> buildgroups(SessionData sd) throws IOException {
+
         // just for run!
-        System.out.println("Using ramdirectory: " + sd.ramDirectory);
-        IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(sd.ramDirectory));
+        // FIXME: consider opening this only once and storing as a session variable.
+        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
+        IndexSearcher searcher = new IndexSearcher(reader);
 
-        HashMap<String, List<Constituent>> groups = new HashMap<>();
+        // This contains {query : (sentid, sentid, ...), ...}
+        HashMap<String, HashSet<String>> allresults = new HashMap<>();
 
-        for(String query : sd.terms) {
+        // FIXME: consider caching query lookups.
+        for(String term : terms) {
 
             //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
-            Query q = new PrefixQuery(new Term("body", query));
-            System.out.println("query is " + q);
+            Query query = new PrefixQuery(new Term("body", term));
 
-            // I actually want all...
-            TopScoreDocCollector collector = TopScoreDocCollector.create(2000000);
-            searcher.search(q, collector);
+            // Assume a large text collection. We want to store EVERY SINGLE INSTANCE.
+            int k = Integer.MAX_VALUE;
+            TopDocs searchresults = searcher.search(query, k);
+            ScoreDoc[] hits = searchresults.scoreDocs;
 
-            ScoreDoc[] hits = collector.topDocs().scoreDocs;
+            HashSet<String> queryids = new HashSet<>();
 
-            List<Constituent> querygroup = new ArrayList<>();
-
-            System.out.println("Found " + hits.length + " hits.");
             for (int i = 0; i < hits.length; ++i) {
                 int luceneId = hits[i].doc;
                 Document d = searcher.doc(luceneId);
 
                 String sentid = d.get("filename");
-                Constituent sent = sd.allsents.get(sentid);
-                querygroup.add(sent);
+                queryids.add(sentid);
             }
 
-            groups.put(query, querygroup);
+            allresults.put(term, queryids);
         }
 
-        return groups;
+
+
+        // this is the number of elements to display to users.
+        int k = 15;
+
+        for(String term : terms){
+            // Don't update already formed groups!
+            if(groups.containsKey(term)) continue;
+
+            // initialize
+            groups.put(term, new HashSet<Constituent>());
+
+            HashSet<String> queryids = allresults.get(term);
+
+            HashSet<String> annointersection = new HashSet<>(annosents.keySet());
+            annointersection.retainAll(queryids);
+
+            // now annointersection contains only these sentence ids which are annotated (with something) and also
+            // contain the search term.
+
+            HashSet<Constituent> querygroup = groups.get(term);
+
+            for(String sentid : annointersection){
+                // FIXME: understand the connection between annosents and cache.
+                // Is cache always kept up to date with annotated sentences??
+                querygroup.add(annosents.get(sentid));
+                if(querygroup.size() == k) break;
+            }
+
+            if(querygroup.size() >= k){
+                // we are good to go! Load these sentences (lazily) and return.
+                // no need to augment appropriate groups because these are all already in place.
+                logger.info(term + " :Found all sents in annotated sentences!");
+                continue;
+            }
+
+            if(annosents.size() > 100){
+                logger.info("annosents size is: " + annosents.size() + ", so we don't add any more.");
+                continue;
+            }
+
+            HashSet<String> allintersection = new HashSet<>(cache.keySet());
+            allintersection.removeAll(annointersection);
+            allintersection.retainAll(queryids);
+
+            // now allintersection has cached sentids which are NOT in annosents, but which contain the search term.
+            for(String sentid : allintersection){
+                // NOTE: this should NOT be reading from file. These should all be cached... that's the whole point.
+                Constituent sent = cache.getSentence(sentid);
+                querygroup.add(sent);
+
+                // this is the difficult part.
+                // if sent SHOULD BE in any other group, then add it now.
+                for(String term2 : allresults.keySet()){
+                    HashSet<String> termids = allresults.get(term2);
+                    if(termids.contains(sentid)){
+                        if(!groups.containsKey(term2)){
+                            groups.put(term2, new HashSet<>());
+                        }
+                        logger.debug("group: {} getting new sent: {}", term2, sentid);
+                        groups.get(term2).add(sent);
+                    }
+                }
+                if(querygroup.size() == k) break;
+            }
+
+            if(querygroup.size() >= k){
+                logger.info(term + " : Found all sents in cache!");
+                continue;
+            }
+
+            logger.info(term + " :( had to go to disk.");
+
+            // Sigh. Now we need to go to disk.
+            for(String sentid : allresults.get(term)){
+                Constituent sent = cache.getSentence(sentid);
+                querygroup.add(sent);
+
+                // this is the difficult part.
+                // if sent SHOULD BE in any other group, then add it now.
+                for(String term2 : allresults.keySet()){
+                    HashSet<String> termids = allresults.get(term2);
+                    if(termids.contains(sentid)){
+                        if(!groups.containsKey(term2)){
+                            groups.put(term2, new HashSet<>());
+                        }
+                        logger.debug("group: {} getting new sent: {}", term2, sentid);
+                        groups.get(term2).add(sent);
+                    }
+                }
+
+                if(querygroup.size() == k) break;
+            }
+        }
+
+        reader.close();
+
+        logger.info("Done building groups. ({})", cache.size());
     }
 
     @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="groupid") String groupid, @RequestParam(value="sentid") String sentid, HttpSession hs, Model model) throws Exception {
+    public void addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="groupid") String groupid, @RequestParam(value="sentid") String sentid, HttpSession hs, Model model) throws Exception {
 
         SessionData sd = new SessionData(hs);
 
-        HashMap<String, List<Constituent>> groups = (HashMap<String, List<Constituent>>) hs.getAttribute("groups");
-        List<Constituent> group = groups.get(groupid);
+        logger.debug("called addspan with: {}, {}, {}, {}, {}", label, starttokid, endtokid, groupid, sentid);
+
+        HashMap<String, HashSet<Constituent>> groups = sd.groups;
+        HashSet<Constituent> group = groups.get(groupid);
 
         int start = Integer.parseInt(starttokid);
         int end = Integer.parseInt(endtokid);
 
         String text = null;
 
-        // TODO: inefficient b/c two loops
+        List<Constituent> candidates = new ArrayList<>();
+
+        // This loop finds the sent in question. Would be faster if this was a map?
         for(Constituent sent : group){
             if(getSentId(sent).equals(sentid)){
                 TextAnnotation ta = sent.getTextAnnotation();
@@ -270,7 +420,7 @@ public class BootstrapController {
                 int sentstart = sent.getStartSpan();
 
                 Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, sentstart + start, sentstart + end);
-                ner.addConstituent(newc);
+                candidates.add(newc);
 
                 text = newc.getTokenizedSurfaceForm();
 
@@ -278,8 +428,21 @@ public class BootstrapController {
             }
         }
 
+        logger.debug("Text is: " + text);
+
+        addtext(text, label, groupid, hs, model);
+    }
+
+    @RequestMapping(value="/addtext", method=RequestMethod.GET)
+    public String addtext(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
+        SessionData sd = new SessionData(hs);
+        HashMap<String, HashSet<Constituent>> groups = sd.groups;
+        HashSet<Constituent> group = groups.get(groupid);
+        List<Constituent> candidates = new ArrayList<>();
         for(Constituent sent : group){
+            logger.debug("addspan:: group {{}) has sent: {}", groupid, getSentId(sent));
             String surf = sent.getTokenizedSurfaceForm();
+
             if(surf.contains(text)){
 
                 // need to find index of tokens into sentence (could be multiple indices).
@@ -290,13 +453,15 @@ public class BootstrapController {
 
                 int sentstart = sent.getStartSpan();
 
-                int i = 0;
-                int ind;
-                while((ind = surf.indexOf(text, i)) != -1){
-
-                    // ind is a character offset into the surface string.
-                    // I want to convert this to a token offset.
-                    int startind = StringUtils.countMatches(surf.substring(0, ind), " ");
+                Pattern pattern = Pattern.compile("\\b"+text+"[^ ]*\\b", Pattern.CASE_INSENSITIVE);
+                // in case you would like to ignore case sensitivity,
+                // you could use this statement:
+                // Pattern pattern = Pattern.compile("\\s+", Pattern.CASE_INSENSITIVE);
+                Matcher matcher = pattern.matcher(surf);
+                // check all occurance
+                while (matcher.find()) {
+                    // character offsets need to be converted to token offsets.
+                    int startind = StringUtils.countMatches(surf.substring(0, matcher.start()), " ");
                     int endind = startind + text.split(" ").length;
 
                     Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, sentstart + startind, sentstart + endind);
@@ -304,48 +469,263 @@ public class BootstrapController {
                     // it may already be there...
                     // TODO: how does this work? I hope it defines equality by content.
                     if(!ner.containsConstituent(newc)) {
-                        ner.addConstituent(newc);
+                        candidates.add(newc);
                     }
-
-                    i += text.length() + ind;
                 }
-
             }
         }
 
-        // update the terms
-        // TODO: should really be done when saving.
-        sd.terms.add(text);
+        // This logic taken almost verbatim from AnnotationController.
+        for(Constituent cand : candidates){
+            View ner = cand.getView();
+            IntPair span = cand.getSpan();
+            List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
 
-        return label + starttokid + endtokid + groupid + sentid;
+            // this span is already labeled!
+            if (lc.size() > 0) {
+                boolean removed = false;
+                for (Constituent oldc : lc) {
+                    IntPair oldspan = oldc.getSpan();
+
+                    int a = span.getFirst();
+                    int b = span.getSecond();
+                    int c = oldspan.getFirst();
+                    int d = oldspan.getSecond();
+
+                    if(a == c && b >= d){
+                        ner.removeConstituent(oldc);
+                        removed = true;
+                    }else if(a <= c && b == d){
+                        ner.removeConstituent(oldc);
+                        removed = true;
+                    }
+                }
+
+                // if we did not remove the constituent on this span, then don't add another one!
+                // just skip this span.
+                if(!removed){
+                    continue;
+                }
+            }
+
+            // an O label means don't add the constituent.
+            if (label.equals("O")) {
+                System.err.println("Should never happen: label is O");
+            } else{
+                ner.addConstituent(cand);
+            }
+        }
+
+        save(groupid, hs, model);
+
+        return "redirect:/bootstrap/sents";
     }
 
 
+
+    @RequestMapping(value="/logout")
+    public String logout(HttpSession hs){
+        logger.info("Logging out...");
+//        hs.removeAttribute("username");
+//        hs.removeAttribute("dataname");
+//        hs.removeAttribute("tas");
+
+        // I think this is preferable.
+        hs.invalidate();
+
+        return "redirect:/bootstrap/";
+    }
+
+    @RequestMapping(value = "/save", method=RequestMethod.GET)
+    @ResponseBody
+    public void save(@RequestParam(value="groupid", required=true) String groupid, HttpSession hs, Model model) throws IOException {
+        logger.info("Save has been called for group: " + groupid);
+
+        SessionData sd = new SessionData(hs);
+
+        HashMap<String, Constituent> annosents = sd.annosents;
+
+        HashMap<String, HashSet<Constituent>> groups = sd.groups;
+        HashSet<Constituent> group = groups.get(groupid);
+
+        HashSet<TextAnnotation> tas = new HashSet<>();
+        for(Constituent sent : group){
+            View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
+            for(Constituent name : ner.getConstituentsCovering(sent)){
+                String surf = name.getTokenizedSurfaceForm();
+
+                // FIXME: this may have trouble with short two word tokens... (lyu je)
+                HashSet<String> shorternames = new HashSet<>();
+                boolean prefixinterms = false;
+                while(surf.length() > 2){
+                    // if the prefix is in the term list
+                    if(sd.terms.contains(surf)){
+                        // then don't add!
+                        prefixinterms = true;
+                        break;
+                    }
+                    // remove last character
+                    surf = surf.substring(0,surf.length()-1);
+
+                }
+
+                // only add surf if a shorter version is not in terms.
+                if(!prefixinterms){
+                    sd.terms.add(name.getTokenizedSurfaceForm());
+                }
+            };
+            annosents.put(getSentId(sent), sent);
+            tas.add(sent.getTextAnnotation());
+        }
+
+        // convert the set (with no duplicates) into a list.
+        List<TextAnnotation> talist = new ArrayList<>(tas);
+
+        // write out to
+        String username = sd.username;
+        String folder = sd.dataname;
+
+        Properties props = datasets.get(folder);
+        String folderpath = props.getProperty("folderpath");
+        String foldertype = props.getProperty("type");
+
+        if(username != null && folderpath != null) {
+            folderpath = folderpath.replaceAll("/$", "");
+            String outpath = folderpath + "-sentanno-" + username + "/";
+            logger.info("Writing out to: " + outpath);
+
+            TempConllReader.TaToConll(talist, outpath);
+        }else{
+            logger.error("Output folder is null. Probably because the config file needs a 'folderpath' option.");
+        }
+    }
 
     @RequestMapping(value="/sents", method= RequestMethod.GET)
     public String annotation(@RequestParam(value="groupid", required=false) String groupid, Model model, HttpSession hs) throws IOException {
         SessionData sd = new SessionData(hs);
 
-        HashMap<String, List<Constituent>> groups = buildgroups(sd);
-        hs.setAttribute("groups", groups);
+        HashMap<String, HashSet<Constituent>> groups = sd.groups;
+
+        // TODO: this is slow. Does it need to be here?
+        updategroups(sd.indexpath, sd.terms, sd.cache, sd.annosents, groups);
 
         if(groupid != null) {
-
-            List<Constituent> sents = groups.get(groupid);
+            HashSet<Constituent> sents = groups.get(groupid);
 
             for (Constituent sent : sents) {
-                sent.addAttribute("html", getHTMLfromSent(sent));
+                sent.addAttribute("html", getHTMLfromSent(sent, groupid));
             }
 
             model.addAttribute("groupid", groupid);
             model.addAttribute("sents", sents);
-            model.addAttribute("labels", hs.getAttribute("labels"));
+
         }else{
-            model.addAttribute("groups", groups);
+
+            HashMap<String, HashSet<Constituent>> annogroups = new HashMap<>();
+            HashMap<String, HashSet<Constituent>> unannogroups = new HashMap<>();
+
+            HashMap<String, Integer> unlabeledamount = new HashMap<>();
+
+            for(String groupkey : groups.keySet()){
+                HashSet<Constituent> group = groups.get(groupkey);
+                // FIXME: assume that groupid is the literal query string for that group (will change when context is also used).
+
+                int numunlabeled = 0;
+                for(Constituent sent : group){
+                    View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
+
+                    List<Constituent> nercons = ner.getConstituentsCovering(sent);
+                    boolean grouplabeledinsentence = false;
+                    for(Constituent nercon : nercons){
+                        if(nercon.getTokenizedSurfaceForm().contains(groupkey)){
+                            grouplabeledinsentence = true;
+                            break;
+                        }
+                    }
+                    // by here, I know if sentence is group labeled. If answer is YES, then keep checking sentences.
+                    // if answer is NO, then break and put in unannogroups.
+                    if(!grouplabeledinsentence){
+                        numunlabeled += 1;
+                    }
+                }
+
+                if(numunlabeled > 0) {
+                    unannogroups.put(groupkey, group);
+                    unlabeledamount.put(groupkey, numunlabeled);
+                }else {
+                    annogroups.put(groupkey, group);
+                }
+
+            }
+
+            int totaltokens = 1;
+            int labeledtokens = 0;
+            HashMap<String, Constituent> annosents = sd.annosents;
+            for(String sentid : annosents.keySet()){
+                Constituent sent = annosents.get(sentid);
+                totaltokens += sent.size();
+                View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
+                List<Constituent> nercons = ner.getConstituentsCovering(sent);
+                for(Constituent nercon : nercons){
+                    labeledtokens += nercon.size();
+                }
+            }
+
+            model.addAttribute("labeledtokens", labeledtokens);
+            model.addAttribute("totaltokens", totaltokens);
+            model.addAttribute("annosents", annosents);
+
+            model.addAttribute("annogroups", annogroups);
+            model.addAttribute("unannogroups", unannogroups);
+            model.addAttribute("unlabeledamount", unlabeledamount);
+
         }
+
+        model.addAttribute("labels", hs.getAttribute("labels"));
 
         return "bs-group-anno";
     }
+
+    @RequestMapping(value="/removetoken", method=RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public String removetoken(@RequestParam(value="sentid") String sentid, @RequestParam(value="tokid") String tokid, HttpSession hs, Model model) throws Exception {
+
+        logger.info(String.format("Sentence with id %s: remove token (id:%s).", sentid, tokid));
+
+        // assume sentid
+        SessionData sd = new SessionData(hs);
+        Constituent sent = sd.cache.getSentence(sentid);
+        TextAnnotation ta = sent.getTextAnnotation();
+
+        int tokint= Integer.parseInt(tokid);
+        Pair<Integer, Integer> tokspan = new Pair<>(sent.getStartSpan() + tokint, sent.getStartSpan() + tokint+1);
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+        List<Constituent> lc = ner.getConstituentsCoveringSpan(tokspan.getFirst(), tokspan.getSecond());
+
+        if(lc.size() > 0) {
+            Constituent oldc = lc.get(0);
+
+            int origstart = oldc.getStartSpan();
+            int origend = oldc.getEndSpan();
+            String origlabel = oldc.getLabel();
+            ner.removeConstituent(oldc);
+
+            if(origstart != tokspan.getFirst()){
+                // this means last token is being changed.
+                Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, origstart, tokspan.getFirst());
+                ner.addConstituent(newc);
+            }else if(origend != tokspan.getSecond()){
+                // this means first token is being changed.
+                Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, tokspan.getSecond(), origend);
+                ner.addConstituent(newc);
+            }
+        }
+
+        return getHTMLfromSent(sd.cache.get(sentid));
+    }
+
 
     @RequestMapping(value="/gethtml", method= RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
@@ -353,12 +733,15 @@ public class BootstrapController {
     public String gethtml(@RequestParam(value="sentid", required=true) String sentid, Model model, HttpSession hs){
         SessionData sd = new SessionData(hs);
 
-        return getHTMLfromSent(sd.allsents.get(sentid));
+        return getHTMLfromSent(sd.cache.get(sentid));
     }
 
 
-
     public static String getHTMLfromSent(Constituent sent){
+        return getHTMLfromSent(sent, "");
+    }
+
+    public static String getHTMLfromSent(Constituent sent, String keyword){
 
         IntPair sentspan = sent.getSpan();
 
@@ -366,6 +749,7 @@ public class BootstrapController {
 
         View ner = ta.getView(ViewNames.NER_CONLL);
 
+        // take just the
         String[] text = Arrays.copyOfRange(ta.getTokenizedText().split(" "), sentspan.getFirst(), sentspan.getSecond());
 
         // add spans to every word that is not a constituent.

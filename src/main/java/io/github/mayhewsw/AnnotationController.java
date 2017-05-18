@@ -598,19 +598,16 @@ public class AnnotationController {
         TreeMap<String, TextAnnotation> tas = sd.tas;
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
 
-        System.out.println("Using ramdirectory: " + sd.ramDirectory);
         IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(sd.ramDirectory));
 
         //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
         Query q = new PrefixQuery(new Term("body", query));
-        System.out.println("query is " + q);
 
         TopScoreDocCollector collector = TopScoreDocCollector.create(20);
         searcher.search(q, collector);
 
         ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-        System.out.println("Found " + hits.length + " hits.");
         for (int i = 0; i < hits.length; ++i) {
             int luceneId = hits[i].doc;
             Document d = searcher.doc(luceneId);

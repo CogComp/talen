@@ -1,0 +1,7 @@
+name	Uyghur
+folderpath	/shared/corpora/ner/eval/column/mono-all-uly
+indexpath	/shared/corpora/ner/eval/column/mono-all-uly-indexsent
+type	conll
+# dictionary
+labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
+terms   obama,shinjang,xoten
