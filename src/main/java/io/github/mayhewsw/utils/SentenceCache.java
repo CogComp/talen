@@ -10,6 +10,8 @@ import io.github.mayhewsw.TempConllReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by mayhew2 on 5/18/17.
@@ -18,8 +20,11 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
     private final String folderpath;
 
+    HashMap<String, HashSet<String>> allresults;
+
     public SentenceCache(String folderpath){
         this.folderpath = folderpath;
+        this.allresults = new HashMap<>();
     }
 
     /**
@@ -47,4 +52,16 @@ public class SentenceCache extends HashMap<String, Constituent> {
         return this.get(sentid);
     }
 
+
+    public void putQueryResult(String term, HashSet<String> queryids) {
+        this.allresults.put(term, queryids);
+    }
+
+    public HashSet<String> getAllResults(String term) {
+        return this.allresults.get(term);
+    }
+
+    public Set<String> getAllKeys(){
+        return this.allresults.keySet();
+    }
 }

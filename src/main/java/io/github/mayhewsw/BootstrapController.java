@@ -164,6 +164,12 @@ public class BootstrapController {
         logger.info("Now looking in user annotation folder: " + outfolder);
         HashMap<String, Constituent> annosents = new HashMap<>();
 
+        String sentidsfname = new File(folderpath).getParent() + "/annosents-" + sd.username + ".txt";
+        HashSet<String> annosentids = new HashSet<>();
+        if(new File(sentidsfname).exists()){
+            annosentids.addAll(LineIO.read(sentidsfname));
+        }
+
         if((new File(outfolder)).exists()) {
             TempConllReader cnl = new TempConllReader(outfolder);
             while (cnl.hasNext()) {
@@ -173,6 +179,10 @@ public class BootstrapController {
                 // this will overwrite whatever was previously there.
                 for (Constituent sent : sents.getConstituents()) {
                     String sentid = getSentId(sent);
+
+                    // only keep those sentences that we have annotated.
+                    if(!annosentids.contains(sentid)) continue;
+
                     annosents.put(sentid, sent);
 
                     // this just to cache the sentence.
@@ -259,17 +269,20 @@ public class BootstrapController {
     public static void updategroups(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, Constituent> annosents, HashMap<String, HashSet<Constituent>> groups) throws IOException {
         logger.info("Updating groups... ({})", cache.size());
 
-
         // just for run!
         // FIXME: consider opening this only once and storing as a session variable.
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
         IndexSearcher searcher = new IndexSearcher(reader);
 
         // This contains {query : (sentid, sentid, ...), ...}
-        HashMap<String, HashSet<String>> allresults = new HashMap<>();
+        //HashMap<String, HashSet<String>> allresults = new HashMap<>();
 
         // FIXME: consider caching query lookups.
         for(String term : terms) {
+
+            if(cache.getAllResults(term) != null){
+                continue;
+            }
 
             //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
             Query query = new PrefixQuery(new Term("body", term));
@@ -289,7 +302,9 @@ public class BootstrapController {
                 queryids.add(sentid);
             }
 
-            allresults.put(term, queryids);
+            cache.putQueryResult(term, queryids);
+
+            //allresults.put(term, queryids);
         }
 
 
@@ -304,7 +319,7 @@ public class BootstrapController {
             // initialize
             groups.put(term, new HashSet<Constituent>());
 
-            HashSet<String> queryids = allresults.get(term);
+            HashSet<String> queryids = cache.getAllResults(term);
 
             HashSet<String> annointersection = new HashSet<>(annosents.keySet());
             annointersection.retainAll(queryids);
@@ -345,8 +360,8 @@ public class BootstrapController {
 
                 // this is the difficult part.
                 // if sent SHOULD BE in any other group, then add it now.
-                for(String term2 : allresults.keySet()){
-                    HashSet<String> termids = allresults.get(term2);
+                for(String term2 : cache.getAllKeys()){
+                    HashSet<String> termids = cache.getAllResults(term2);;
                     if(termids.contains(sentid)){
                         if(!groups.containsKey(term2)){
                             groups.put(term2, new HashSet<>());
@@ -366,14 +381,20 @@ public class BootstrapController {
             logger.info(term + " :( had to go to disk.");
 
             // Sigh. Now we need to go to disk.
-            for(String sentid : allresults.get(term)){
+            for(String sentid : cache.getAllResults(term)){
+                // This avoids have discussion forum results (which can be noisy) and huge files.
+                int sentind = Integer.parseInt(sentid.split(":")[1]);
+                if(sentid.contains("_DF_") || sentind > 200){
+                    continue;
+                }
+
                 Constituent sent = cache.getSentence(sentid);
                 querygroup.add(sent);
 
                 // this is the difficult part.
                 // if sent SHOULD BE in any other group, then add it now.
-                for(String term2 : allresults.keySet()){
-                    HashSet<String> termids = allresults.get(term2);
+                for(String term2 : cache.getAllKeys()){
+                    HashSet<String> termids = cache.getAllResults(term2);;
                     if(termids.contains(sentid)){
                         if(!groups.containsKey(term2)){
                             groups.put(term2, new HashSet<>());
@@ -434,7 +455,9 @@ public class BootstrapController {
     }
 
     @RequestMapping(value="/addtext", method=RequestMethod.GET)
-    public String addtext(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public void addtext(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
         SessionData sd = new SessionData(hs);
         HashMap<String, HashSet<Constituent>> groups = sd.groups;
         HashSet<Constituent> group = groups.get(groupid);
@@ -515,13 +538,15 @@ public class BootstrapController {
                 ner.addConstituent(cand);
             }
         }
+    }
 
+    @RequestMapping(value="/addtextsave", method=RequestMethod.GET)
+    public String addtextandsave(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
+        addtext(text, label, groupid, hs, model);
         save(groupid, hs, model);
 
         return "redirect:/bootstrap/sents";
     }
-
-
 
     @RequestMapping(value="/logout")
     public String logout(HttpSession hs){
@@ -553,26 +578,7 @@ public class BootstrapController {
             View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
             for(Constituent name : ner.getConstituentsCovering(sent)){
                 String surf = name.getTokenizedSurfaceForm();
-
-                // FIXME: this may have trouble with short two word tokens... (lyu je)
-                HashSet<String> shorternames = new HashSet<>();
-                boolean prefixinterms = false;
-                while(surf.length() > 2){
-                    // if the prefix is in the term list
-                    if(sd.terms.contains(surf)){
-                        // then don't add!
-                        prefixinterms = true;
-                        break;
-                    }
-                    // remove last character
-                    surf = surf.substring(0,surf.length()-1);
-
-                }
-
-                // only add surf if a shorter version is not in terms.
-                if(!prefixinterms){
-                    sd.terms.add(name.getTokenizedSurfaceForm());
-                }
+                sd.terms.add(surf);
             };
             annosents.put(getSentId(sent), sent);
             tas.add(sent.getTextAnnotation());
@@ -588,6 +594,8 @@ public class BootstrapController {
         Properties props = datasets.get(folder);
         String folderpath = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
+
+        LineIO.write(new File(folderpath).getParent() + "/annosents-" + username + ".txt", annosents.keySet());
 
         if(username != null && folderpath != null) {
             folderpath = folderpath.replaceAll("/$", "");

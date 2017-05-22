@@ -34,7 +34,7 @@
                             <div class="list-group">
                                 <div th:each="groupid : ${unannogroups.keySet()}" class="list-group-item">
 
-                                    <a th:each="label : ${labels}" th:href="@{/bootstrap/addtext(text=${groupid},label=${label},groupid=${groupid})}" th:class="${label} + ' badge'" th:text="${label}"></a>
+                                    <a th:each="label : ${labels}" th:href="@{/bootstrap/addtextsave(text=${groupid},label=${label},groupid=${groupid})}" th:class="${label} + ' badge'" th:text="${label}"></a>
 
                                     <a th:href="'/bootstrap/sents?groupid=' + ${groupid}"><h4 th:text="'Group: ' + ${groupid} + ' (' + ${unannogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h4></a>
                                     <p th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></p>
@@ -112,6 +112,11 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+
+                    <div class="spacer"></div>
+                    <button th:each="label : ${labels}" th:id="'addlabel-' + ${label}" th:class="${label} + ' btn'" th:text="${label}"></button>
+
+
                 </div>
 
             </div>
@@ -234,6 +239,7 @@
 
 
 
+
         // this runs when you click on a single button.
         $(".container").on("click", "button", function(){
             var buttonvalue = $(this)[0].value;
@@ -342,6 +348,28 @@
             });
             return "Finished with refresh...";
         };
+
+        $("[id^=addlabel-]").click(function(d){
+
+            var label = $(this).text();
+            var text= getParameterByName("groupid");
+
+            $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+            $("#savebutton").css({"border-color" : "#c00"});
+
+            $.ajax({
+                method: "GET",
+                url: "/bootstrap/addtext",
+                data: {text: text, label: label, groupid: getParameterByName("groupid")}
+            }).then(function (msg) {
+                console.log(msg);
+                var ret = refreshsents();
+                return ret
+            }).done(function(f){
+                console.log(f);
+                loadtok();
+            });
+        });
 
         function save(){
             var groupid = getParameterByName("groupid");
