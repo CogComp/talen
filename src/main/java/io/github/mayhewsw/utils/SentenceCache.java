@@ -118,7 +118,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
         }
 
         // put a limit on the top num of sentences in groups.
-        if(this.keySet().size() > 5000){
+        if(allgroups.size() > 500){
             logger.info("Num sentences in groups has reached the limit. Not reading any more...");
             return displaylist;
         }
