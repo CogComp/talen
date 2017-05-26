@@ -257,17 +257,19 @@ public class BootstrapController {
     public static void updategroups2(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, HashSet<Constituent>> groups) throws IOException {
         logger.info("Updating groups2... ({})", cache.size());
 
-        // all sentences that appear in groups.
-//        HashSet<Constituent> allgroups = new HashSet<>();
-//        for(String term : groups.keySet()){
-//            allgroups.addAll(groups.get(term));
-//        }
+        // all sentence ids that appear in groups.
+        HashSet<String> allgroups = new HashSet<>();
+        for(String term : groups.keySet()){
+            for(Constituent sent : groups.get(term)){
+                allgroups.add(getSentId(sent));
+            }
+        }
 
         // actually build groups
         for(String term : terms){
             if(!groups.containsKey(term)){
                 int k = 15;
-                HashSet<Constituent> group = cache.gatherTopK(term, k);
+                HashSet<Constituent> group = cache.gatherTopK(term, allgroups, k);
                 groups.put(term, group);
             }
         }

@@ -96,38 +96,45 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * Gather the display list for term, prioritized according to already loaded sentences
      * and sentences already in groups.
      * @param term
-     * @param k
-     * @return
+     * @param allgroups
+     * @param k  @return
      * @throws IOException
      */
-    public HashSet<Constituent> gatherTopK(String term, int k) throws IOException {
+    public HashSet<Constituent> gatherTopK(String term, HashSet<String> allgroups, int k) throws IOException {
         // at the very least, we need to have all the results from this term.
+
+        // this is what we will return.
+        HashSet<Constituent> displaylist = new HashSet<>();
+
+        // this is the full set of sentences containing this term.
+        HashSet<String> fulllist = this.getAllResults(term);
+
+        // allgroups will contain only those sentences that contain term, and which are already in groups.
+        allgroups.retainAll(fulllist);
+
+        for(String sentid : allgroups){
+            if(displaylist.size() >= k) break;
+            displaylist.add(this.getSentence(sentid));
+        }
+
+        // put a limit on the top num of sentences in groups.
+        if(this.keySet().size() > 5000){
+            logger.info("Num sentences in groups has reached the limit. Not reading any more...");
+            return displaylist;
+        }
 
         // the set of already loaded sentences is the keys of the cache.
         HashSet<String> loadedsents = new HashSet<>(this.keySet());
 
-        HashSet<Constituent> displaylist = new HashSet<>();
-
-
-
-        HashSet<String> fulllist = this.getAllResults(term);
-
+        // loadedsents will contain only those sentences which contain term, and which are already loaded.
         loadedsents.retainAll(fulllist);
-
-        // now loadedsents contains only those sentences which contain term, and which are already loaded.
-
-        //  TODO: prioritize by sentences in DISPLAY LISTS already (which is a subset of all loaded sentences).
 
         for(String sentid : loadedsents){
             if(displaylist.size() >= k) break;
             displaylist.add(this.getSentence(sentid));
         }
-        
-        // put a limit on the top num of loadedsents.
-        if(this.keySet().size() > 5000){
-            logger.info("Cache loaded sentences has reached the limit. Not reading any more...");
-            return displaylist;
-        }
+
+        //  TODO: put a limit here also??
 
         for(String sentid : fulllist){
             if(displaylist.size() >= k) break;
