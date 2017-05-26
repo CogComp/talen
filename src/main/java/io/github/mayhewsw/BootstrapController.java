@@ -307,8 +307,6 @@ public class BootstrapController {
             //allresults.put(term, queryids);
         }
 
-
-
         // this is the number of elements to display to users.
         int k = 15;
 
@@ -316,17 +314,17 @@ public class BootstrapController {
             // Don't update already formed groups!
             if(groups.containsKey(term)) continue;
 
-            // initialize
-            groups.put(term, new HashSet<Constituent>());
-
             HashSet<String> queryids = cache.getAllResults(term);
 
+            // annosents is ALL sentences with any annotations.
             HashSet<String> annointersection = new HashSet<>(annosents.keySet());
             annointersection.retainAll(queryids);
 
             // now annointersection contains only these sentence ids which are annotated (with something) and also
             // contain the search term.
 
+            // initialize
+            groups.put(term, new HashSet<Constituent>());
             HashSet<Constituent> querygroup = groups.get(term);
 
             for(String sentid : annointersection){
@@ -337,7 +335,7 @@ public class BootstrapController {
             }
 
             if(querygroup.size() >= k){
-                // we are good to go! Load these sentences (lazily) and return.
+                // we are good to go!
                 // no need to augment appropriate groups because these are all already in place.
                 logger.info(term + " :Found all sents in annotated sentences!");
                 continue;
