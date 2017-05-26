@@ -12,6 +12,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +30,7 @@ import static com.sun.corba.se.impl.util.RepositoryId.cache;
  */
 public class SentenceCache extends HashMap<String, Constituent> {
 
+    private static Logger logger = LoggerFactory.getLogger(SentenceCache.class);
     private final String folderpath;
 
     HashMap<String, HashSet<String>> allresults;
@@ -100,22 +103,30 @@ public class SentenceCache extends HashMap<String, Constituent> {
     public HashSet<Constituent> gatherTopK(String term, int k) throws IOException {
         // at the very least, we need to have all the results from this term.
 
-        HashSet<String> fulllist = this.getAllResults(term);
-
         // the set of already loaded sentences is the keys of the cache.
         HashSet<String> loadedsents = new HashSet<>(this.keySet());
+
+        HashSet<Constituent> displaylist = new HashSet<>();
+
+
+
+        HashSet<String> fulllist = this.getAllResults(term);
 
         loadedsents.retainAll(fulllist);
 
         // now loadedsents contains only those sentences which contain term, and which are already loaded.
-
-        HashSet<Constituent> displaylist = new HashSet<>();
 
         //  TODO: prioritize by sentences in DISPLAY LISTS already (which is a subset of all loaded sentences).
 
         for(String sentid : loadedsents){
             if(displaylist.size() >= k) break;
             displaylist.add(this.getSentence(sentid));
+        }
+        
+        // put a limit on the top num of loadedsents.
+        if(this.keySet().size() > 5000){
+            logger.info("Cache loaded sentences has reached the limit. Not reading any more...");
+            return displaylist;
         }
 
         for(String sentid : fulllist){

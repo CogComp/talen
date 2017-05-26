@@ -258,10 +258,10 @@ public class BootstrapController {
         logger.info("Updating groups2... ({})", cache.size());
 
         // all sentences that appear in groups.
-        HashSet<Constituent> allgroups = new HashSet<>();
-        for(String term : groups.keySet()){
-            allgroups.addAll(groups.get(term));
-        }
+//        HashSet<Constituent> allgroups = new HashSet<>();
+//        for(String term : groups.keySet()){
+//            allgroups.addAll(groups.get(term));
+//        }
 
         // actually build groups
         for(String term : terms){
@@ -275,6 +275,7 @@ public class BootstrapController {
         // now resolve groups
         // important to do this after groups is fully built.
         for(String term : groups.keySet()){
+            // TODO: consider flipping these and doing an intersection
             for(Constituent sent : groups.get(term)){
                 for(String otherterm : groups.keySet()){
                     if(term.equals(otherterm)) continue;
