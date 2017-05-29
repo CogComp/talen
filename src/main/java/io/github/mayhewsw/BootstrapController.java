@@ -485,6 +485,8 @@ public class BootstrapController {
         logger.debug("Text is: " + text);
 
         addtext(text, label, groupid, hs, model);
+        logger.debug("Done adding spans...")aaaaa;
+
     }
 
     @RequestMapping(value="/addtext", method=RequestMethod.GET)
@@ -679,7 +681,7 @@ public class BootstrapController {
 
                 int numunlabeled = 0;
                 for(String sentid : group){
-                    Constituent sent = sd.cache.get(sentid);
+                    Constituent sent = sd.cache.getSentence(sentid);
                     View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
 
                     List<Constituent> nercons = ner.getConstituentsCovering(sent);
