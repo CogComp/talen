@@ -1,6 +1,7 @@
 name	EnglishConll
-path	data/train-short/
+folderpath	data/train-short/
+indexpath	data/train-short-indexsent/
 type	conll
 # dictionary
 labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral
-terms   Sampras,Britain,Greece,Tritan Shehu
+terms   Sampras,Britain,America

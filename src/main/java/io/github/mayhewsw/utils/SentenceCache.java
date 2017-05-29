@@ -4,8 +4,8 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.BootstrapController;
-import io.github.mayhewsw.TempConllReader;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.sun.corba.se.impl.util.RepositoryId.cache;
 
 /**
  *
@@ -63,7 +62,8 @@ public class SentenceCache extends HashMap<String, Constituent> {
     public Constituent getSentence(String sentid) throws FileNotFoundException {
         if(!this.containsKey(sentid)){
             String fileid = sentid.split(":")[0];
-            TextAnnotation ta = TempConllReader.loadCoNLLfile(new File(folderpath, fileid).getAbsolutePath());
+
+            TextAnnotation ta = new CoNLLNerReader(new File(folderpath, fileid).getAbsolutePath()).next();
 
             View sentview = ta.getView(ViewNames.SENTENCE);
             for(Constituent sent : sentview.getConstituents()){

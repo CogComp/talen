@@ -9,6 +9,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Sentence;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
+import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.utils.SentenceCache;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -164,7 +165,7 @@ public class BootstrapController {
         }
 
         if((new File(outfolder)).exists()) {
-            TempConllReader cnl = new TempConllReader(outfolder);
+            CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
             while (cnl.hasNext()) {
                 TextAnnotation ta = cnl.next();
                 View sents = ta.getView(ViewNames.SENTENCE);
@@ -640,7 +641,7 @@ public class BootstrapController {
             String outpath = folderpath + "-sentanno-" + username + "/";
             logger.info("Writing out to: " + outpath);
 
-            TempConllReader.TaToConll(talist, outpath);
+            CoNLLNerReader.TaToConll(talist, outpath);
         }else{
             logger.error("Output folder is null. Probably because the config file needs a 'folderpath' option.");
         }

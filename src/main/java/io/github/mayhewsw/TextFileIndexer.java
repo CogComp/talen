@@ -109,15 +109,11 @@ public class TextFileIndexer {
         writer.close();
     }
 
-
-    public static void main(String[] args) throws IOException {
-        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly/";
-        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent/";
-
-//        buildsentenceindex(filedir, indexdir);
-//
-//        if(true) return;
-
+    /**
+     * A simple function to test the index that you built using buildsentenceindex.
+     * @param indexdir
+     */
+    public static void testindex(String indexdir) throws IOException {
         //=========================================================
         // Now search
         //=========================================================
@@ -162,7 +158,15 @@ public class TextFileIndexer {
         }
 
         reader.close();
+    }
 
+
+    public static void main(String[] args) throws IOException {
+        String filedir = "data/train-short";
+        String indexdir = "data/train-short-indexsent";
+
+        buildsentenceindex(filedir, indexdir);
+        testindex(indexdir);
     }
 
 
