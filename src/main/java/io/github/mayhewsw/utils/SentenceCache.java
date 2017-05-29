@@ -26,6 +26,11 @@ import java.util.Set;
 import static com.sun.corba.se.impl.util.RepositoryId.cache;
 
 /**
+ *
+ * The sentence cache is a hashmap that maps from sentence ids to actual sentence constituents. All editiing
+ * of sentence constituents must be done through this map. All other data structures only store references
+ * via sentence ids.
+ *
  * Created by mayhew2 on 5/18/17.
  */
 public class SentenceCache extends HashMap<String, Constituent> {
@@ -100,11 +105,11 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * @param k  @return
      * @throws IOException
      */
-    public HashSet<Constituent> gatherTopK(String term, HashSet<String> allgroups, int k) throws IOException {
+    public HashSet<String> gatherTopK(String term, HashSet<String> allgroups, int k) throws IOException {
         // at the very least, we need to have all the results from this term.
 
         // this is what we will return.
-        HashSet<Constituent> displaylist = new HashSet<>();
+        HashSet<String> displaylist = new HashSet<>();
 
         // this is the full set of sentences containing this term.
         HashSet<String> fulllist = this.getAllResults(term);
@@ -114,7 +119,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
         for(String sentid : allgroups){
             if(displaylist.size() >= k) break;
-            displaylist.add(this.getSentence(sentid));
+            displaylist.add(sentid);
         }
 
         // put a limit on the top num of sentences in groups.
@@ -131,14 +136,14 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
         for(String sentid : loadedsents){
             if(displaylist.size() >= k) break;
-            displaylist.add(this.getSentence(sentid));
+            displaylist.add(sentid);
         }
 
         //  TODO: put a limit here also??
 
         for(String sentid : fulllist){
             if(displaylist.size() >= k) break;
-            displaylist.add(this.getSentence(sentid));
+            displaylist.add(sentid);
         }
 
         return displaylist;

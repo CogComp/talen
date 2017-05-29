@@ -196,7 +196,7 @@ public class BootstrapController {
         sd = new SessionData(hs);
 
         // build groups here.
-        HashMap<String, HashSet<Constituent>> groups = new HashMap<>();
+        HashMap<String, HashSet<String>> groups = new HashMap<>();
         //updategroups(sd.indexpath, terms, cache, sd.annosents, groups);
         updategroups2(sd.indexpath, terms, cache, groups);
         hs.setAttribute("groups", groups);
@@ -254,22 +254,21 @@ public class BootstrapController {
     }
 
 
-    public static void updategroups2(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, HashSet<Constituent>> groups) throws IOException {
+    public static void updategroups2(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, HashSet<String>> groups) throws IOException {
         logger.info("Updating groups2... ({})", cache.size());
 
         // all sentence ids that appear in groups.
         HashSet<String> allgroups = new HashSet<>();
+
         for(String term : groups.keySet()){
-            for(Constituent sent : groups.get(term)){
-                allgroups.add(getSentId(sent));
-            }
+            allgroups.addAll(groups.get(term));
         }
 
         // actually build groups
         for(String term : terms){
             if(!groups.containsKey(term)){
                 int k = 15;
-                HashSet<Constituent> group = cache.gatherTopK(term, allgroups, k);
+                HashSet<String> group = cache.gatherTopK(term, allgroups, k);
                 groups.put(term, group);
             }
         }
@@ -278,14 +277,14 @@ public class BootstrapController {
         // important to do this after groups is fully built.
         for(String term : groups.keySet()){
             // TODO: consider flipping these and doing an intersection
-            for(Constituent sent : groups.get(term)){
+            for(String sent : groups.get(term)){
                 for(String otherterm : groups.keySet()){
                     if(term.equals(otherterm)) continue;
 
                     HashSet<String> fulllist = cache.getAllResults(otherterm);
 
                     // if this sentence is also present in the FULL LIST of other term, then add it to the group.
-                    if(fulllist != null && fulllist.contains(getSentId(sent))){
+                    if(fulllist != null && fulllist.contains(sent)){
                         groups.get(otherterm).add(sent);
                     }
                 }
@@ -455,8 +454,8 @@ public class BootstrapController {
 
         logger.debug("called addspan with: {}, {}, {}, {}, {}", label, starttokid, endtokid, groupid, sentid);
 
-        HashMap<String, HashSet<Constituent>> groups = sd.groups;
-        HashSet<Constituent> group = groups.get(groupid);
+        HashMap<String, HashSet<String>> groups = sd.groups;
+        HashSet<String> group = groups.get(groupid);
 
         int start = Integer.parseInt(starttokid);
         int end = Integer.parseInt(endtokid);
@@ -466,8 +465,9 @@ public class BootstrapController {
         List<Constituent> candidates = new ArrayList<>();
 
         // This loop finds the sent in question. Would be faster if this was a map?
-        for(Constituent sent : group){
-            if(getSentId(sent).equals(sentid)){
+        for(String groupsentid : group){
+            Constituent sent = sd.cache.getSentence(groupsentid);
+            if(groupsentid.equals(sentid)){
                 TextAnnotation ta = sent.getTextAnnotation();
                 View ner = ta.getView(ViewNames.NER_CONLL);
 
@@ -492,10 +492,11 @@ public class BootstrapController {
     @ResponseBody
     public void addtext(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
         SessionData sd = new SessionData(hs);
-        HashMap<String, HashSet<Constituent>> groups = sd.groups;
-        HashSet<Constituent> group = groups.get(groupid);
+        HashMap<String, HashSet<String>> groups = sd.groups;
+        HashSet<String> group = groups.get(groupid);
         List<Constituent> candidates = new ArrayList<>();
-        for(Constituent sent : group){
+        for(String groupsentid : group){
+            Constituent sent = sd.cache.getSentence(groupsentid);
             logger.debug("addspan:: group {{}) has sent: {}", groupid, getSentId(sent));
             String surf = sent.getTokenizedSurfaceForm();
 
@@ -603,11 +604,13 @@ public class BootstrapController {
 
         HashMap<String, Constituent> annosents = sd.annosents;
 
-        HashMap<String, HashSet<Constituent>> groups = sd.groups;
-        HashSet<Constituent> group = groups.get(groupid);
+        HashMap<String, HashSet<String>> groups = sd.groups;
+        HashSet<String> group = groups.get(groupid);
 
         HashSet<TextAnnotation> tas = new HashSet<>();
-        for(Constituent sent : group){
+        for(String sentid : group){
+            Constituent sent = sd.cache.getSentence(sentid);
+
             View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
             for(Constituent name : ner.getConstituentsCovering(sent)){
                 String surf = name.getTokenizedSurfaceForm();
@@ -645,35 +648,38 @@ public class BootstrapController {
     public String annotation(@RequestParam(value="groupid", required=false) String groupid, Model model, HttpSession hs) throws IOException {
         SessionData sd = new SessionData(hs);
 
-        HashMap<String, HashSet<Constituent>> groups = sd.groups;
+        HashMap<String, HashSet<String>> groups = sd.groups;
 
         // TODO: this is slow. Does it need to be here?
         //updategroups(sd.indexpath, sd.terms, sd.cache, sd.annosents, groups);
         updategroups2(sd.indexpath, sd.terms, sd.cache, groups);
 
         if(groupid != null) {
-            HashSet<Constituent> sents = groups.get(groupid);
+            HashSet<String> sentids = groups.get(groupid);
 
-            for (Constituent sent : sents) {
-                sent.addAttribute("html", getHTMLfromSent(sent, groupid));
+            HashMap<String, String> id2html = new HashMap<>();
+            for (String sentid : sentids) {
+                String html = getHTMLfromSent(sd.cache.get(sentid), groupid);
+                id2html.put(sentid, html);
             }
 
             model.addAttribute("groupid", groupid);
-            model.addAttribute("sents", sents);
+            model.addAttribute("id2html", id2html);
 
         }else{
 
-            HashMap<String, HashSet<Constituent>> annogroups = new HashMap<>();
-            HashMap<String, HashSet<Constituent>> unannogroups = new HashMap<>();
+            HashMap<String, HashSet<String>> annogroups = new HashMap<>();
+            HashMap<String, HashSet<String>> unannogroups = new HashMap<>();
 
             HashMap<String, Integer> unlabeledamount = new HashMap<>();
 
             for(String groupkey : groups.keySet()){
-                HashSet<Constituent> group = groups.get(groupkey);
+                HashSet<String> group = groups.get(groupkey);
                 // FIXME: assume that groupid is the literal query string for that group (will change when context is also used).
 
                 int numunlabeled = 0;
-                for(Constituent sent : group){
+                for(String sentid : group){
+                    Constituent sent = sd.cache.get(sentid);
                     View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
 
                     List<Constituent> nercons = ner.getConstituentsCovering(sent);

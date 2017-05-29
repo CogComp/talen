@@ -35,7 +35,7 @@ public class SessionData {
 //    String folderpath;
     String indexpath;
 
-    HashMap<String, HashSet<Constituent>> groups;
+    HashMap<String, HashSet<String>> groups;
 
     public SessionData(HttpSession hs){
 
@@ -63,7 +63,7 @@ public class SessionData {
         cache = (SentenceCache) hs.getAttribute("cache");
         annosents = (HashMap<String, Constituent>) hs.getAttribute("annosents");
 
-        groups = (HashMap<String, HashSet<Constituent>>) hs.getAttribute("groups");
+        groups = (HashMap<String, HashSet<String>>) hs.getAttribute("groups");
 
     }
 

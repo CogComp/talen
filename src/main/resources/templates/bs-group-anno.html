@@ -103,9 +103,9 @@
 
         <div class="row">
             <div class="col-md-8">
-                <div th:each="sent : ${sents}" class="panel panel-default">
-                    <div  th:text="${sent.getTextAnnotation().getId() + ':' + sent.getSentenceId()}" class="panel-heading"></div>
-                    <div class="panel-body text" th:id="${sent.getTextAnnotation().getId() + ':' + sent.getSentenceId()}" th:utext="${sent.getAttribute('html')}">
+                <div th:each="sentid : ${id2html.keySet()}" class="panel panel-default">
+                    <div  th:text="${sentid}" class="panel-heading"></div>
+                    <div class="panel-body text" th:id="${sentid}" th:utext="${id2html.get(sentid)}">
                     </div>
                 </div>
             </div>
