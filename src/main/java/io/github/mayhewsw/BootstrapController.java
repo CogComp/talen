@@ -485,7 +485,7 @@ public class BootstrapController {
         logger.debug("Text is: " + text);
 
         addtext(text, label, groupid, hs, model);
-        logger.debug("Done adding spans...")aaaaa;
+        logger.debug("Done adding spans...");
 
     }
 
