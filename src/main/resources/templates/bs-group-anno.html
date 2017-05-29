@@ -333,17 +333,20 @@
         };
 
         function refreshsents(){
-            $(".text").each(function() {
+
+            var elems = $(".text"), count = elems.length;
+
+            elems.each(function() {
                 var sentid = this.id;
 
                 $.ajax({
                     method: "POST",
-                    async: false,
                     url: "/bootstrap/gethtml",
                     data: {sentid: sentid}
                 }).done(function (msg) {
                     var panel = $(document.getElementById(sentid));
                     panel.html(msg);
+                    if (!--count) loadtok();
                 });
             });
             return "Finished with refresh...";
@@ -361,13 +364,9 @@
                 method: "GET",
                 url: "/bootstrap/addtext",
                 data: {text: text, label: label, groupid: getParameterByName("groupid")}
-            }).then(function (msg) {
+            }).done(function (msg) {
                 console.log(msg);
-                var ret = refreshsents();
-                return ret
-            }).done(function(f){
-                console.log(f);
-                loadtok();
+                refreshsents();
             });
         });
 
