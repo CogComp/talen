@@ -166,6 +166,13 @@ public class SentenceCache extends HashMap<String, Constituent> {
             Document d = searcher.doc(luceneId);
 
             String sentid = d.get("filename");
+
+            // This avoids have discussion forum results (which can be noisy) and huge files.
+            int sentind = Integer.parseInt(sentid.split(":")[1]);
+            if(sentid.contains("_DF_") || sentind > 200){
+                continue;
+            }
+
             queryids.add(sentid);
         }
 
