@@ -44,17 +44,11 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="checkbox">
-                                <label>
-                                    <input type="checkbox" value="" />
-                                    Select only from annotated sentences
-                                </label>
-                            </div>
-
                             <div class="spacer"></div>
                             <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
                             <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
-                            <p th:text="'Num anno sents: ' + ${annosents.size()}"></p>
+                            <p th:text="'Num anno sents: ' + ${numannosents}"></p>
+                            <p th:text="'Num sents in groups: ' + ${numsentsingroups}"></p>
                         </div>
                     </div>
                 </div>
@@ -79,7 +73,7 @@
                             <div class="spacer"></div>
                             <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
                             <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
-                            <p th:text="'Num anno sents: ' + ${annosents.size()}"></p>
+                            <p th:text="'Num anno sents: ' + ${numannosents}"></p>
 
 
                         </div>
@@ -102,12 +96,12 @@
         <h3 th:text="'Group: ' + ${groupid}"></h3>
 
         <div class="row">
-            <div class="col-md-8">
-                <div th:each="sentid : ${id2html.keySet()}" class="panel panel-default">
-                    <div  th:text="${sentid}" class="panel-heading"></div>
-                    <div class="panel-body text" th:id="${sentid}" th:utext="${id2html.get(sentid)}">
-                    </div>
-                </div>
+            <div th:utext="${html}" id="htmlcontainer" class="col-md-8">
+                <!--<div th:each="sentid : ${id2html.keySet()}" class="panel panel-default">-->
+                    <!--<div  th:text="${sentid}" class="panel-heading"></div>-->
+                    <!--<div class="panel-body text" th:id="${sentid}" th:utext="${id2html.get(sentid)}">-->
+                    <!--</div>-->
+                <!--</div>-->
             </div>
             <div class="col-md-4">
                 <div class="form-group">
@@ -251,7 +245,6 @@
             console.log(sentid);
 
             console.log("Clicked on a button..." + buttonvalue);
-            console.log("refers to: " + spanid);
 
             var sel = document.getSelection();
 
@@ -260,14 +253,12 @@
 
             // check if these ids are actual nodes.
             if(fid.startsWith("tok-") && lid.startsWith("tok-") && lid != fid){
-                console.log(this);
-                console.log("Showing popover for span: " + fid + "-" + lid)
                 var startid = fid;
-                var endid = "tok:" + (getnum(lid) + 1);
+                var endid = "tok-" + (getnum(lid) + 1);
 
             }else{
                 var startid = $(this).parents("[id^=popovertok]")[0].id;
-                var endid = "tok:" + (getnum(startid) + 1);
+                var endid = "tok-" + (getnum(startid) + 1);
             }
 
             addlabel(sentid, startid, endid, buttonvalue);
@@ -281,7 +272,7 @@
 
         // given a span id (e.g. tok-4), return the integer
         function getnum(spanid){
-            return parseInt(spanid.split(":").slice(-1)[0]);
+            return parseInt(spanid.split("-").slice(-1)[0]);
         }
 
         // Given a span, remove the label.
@@ -322,35 +313,22 @@
                 method: "POST",
                 url: "/bootstrap/addspan",
                 data: {label: newclass, starttokid: getnum(starttokid), endtokid:getnum(endtokid), sentid: sentid, groupid: getParameterByName("groupid")}
-            }).then(function (msg) {
-                console.log(msg);
-                var ret = refreshsents();
-                return ret
-            }).done(function(f){
-                console.log(f);
-                loadtok();
+            }).done(function (msg) {
+                refreshsents();
             });
         };
 
         function refreshsents(){
-
-            var elems = $(".text"), count = elems.length;
-
-            elems.each(function() {
-                var sentid = this.id;
-
-                $.ajax({
-                    method: "POST",
-                    url: "/bootstrap/gethtml",
-                    data: {sentid: sentid}
-                }).done(function (msg) {
-                    var panel = $(document.getElementById(sentid));
-                    panel.html(msg);
-                    if (!--count) loadtok();
-                });
+            var groupid= getParameterByName("groupid");
+            $.ajax({
+                method: "POST",
+                url: "/bootstrap/gethtml",
+                data: {groupid: groupid}
+            }).done(function (msg) {
+                $("#htmlcontainer").html(msg);
+                loadtok();
             });
-            return "Finished with refresh...";
-        };
+        }
 
         $("[id^=addlabel-]").click(function(d){
 

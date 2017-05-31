@@ -29,7 +29,7 @@ public class SessionData {
     Properties prop;
 
     SentenceCache cache;
-    HashMap<String, Constituent> annosents;
+    HashMap<String, HashSet<String>> annosents;
 
     HashSet<String> terms;
 //    String folderpath;
@@ -61,7 +61,7 @@ public class SessionData {
         terms = (HashSet<String>) hs.getAttribute("terms");
 
         cache = (SentenceCache) hs.getAttribute("cache");
-        annosents = (HashMap<String, Constituent>) hs.getAttribute("annosents");
+        annosents = (HashMap<String, HashSet<String>>) hs.getAttribute("annosents");
 
         groups = (HashMap<String, HashSet<String>>) hs.getAttribute("groups");
 

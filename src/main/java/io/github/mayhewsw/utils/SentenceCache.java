@@ -67,7 +67,10 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
             View sentview = ta.getView(ViewNames.SENTENCE);
             for(Constituent sent : sentview.getConstituents()){
-                this.put(BootstrapController.getSentId(sent), sent);
+                String id = BootstrapController.getSentId(sent);
+                if(!this.containsKey(id)) {
+                    this.put(id, sent);
+                }
             }
         }
 
@@ -108,6 +111,9 @@ public class SentenceCache extends HashMap<String, Constituent> {
     public HashSet<String> gatherTopK(String term, HashSet<String> allgroups, int k) throws IOException {
         // at the very least, we need to have all the results from this term.
 
+        // copy allgroups so we never modify it.
+        HashSet<String> allgroupsintersection = new HashSet<>(allgroups);
+
         // this is what we will return.
         HashSet<String> displaylist = new HashSet<>();
 
@@ -115,16 +121,16 @@ public class SentenceCache extends HashMap<String, Constituent> {
         HashSet<String> fulllist = this.getAllResults(term);
 
         // allgroups will contain only those sentences that contain term, and which are already in groups.
-        allgroups.retainAll(fulllist);
+        allgroupsintersection.retainAll(fulllist);
 
-        for(String sentid : allgroups){
+        for(String sentid : allgroupsintersection){
             if(displaylist.size() >= k) break;
             displaylist.add(sentid);
         }
 
         // put a limit on the top num of sentences in groups.
-        if(allgroups.size() > 500){
-            logger.info("Num sentences in groups has reached the limit. Not reading any more...");
+        if(allgroups.size() > 50){
+            logger.info("Num sentences in groups has reached the limit before term: {}. Not reading any more...", term);
             return displaylist;
         }
 

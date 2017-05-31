@@ -4,4 +4,4 @@ indexpath	data/train-short-indexsent/
 type	conll
 # dictionary
 labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral
-terms   Sampras,Britain,America
+terms   Sampras

@@ -2,16 +2,13 @@ package io.github.mayhewsw.utils;
 
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
-import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Sentence;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import io.github.mayhewsw.SessionData;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
@@ -31,16 +28,17 @@ import static io.github.mayhewsw.BootstrapController.getSentId;
  */
 public class FinalSaver {
 
-    public static void save(String origfolder, String romanfolder, String sentencesfname) throws IOException {
-
-        String outfolder = romanfolder;
-
-        HashMap<String, Constituent> annosents = new HashMap<>();
+    public static void save(String origfolder, String romanfolder, String sentencesfname, String outfolder) throws IOException {
 
         String sentidsfname = sentencesfname;
         HashSet<String> annosentids = new HashSet<>();
         if(new File(sentidsfname).exists()){
-            annosentids.addAll(LineIO.read(sentidsfname));
+            List<String> annolines = LineIO.read(sentidsfname);
+
+            for(String annoline : annolines){
+                String sentidline = annoline.split("\t")[1];
+                annosentids.addAll(Arrays.asList(sentidline.split(",")));
+            }
         }else{
             System.err.println("No annotated sentences... exiting...");
             return;
@@ -49,7 +47,7 @@ public class FinalSaver {
         System.out.println(annosentids);
 
         if((new File(outfolder)).exists()) {
-            CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
+            CoNLLNerReader cnl = new CoNLLNerReader(romanfolder);
 
             while (cnl.hasNext()) {
                 TextAnnotation ta = cnl.next();
@@ -67,7 +65,7 @@ public class FinalSaver {
                     if(!annosentids.contains(sentid)) continue;
 
                     // how to rewrite this sentence as a textannotation.
-                    SentToConll(sent, "/tmp/sents/");
+                    SentToConll(sent, outfolder);
                 }
             }
         }
@@ -75,7 +73,12 @@ public class FinalSaver {
     }
 
 
-
+    /**
+     * Write this sentence out to conll format. Each individual sentence becomes a file.
+     * @param sent
+     * @param outpath
+     * @throws IOException
+     */
     public static void SentToConll(Constituent sent, String outpath) throws IOException {
 
         TextAnnotation ta = sent.getTextAnnotation();
@@ -104,8 +107,9 @@ public class FinalSaver {
         String origfolder = "data/tmp";
         String romanfolder = "data/train-short-sentanno-test/";
         String sentencesfname = "data/annosents-test.txt";
+        String outpath = "/tmp/sents/";
 
-        save(origfolder, romanfolder, sentencesfname);
+        save(origfolder, romanfolder, sentencesfname, outpath);
 
     }
 

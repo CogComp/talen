@@ -29,6 +29,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by mayhew2 on 5/10/17.
@@ -129,9 +130,8 @@ public class BootstrapController {
     public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
 
         Properties prop = datasets.get(dataname);
-        // this refers to a folder containing a large number of conll files.
+        // this refers to a folder containing a large number of unannotated conll files.
         String folderpath = prop.getProperty("folderpath");
-
 
         // this refers to the index made by lucene (probably of the folder)
         String indexpath = prop.getProperty("indexpath");
@@ -156,12 +156,25 @@ public class BootstrapController {
         String outfolder = folderpath.replaceAll("/$","") + "-sentanno-" + sd.username + "/";
 
         logger.info("Now looking in user annotation folder: " + outfolder);
-        HashMap<String, Constituent> annosents = new HashMap<>();
+
+        // annosents format is: term<tab>sentence
+        HashMap<String, HashSet<String>> annosents = new HashMap<>();
+
+        // build groups here.
+        HashMap<String, HashSet<String>> groups = new HashMap<>();
 
         String sentidsfname = new File(folderpath).getParent() + "/annosents-" + sd.username + ".txt";
-        HashSet<String> annosentids = new HashSet<>();
         if(new File(sentidsfname).exists()){
-            annosentids.addAll(LineIO.read(sentidsfname));
+            List<String> annolines = LineIO.read(sentidsfname);
+
+            for(String annoline : annolines){
+                String[] sannoline = annoline.split("\t");
+                String term = sannoline[0];
+                String[] sentids = sannoline[1].split(",");
+
+                groups.put(term, new HashSet<String>(Arrays.asList(sentids)));
+                annosents.put(term, new HashSet<String>(Arrays.asList(sentids)));
+            }
         }
 
         if((new File(outfolder)).exists()) {
@@ -174,18 +187,8 @@ public class BootstrapController {
                 for (Constituent sent : sents.getConstituents()) {
                     String sentid = getSentId(sent);
 
-                    // only keep those sentences that we have annotated.
-                    if(!annosentids.contains(sentid)) continue;
-
-                    annosents.put(sentid, sent);
-
                     // this just to cache the sentence.
                     cache.put(sentid, sent);
-
-                    View ner = ta.getView(ViewNames.NER_CONLL);
-                    for(Constituent name : ner.getConstituentsCovering(sent)){
-                        terms.add(name.getTokenizedSurfaceForm());
-                    };
                 }
             }
         }
@@ -196,9 +199,7 @@ public class BootstrapController {
 
         sd = new SessionData(hs);
 
-        // build groups here.
-        HashMap<String, HashSet<String>> groups = new HashMap<>();
-        //updategroups(sd.indexpath, terms, cache, sd.annosents, groups);
+
         updategroups2(sd.indexpath, terms, cache, groups);
         hs.setAttribute("groups", groups);
 
@@ -230,6 +231,10 @@ public class BootstrapController {
         model.addAttribute("datasets", datasets.keySet());
         model.addAttribute("user", new User());
 
+        if(hs.getAttribute("dict") == null) {
+            hs.setAttribute("dict", new Dictionary());
+        }
+
         return "bs-home";
     }
 
@@ -256,7 +261,7 @@ public class BootstrapController {
 
 
     public static void updategroups2(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, HashSet<String>> groups) throws IOException {
-        logger.info("Updating groups2... ({})", cache.size());
+        logger.info("Updating groups2...");
 
         // all sentence ids that appear in groups.
         HashSet<String> allgroups = new HashSet<>();
@@ -291,7 +296,7 @@ public class BootstrapController {
                 }
             }
         }
-        logger.info("Done updating groups2... ({})", cache.size());
+        logger.info("Done updating groups2...");
     }
 
 
@@ -487,7 +492,6 @@ public class BootstrapController {
 
         addtext(text, label, groupid, hs, model);
         logger.debug("Done adding spans...");
-
     }
 
     @RequestMapping(value="/addtext", method=RequestMethod.GET)
@@ -500,10 +504,11 @@ public class BootstrapController {
         List<Constituent> candidates = new ArrayList<>();
         for(String groupsentid : group){
             Constituent sent = sd.cache.getSentence(groupsentid);
-            logger.debug("addspan:: group {{}) has sent: {}", groupid, getSentId(sent));
             String surf = sent.getTokenizedSurfaceForm();
 
             if(surf.contains(text)){
+
+                logger.debug("Found sent with id: " + groupsentid);
 
                 // need to find index of tokens into sentence (could be multiple indices).
 
@@ -513,7 +518,7 @@ public class BootstrapController {
 
                 int sentstart = sent.getStartSpan();
 
-                Pattern pattern = Pattern.compile("\\b"+text+"[^ ]*\\b", Pattern.CASE_INSENSITIVE);
+                Pattern pattern = Pattern.compile("\\b"+text+"[^ ]*", Pattern.CASE_INSENSITIVE);
                 // in case you would like to ignore case sensitivity,
                 // you could use this statement:
                 // Pattern pattern = Pattern.compile("\\s+", Pattern.CASE_INSENSITIVE);
@@ -605,7 +610,7 @@ public class BootstrapController {
 
         SessionData sd = new SessionData(hs);
 
-        HashMap<String, Constituent> annosents = sd.annosents;
+        HashMap<String, HashSet<String>> annosents = sd.annosents;
 
         HashMap<String, HashSet<String>> groups = sd.groups;
         HashSet<String> group = groups.get(groupid);
@@ -619,9 +624,10 @@ public class BootstrapController {
                 String surf = name.getTokenizedSurfaceForm();
                 sd.terms.add(surf);
             };
-            annosents.put(getSentId(sent), sent);
             tas.add(sent.getTextAnnotation());
         }
+
+        annosents.put(groupid, group);
 
         // convert the set (with no duplicates) into a list.
         List<TextAnnotation> talist = new ArrayList<>(tas);
@@ -634,7 +640,15 @@ public class BootstrapController {
         String folderpath = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
 
-        LineIO.write(new File(folderpath).getParent() + "/annosents-" + username + ".txt", annosents.keySet());
+
+        List<String> annolines = new ArrayList<>();
+        for(String term : annosents.keySet()){
+            HashSet<String> annogroup = annosents.get(term);
+            String annoline = term + "\t" + StringUtils.join(annogroup, ",");
+            annolines.add(annoline);
+        }
+
+        LineIO.write(new File(folderpath).getParent() + "/annosents-" + username + ".txt", annolines);
 
         if(username != null && folderpath != null) {
             folderpath = folderpath.replaceAll("/$", "");
@@ -653,23 +667,32 @@ public class BootstrapController {
 
         HashMap<String, HashSet<String>> groups = sd.groups;
 
-        // TODO: this is slow. Does it need to be here?
-        //updategroups(sd.indexpath, sd.terms, sd.cache, sd.annosents, groups);
-        updategroups2(sd.indexpath, sd.terms, sd.cache, groups);
-
         if(groupid != null) {
             HashSet<String> sentids = groups.get(groupid);
 
-            HashMap<String, String> id2html = new HashMap<>();
-            for (String sentid : sentids) {
-                String html = getHTMLfromSent(sd.cache.get(sentid), groupid);
-                id2html.put(sentid, html);
-            }
+            String html = this.getAllHTML(sentids, sd);
+
+//            HashMap<String, String> id2html = new HashMap<>();
+//            for (String sentid : sentids) {
+//                String html = getHTMLfromSent(sd.cache.get(sentid), sd.dict, sd.showdefs);
+//                id2html.put(sentid, html);
+//            }
 
             model.addAttribute("groupid", groupid);
-            model.addAttribute("id2html", id2html);
+            model.addAttribute("html", html);
 
         }else{
+
+            // TODO: this is slow. Does it need to be here?
+            //updategroups(sd.indexpath, sd.terms, sd.cache, sd.annosents, groups);
+            updategroups2(sd.indexpath, sd.terms, sd.cache, groups);
+
+            // all sentence ids that appear in groups.
+            HashSet<String> allgroups = new HashSet<>();
+            for(String term : groups.keySet()){
+                allgroups.addAll(groups.get(term));
+            }
+            int numsentsingroups = allgroups.size();
 
             HashMap<String, HashSet<String>> annogroups = new HashMap<>();
             HashMap<String, HashSet<String>> unannogroups = new HashMap<>();
@@ -709,11 +732,20 @@ public class BootstrapController {
 
             }
 
+            // set to 1 so we avoid division by 0 errors.
             int totaltokens = 1;
             int labeledtokens = 0;
-            HashMap<String, Constituent> annosents = sd.annosents;
-            for(String sentid : annosents.keySet()){
-                Constituent sent = annosents.get(sentid);
+
+            HashMap<String, HashSet<String>> annosents = sd.annosents;
+
+            // combine all values from annosents into one list.
+            HashSet<String> annovalues = new HashSet<>();
+            for(Set<String> v : annosents.values()){
+                annovalues.addAll(v);
+            }
+
+            for(String sentid : annovalues){
+                Constituent sent = sd.cache.get(sentid);
                 totaltokens += sent.size();
                 View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
                 List<Constituent> nercons = ner.getConstituentsCovering(sent);
@@ -724,11 +756,12 @@ public class BootstrapController {
 
             model.addAttribute("labeledtokens", labeledtokens);
             model.addAttribute("totaltokens", totaltokens);
-            model.addAttribute("annosents", annosents);
+            model.addAttribute("numannosents", annovalues.size());
 
             model.addAttribute("annogroups", annogroups);
             model.addAttribute("unannogroups", unannogroups);
             model.addAttribute("unlabeledamount", unlabeledamount);
+            model.addAttribute("numsentsingroups", numsentsingroups);
 
         }
 
@@ -774,25 +807,67 @@ public class BootstrapController {
             }
         }
 
-        return getHTMLfromSent(sd.cache.get(sentid));
+        return getHTMLfromSent(sd.cache.get(sentid), sd.dict, sd.showdefs);
     }
 
 
     @RequestMapping(value="/gethtml", method= RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String gethtml(@RequestParam(value="sentid", required=true) String sentid, Model model, HttpSession hs){
+    public String gethtml(@RequestParam(value="groupid", required=true) String groupid, Model model, HttpSession hs){
         SessionData sd = new SessionData(hs);
-
-        return getHTMLfromSent(sd.cache.get(sentid));
+        HashSet<String> group = sd.groups.get(groupid);
+        return getAllHTML(group, sd);
     }
 
 
-    public static String getHTMLfromSent(Constituent sent){
-        return getHTMLfromSent(sent, "");
+    /**
+     * This returns one large HTML string for all sentences.
+     * @param sentids
+     * @param sd
+     * @return
+     */
+    public String getAllHTML(HashSet<String> sentids, SessionData sd){
+        HashMap<String, String> id2html = new HashMap<>();
+
+        String ret = "";
+
+        String htmltemplate = "<div class=\"panel panel-default\">" +
+                "<div class=\"panel-heading\">%s</div>" +
+                "<div class=\"panel-body text\" id=%s>%s</div></div>";
+
+        for (String sentid : sentids) {
+            String html = getHTMLfromSent(sd.cache.get(sentid), sd.dict, sd.showdefs);
+            //id2html.put(sentid, html);
+            ret += String.format(htmltemplate, sentid, sentid, html) + "\n";
+        }
+
+        return ret;
     }
 
-    public static String getHTMLfromSent(Constituent sent, String keyword){
+
+    @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
+    @ResponseBody
+    public String toggledefs(@RequestParam(value="groupid") String groupid, HttpSession hs) {
+
+        SessionData sd = new SessionData(hs);
+        HashSet<String> group = sd.groups.get(groupid);
+
+        Boolean showdefs = sd.showdefs;
+        showdefs = !showdefs;
+        hs.setAttribute("showdefs", showdefs);
+        sd.showdefs = showdefs;
+
+        return this.getAllHTML(group, sd);
+    }
+
+    /**
+     * Given a sentence, produce the HTML for display. .
+     * @param sent
+     * @param keyword
+     * @return
+     */
+    public static String getHTMLfromSent(Constituent sent, Dictionary dict, boolean showdefs){
 
         IntPair sentspan = sent.getSpan();
 
@@ -805,8 +880,18 @@ public class BootstrapController {
 
         // add spans to every word that is not a constituent.
         for(int t = 0; t < text.length; t++){
+            String def = null;
+            if(dict != null && dict.containsKey(text[t])){
+                def = dict.get(text[t]).get(0);
+            }
+
             String id = getSentId(sent);
-            text[t] = "<span class='token pointer' id='tok-" + id + ":" + t + "'>" + text[t] + "</span>";
+
+            if(showdefs && def != null) {
+                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
+            }else{
+                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+            }
         }
 
         List<Constituent> sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
