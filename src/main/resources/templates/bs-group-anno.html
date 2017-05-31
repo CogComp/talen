@@ -106,6 +106,7 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+                    <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dict.</a>
 
                     <div class="spacer"></div>
                     <button th:each="label : ${labels}" th:id="'addlabel-' + ${label}" th:class="${label} + ' btn'" th:text="${label}"></button>
@@ -181,11 +182,11 @@
         $("#dictbutton").click(function(){
             $.ajax({
                 method: "GET",
-                url: "/toggledefs",
-                data: {taid: getParameterByName("taid")}
+                url: "/bootstrap/toggledefs",
+                data: {groupid: getParameterByName("groupid")}
             }).done(function (msg) {
                 console.log("successful toggle");
-                $("#text").html(msg);
+                $("#htmlcontainer").html(msg);
                 loadtok();
             });
 

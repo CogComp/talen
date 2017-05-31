@@ -79,13 +79,11 @@ public class AnnotationController {
             System.out.println(f);
             Properties prop = new Properties();
 
-            InputStream input = null;
-
             try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
 
-                input = new FileInputStream(f);
                 // load a properties file
-                prop.load(input);
+                prop.load(in);
 
                 datasets.put(prop.getProperty("name"), prop);
 

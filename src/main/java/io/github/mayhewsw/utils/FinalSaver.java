@@ -104,9 +104,9 @@ public class FinalSaver {
     }
 
     public static void main(String[] args) throws IOException {
-        String origfolder = "data/tmp";
-        String romanfolder = "data/train-short-sentanno-test/";
-        String sentencesfname = "data/annosents-test.txt";
+        String origfolder = "/shared/corpora/ner/eval/column/mono-all";
+        String romanfolder = "/shared/corpora/ner/eval/column/mono-all-uly-sentanno-mayhew2";
+        String sentencesfname = "/shared/corpora/ner/eval/column/annosents-mayhew2.txt";
         String outpath = "/tmp/sents/";
 
         save(origfolder, romanfolder, sentencesfname, outpath);

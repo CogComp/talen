@@ -1,7 +1,7 @@
 name	Uyghur
 folderpath	/shared/corpora/ner/eval/column/mono-all-uly
-indexpath	/shared/corpora/ner/eval/column/mono-all-uly-indexsent
+indexpath	/shared/corpora/ner/eval/column/mono-all-uly-indexsent2
 type	conll
-# dictionary
+dictionary	/shared/experiments/mayhew2/lexicons/uig-eng.masterlex.txt.uly.gz
 labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
-terms   obama,shinjang,xoten
+terms   shi jinping,shinjang,xoten,kériye,rabiye qadir

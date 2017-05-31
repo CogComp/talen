@@ -34,7 +34,7 @@ public class TextFileIndexer {
         @Override
         protected TokenStreamComponents createComponents(String fieldName) {
             Tokenizer source = new WhitespaceTokenizer();
-            TokenStream filter = new ShingleFilter(source);
+            TokenStream filter = new ShingleFilter(source, 6);
             return new TokenStreamComponents(source, filter);
         }
 
@@ -137,7 +137,7 @@ public class TextFileIndexer {
                 Query q = new PrefixQuery(new Term("body", s));
 
                 System.out.println(q);
-                TopScoreDocCollector collector = TopScoreDocCollector.create(5);
+                TopScoreDocCollector collector = TopScoreDocCollector.create(50);
                 searcher.search(q, collector);
                 ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
@@ -160,15 +160,13 @@ public class TextFileIndexer {
         reader.close();
     }
 
-
     public static void main(String[] args) throws IOException {
-        String filedir = "data/train-short";
-        String indexdir = "data/train-short-indexsent";
+        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly";
+        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent2";
 
-        buildsentenceindex(filedir, indexdir);
+        //buildsentenceindex(filedir, indexdir);
         testindex(indexdir);
     }
-
 
 
 }

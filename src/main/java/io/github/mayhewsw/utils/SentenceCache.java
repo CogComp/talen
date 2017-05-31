@@ -129,7 +129,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
         }
 
         // put a limit on the top num of sentences in groups.
-        if(allgroups.size() > 200){
+        if(allgroups.size() > 500){
             logger.info("Num sentences in groups has reached the limit before term: {}. Not reading any more...", term);
             return displaylist;
         }
@@ -186,6 +186,9 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
             queryids.add(sentid);
         }
+
+        logger.debug("Found {} results for term {}", queryids.size(), term);
+
 
         this.putQueryResult(term, queryids);
     }

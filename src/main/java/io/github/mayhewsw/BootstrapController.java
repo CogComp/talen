@@ -62,12 +62,12 @@ public class BootstrapController {
 
             Properties prop = new Properties();
 
-            InputStream input = null;
-
             try {
-                input = new FileInputStream(f);
+                // we want utf-8.
+                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
+
                 // load a properties file
-                prop.load(input);
+                prop.load(in);
 
                 datasets.put(prop.getProperty("name"), prop);
 
@@ -116,6 +116,32 @@ public class BootstrapController {
 //
 //    }
 
+    @RequestMapping(value="/search", method=RequestMethod.GET)
+    public String search(@RequestParam(value="query", required=true) String query, HttpSession hs, Model model) throws IOException {
+        SessionData sd = new SessionData(hs);
+
+        HashSet<String> sents = sd.cache.getAllResults(query);
+        // serch only among annotated sentences.
+        HashMap<String, HashSet<String>> annosents = sd.annosents;
+
+        // combine all values from annosents into one list.
+        HashSet<String> annovalues = new HashSet<>();
+        for(Set<String> v : annosents.values()){
+            annovalues.addAll(v);
+        }
+
+        annovalues.retainAll(sents);
+
+        // this is a special group.
+        String html = this.getAllHTML(annovalues, sd);
+
+        model.addAttribute("groupid", "specialgroup-" + query);
+        model.addAttribute("html", html);
+        model.addAttribute("labels", hs.getAttribute("labels"));
+        return "bs-group-anno";
+    }
+
+
     /**
      * A little convenience function.
      * @param sent
@@ -148,6 +174,21 @@ public class BootstrapController {
         for(String term : termarray){
             terms.add(term);
         }
+
+        String dictpath = prop.getProperty("dictionary");
+        Dictionary dict;
+        if(dictpath != null){
+            logger.info("Loading dictionary: " + dictpath);
+            dict = new Dictionary(dataname, dictpath);
+            hs.setAttribute("dict", dict);
+
+            // TODO: also load the user dictionary.
+
+        }else{
+            logger.info("No dictionary specified.");
+            dict = new Dictionary();
+        }
+
 
         // FIXME: this folder contains entire files, many sentences of which are not annotated. When they are read back in, we will incorrectly mark sentences as annotated.
 
@@ -189,6 +230,11 @@ public class BootstrapController {
 
                     // this just to cache the sentence.
                     cache.put(sentid, sent);
+                    List<Constituent> nercons= sent.getTextAnnotation().getView(ViewNames.NER_CONLL).getConstituentsCovering(sent);
+                    for(Constituent nercon : nercons){
+                        terms.add(nercon.getTokenizedSurfaceForm());
+                    }
+
                 }
             }
         }
@@ -299,157 +345,6 @@ public class BootstrapController {
         logger.info("Done updating groups2...");
     }
 
-
-//    /**
-//     * This uses the terms variable inside SessionData object to query the index for matching sentences.
-//     * @param sd
-//     * @return
-//     * @throws IOException
-//     */
-//    public static void updategroups(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, Constituent> annosents, HashMap<String, HashSet<Constituent>> groups) throws IOException {
-//        logger.info("Updating groups... ({})", cache.size());
-//
-//        // just for run!
-//        // FIXME: consider opening this only once and storing as a session variable.
-//        IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
-//        IndexSearcher searcher = new IndexSearcher(reader);
-//
-//        // This contains {query : (sentid, sentid, ...), ...}
-//        //HashMap<String, HashSet<String>> allresults = new HashMap<>();
-//
-//        // FIXME: consider caching query lookups.
-//        for(String term : terms) {
-//
-//            if(cache.getAllResults(term) != null){
-//                continue;
-//            }
-//
-//            //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
-//            Query query = new PrefixQuery(new Term("body", term));
-//
-//            // Assume a large text collection. We want to store EVERY SINGLE INSTANCE.
-//            int k = Integer.MAX_VALUE;
-//            TopDocs searchresults = searcher.search(query, k);
-//            ScoreDoc[] hits = searchresults.scoreDocs;
-//
-//            HashSet<String> queryids = new HashSet<>();
-//
-//            for (int i = 0; i < hits.length; ++i) {
-//                int luceneId = hits[i].doc;
-//                Document d = searcher.doc(luceneId);
-//
-//                String sentid = d.get("filename");
-//                queryids.add(sentid);
-//            }
-//
-//            cache.putQueryResult(term, queryids);
-//
-//            //allresults.put(term, queryids);
-//        }
-//
-//        // this is the number of elements to display to users.
-//        int k = 15;
-//
-//        for(String term : terms){
-//            // Don't update already formed groups!
-//            if(groups.containsKey(term)) continue;
-//
-//            HashSet<String> queryids = cache.getAllResults(term);
-//
-//            // annosents is ALL sentences with any annotations.
-//            HashSet<String> annointersection = new HashSet<>(annosents.keySet());
-//            annointersection.retainAll(queryids);
-//
-//            // now annointersection contains only these sentence ids which are annotated (with something) and also
-//            // contain the search term.
-//
-//            // initialize
-//            groups.put(term, new HashSet<Constituent>());
-//            HashSet<Constituent> querygroup = groups.get(term);
-//
-//            for(String sentid : annointersection){
-//                // FIXME: understand the connection between annosents and cache.
-//                // Is cache always kept up to date with annotated sentences??
-//                querygroup.add(annosents.get(sentid));
-//                if(querygroup.size() == k) break;
-//            }
-//
-//            if(querygroup.size() >= k){
-//                // we are good to go!
-//                // no need to augment appropriate groups because these are all already in place.
-//                logger.info(term + " :Found all sents in annotated sentences!");
-//                continue;
-//            }
-//
-//            if(annosents.size() > 100){
-//                logger.info("annosents size is: " + annosents.size() + ", so we don't add any more.");
-//                continue;
-//            }
-//
-//            HashSet<String> allintersection = new HashSet<>(cache.keySet());
-//            allintersection.removeAll(annointersection);
-//            allintersection.retainAll(queryids);
-//
-//            // now allintersection has cached sentids which are NOT in annosents, but which contain the search term.
-//            for(String sentid : allintersection){
-//                // NOTE: this should NOT be reading from file. These should all be cached... that's the whole point.
-//                Constituent sent = cache.getSentence(sentid);
-//                querygroup.add(sent);
-//
-//                // this is the difficult part.
-//                // if sent SHOULD BE in any other group, then add it now.
-//                for(String term2 : cache.getAllKeys()){
-//                    HashSet<String> termids = cache.getAllResults(term2);;
-//                    if(termids.contains(sentid)){
-//                        if(!groups.containsKey(term2)){
-//                            groups.put(term2, new HashSet<>());
-//                        }
-//                        logger.debug("group: {} getting new sent: {}", term2, sentid);
-//                        groups.get(term2).add(sent);
-//                    }
-//                }
-//                if(querygroup.size() == k) break;
-//            }
-//
-//            if(querygroup.size() >= k){
-//                logger.info(term + " : Found all sents in cache!");
-//                continue;
-//            }
-//
-//            logger.info(term + " :( had to go to disk.");
-//
-//            // Sigh. Now we need to go to disk.
-//            for(String sentid : cache.getAllResults(term)){
-//                // This avoids have discussion forum results (which can be noisy) and huge files.
-//                int sentind = Integer.parseInt(sentid.split(":")[1]);
-//                if(sentid.contains("_DF_") || sentind > 200){
-//                    continue;
-//                }
-//
-//                Constituent sent = cache.getSentence(sentid);
-//                querygroup.add(sent);
-//
-//                // this is the difficult part.
-//                // if sent SHOULD BE in any other group, then add it now.
-//                for(String term2 : cache.getAllKeys()){
-//                    HashSet<String> termids = cache.getAllResults(term2);;
-//                    if(termids.contains(sentid)){
-//                        if(!groups.containsKey(term2)){
-//                            groups.put(term2, new HashSet<>());
-//                        }
-//                        logger.debug("group: {} getting new sent: {}", term2, sentid);
-//                        groups.get(term2).add(sent);
-//                    }
-//                }
-//
-//                if(querygroup.size() == k) break;
-//            }
-//        }
-//
-//        reader.close();
-//
-//        logger.info("Done building groups. ({})", cache.size());
-//    }
 
     @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
