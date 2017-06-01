@@ -89,33 +89,6 @@ public class BootstrapController {
             };
 
 
-//    /**
-//     * This is done before anything else...
-//     * @param sd
-//     * @throws IOException
-//     */
-//    public void buildmemoryindex(SessionData sd) throws IOException {
-//
-//        // we write to this open file object.
-//        RAMDirectory rd = sd.ramDirectory;
-//
-//        IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
-//
-//        IndexWriter writer = new IndexWriter(rd, cfg);
-//
-//        for(Constituent sent : sd.allsents.values()){
-//            StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
-//
-//            Document d = new Document();
-//            TextField tf = new TextField("body", sr);
-//            d.add(tf);
-//            d.add(new StringField("filename", getSentId(sent), Field.Store.YES));
-//            writer.addDocument(d);
-//        }
-//        writer.close();
-//
-//    }
-
     @RequestMapping(value="/search", method=RequestMethod.GET)
     public String search(@RequestParam(value="query", required=true) String query, HttpSession hs, Model model) throws IOException {
         SessionData sd = new SessionData(hs);
@@ -349,55 +322,39 @@ public class BootstrapController {
     @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public void addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="groupid") String groupid, @RequestParam(value="sentid") String sentid, HttpSession hs, Model model) throws Exception {
+    public void addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="groupid") String groupid, @RequestParam(value="sentid") String sentid, @RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs, Model model) throws Exception {
 
         SessionData sd = new SessionData(hs);
 
         logger.debug("called addspan with: {}, {}, {}, {}, {}", label, starttokid, endtokid, groupid, sentid);
 
-        HashMap<String, HashSet<String>> groups = sd.groups;
-        HashSet<String> group = groups.get(groupid);
-
         int start = Integer.parseInt(starttokid);
         int end = Integer.parseInt(endtokid);
 
-        String text = null;
+        Constituent sent = sd.cache.getSentence(sentid);
 
-        List<Constituent> candidates = new ArrayList<>();
+        TextAnnotation ta = sent.getTextAnnotation();
+        View ner = ta.getView(ViewNames.NER_CONLL);
 
-        // This loop finds the sent in question. Would be faster if this was a map?
-        for(String groupsentid : group){
-            Constituent sent = sd.cache.getSentence(groupsentid);
-            if(groupsentid.equals(sentid)){
-                TextAnnotation ta = sent.getTextAnnotation();
-                View ner = ta.getView(ViewNames.NER_CONLL);
+        int sentstart = sent.getStartSpan();
 
-                int sentstart = sent.getStartSpan();
-
-                Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, sentstart + start, sentstart + end);
-                candidates.add(newc);
-
-                text = newc.getTokenizedSurfaceForm();
-
-                break;
-            }
-        }
+        Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, sentstart + start, sentstart + end);
+        String text = newc.getTokenizedSurfaceForm();
 
         logger.debug("Text is: " + text);
 
-        addtext(text, label, groupid, hs, model);
+        addtext(text, label, sentids, hs, model);
         logger.debug("Done adding spans...");
     }
 
     @RequestMapping(value="/addtext", method=RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public void addtext(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
+    public void addtext(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs, Model model) throws IOException {
         SessionData sd = new SessionData(hs);
-        HashMap<String, HashSet<String>> groups = sd.groups;
-        HashSet<String> group = groups.get(groupid);
+
         List<Constituent> candidates = new ArrayList<>();
-        for(String groupsentid : group){
+        for(String groupsentid : sentids){
             Constituent sent = sd.cache.getSentence(groupsentid);
             String surf = sent.getTokenizedSurfaceForm();
 
@@ -479,11 +436,16 @@ public class BootstrapController {
 
     @RequestMapping(value="/addtextsave", method=RequestMethod.GET)
     public String addtextandsave(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
-        addtext(text, label, groupid, hs, model);
-        //save(groupid, hs, model);
-        String[] a = new String[0];
-        // FIXME:!!!!!
-        save(groupid, a, hs, model);
+
+        SessionData sd = new SessionData(hs);
+
+        HashMap<String, HashSet<String>> groups = sd.groups;
+        HashSet<String> group = groups.get(groupid);
+        String[] grouparray = group.toArray(new String[group.size()]);
+
+        addtext(text, label, grouparray, hs, model);
+
+        save(groupid, grouparray, hs, model);
 
         return "redirect:/bootstrap/sents";
     }
@@ -491,9 +453,6 @@ public class BootstrapController {
     @RequestMapping(value="/logout")
     public String logout(HttpSession hs){
         logger.info("Logging out...");
-//        hs.removeAttribute("username");
-//        hs.removeAttribute("dataname");
-//        hs.removeAttribute("tas");
 
         // I think this is preferable.
         hs.invalidate();
@@ -713,10 +672,10 @@ public class BootstrapController {
     @RequestMapping(value="/gethtml", method= RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String gethtml(@RequestParam(value="groupid", required=true) String groupid, Model model, HttpSession hs){
+    public String gethtml(@RequestParam(value="sentids[]", required=true) String[] sentids, Model model, HttpSession hs){
         SessionData sd = new SessionData(hs);
-        HashSet<String> group = sd.groups.get(groupid);
-        return getAllHTML(group, sd);
+        HashSet<String> sentset = new HashSet<>(Arrays.asList(sentids));
+        return getAllHTML(sentset, sd);
     }
 
 
@@ -747,10 +706,10 @@ public class BootstrapController {
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value="groupid") String groupid, HttpSession hs) {
-
+    public String toggledefs(@RequestParam(value="sentids[]") String[] sentids, HttpSession hs) {
         SessionData sd = new SessionData(hs);
-        HashSet<String> group = sd.groups.get(groupid);
+
+        HashSet<String> group = new HashSet<>(Arrays.asList(sentids));
 
         Boolean showdefs = sd.showdefs;
         showdefs = !showdefs;

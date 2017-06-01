@@ -192,47 +192,10 @@
 
         });
 
-        $("[id^=submit-]").click(function(){
-            console.log("Clicked on:" + this.id)
-            var key = this.id.split("-")[1];
-            var val = $("#def-" + key).val();
-            console.log("you want to submit: " + key + ", " + val);
-            $.ajax({
-                method: "GET",
-                url: "/dict/add",
-                data: {key:key, val:val, taid: getParameterByName("taid")}
-            }).done(function (msg) {
-                console.log("successful addition");
-                $("#text").html(msg);
-                loadtok();
-
-                // this is the simplest option... although it is something of a hack.
-                $("#div-" + key).html("[" + val + "]");
-
-            });
-        });
 
         $("#loadtokbutton").click(function(){
             loadtok();
         });
-
-        $("#removebutton").click(function(){
-            if (confirm('Are you sure you want to remove all?')) {
-                $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
-                $("#savebutton").css({"border-color" : "#c00"});
-                $.ajax({
-                    method: "POST",
-                    url: "/removeall",
-                    data: {id: getParameterByName("taid")}
-                }).done(function (msg) {
-                    console.log("successful removal.");
-                    $("#text").html(msg);
-                    loadtok();
-                });
-            }
-        });
-
-
 
 
         // this runs when you click on a single button.
@@ -313,7 +276,7 @@
             $.ajax({
                 method: "POST",
                 url: "/bootstrap/addspan",
-                data: {label: newclass, starttokid: getnum(starttokid), endtokid:getnum(endtokid), sentid: sentid, groupid: getParameterByName("groupid")}
+                data: {label: newclass, starttokid: getnum(starttokid), endtokid:getnum(endtokid), sentid: sentid, sentids: getsentids()}
             }).done(function (msg) {
                 refreshsents();
             });
@@ -324,7 +287,7 @@
             $.ajax({
                 method: "POST",
                 url: "/bootstrap/gethtml",
-                data: {groupid: groupid}
+                data: {sentids: getsentids()}
             }).done(function (msg) {
                 $("#htmlcontainer").html(msg);
                 loadtok();
@@ -342,25 +305,27 @@
             $.ajax({
                 method: "GET",
                 url: "/bootstrap/addtext",
-                data: {text: text, label: label, groupid: getParameterByName("groupid")}
+                data: {text: text, label: label, sentids: getsentids()}
             }).done(function (msg) {
                 console.log(msg);
                 refreshsents();
             });
         });
 
+        function getsentids(){
+            var ids = $.map($(".text"), function(n, i){
+                return n.id;
+            });
+            return ids;
+        }
+
         function save(){
             var groupid = getParameterByName("groupid");
             console.log("saving group: " + groupid);
 
-            var ids = $.map($(".text"), function(n, i){
-                return n.id;
-            });
-            console.log(ids);
-
             $.ajax({
                 url: "/bootstrap/save",
-                data: {groupid: groupid, sentids: ids},
+                data: {groupid: groupid, sentids: getsentids()},
                 method: "POST",
                 beforeSend: function() {
                     // setting a timeout
