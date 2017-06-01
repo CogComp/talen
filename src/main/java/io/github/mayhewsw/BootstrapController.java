@@ -106,7 +106,7 @@ public class BootstrapController {
         annovalues.retainAll(sents);
 
         // this is a special group.
-        String html = this.getAllHTML(annovalues, sd);
+        String html = this.getAllHTML(new ArrayList<String>(annovalues), query, sd);
 
         model.addAttribute("groupid", "specialgroup-" + query);
         model.addAttribute("html", html);
@@ -292,7 +292,7 @@ public class BootstrapController {
         // actually build groups
         for(String term : terms){
             if(!groups.containsKey(term)){
-                int k = 15;
+                int k = 5;
                 HashSet<String> group = cache.gatherTopK(term, allgroups, k);
                 groups.put(term, group);
             }
@@ -322,11 +322,11 @@ public class BootstrapController {
     @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public void addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="groupid") String groupid, @RequestParam(value="sentid") String sentid, @RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs, Model model) throws Exception {
+    public void addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="sentid") String sentid, @RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs, Model model) throws Exception {
 
         SessionData sd = new SessionData(hs);
 
-        logger.debug("called addspan with: {}, {}, {}, {}, {}", label, starttokid, endtokid, groupid, sentid);
+        logger.debug("called addspan with: {}, {}, {}, {}", label, starttokid, endtokid, sentid);
 
         int start = Integer.parseInt(starttokid);
         int end = Integer.parseInt(endtokid);
@@ -528,7 +528,7 @@ public class BootstrapController {
         if(groupid != null) {
             HashSet<String> sentids = groups.get(groupid);
 
-            String html = this.getAllHTML(sentids, sd);
+            String html = this.getAllHTML(new ArrayList<String>(sentids), sd);
 
 //            HashMap<String, String> id2html = new HashMap<>();
 //            for (String sentid : sentids) {
@@ -665,19 +665,28 @@ public class BootstrapController {
             }
         }
 
-        return getHTMLfromSent(sd.cache.get(sentid), sd.dict, sd.showdefs);
+        String query = "";
+        return getHTMLfromSent(sd.cache.get(sentid), query, sd.dict, sd.showdefs);
     }
-
 
     @RequestMapping(value="/gethtml", method= RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String gethtml(@RequestParam(value="sentids[]", required=true) String[] sentids, Model model, HttpSession hs){
+    public String gethtml(@RequestParam(value="sentids[]", required=true) String[] sentids, String query, Model model, HttpSession hs){
         SessionData sd = new SessionData(hs);
-        HashSet<String> sentset = new HashSet<>(Arrays.asList(sentids));
-        return getAllHTML(sentset, sd);
+        return getAllHTML(Arrays.asList(sentids), query, sd);
     }
 
+
+    /**
+     * Convenience function with no query.
+     * @param sentids
+     * @param sd
+     * @return
+     */
+    public String getAllHTML(List<String> sentids, SessionData sd){
+        return getAllHTML(sentids, "", sd);
+    }
 
     /**
      * This returns one large HTML string for all sentences.
@@ -685,7 +694,7 @@ public class BootstrapController {
      * @param sd
      * @return
      */
-    public String getAllHTML(HashSet<String> sentids, SessionData sd){
+    public String getAllHTML(List<String> sentids, String query, SessionData sd){
         HashMap<String, String> id2html = new HashMap<>();
 
         String ret = "";
@@ -695,7 +704,7 @@ public class BootstrapController {
                 "<div class=\"panel-body text\" id=%s>%s</div></div>";
 
         for (String sentid : sentids) {
-            String html = getHTMLfromSent(sd.cache.get(sentid), sd.dict, sd.showdefs);
+            String html = getHTMLfromSent(sd.cache.get(sentid), query, sd.dict, sd.showdefs);
             //id2html.put(sentid, html);
             ret += String.format(htmltemplate, sentid, sentid, html) + "\n";
         }
@@ -706,17 +715,15 @@ public class BootstrapController {
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value="sentids[]") String[] sentids, HttpSession hs) {
+    public String toggledefs(@RequestParam(value="sentids[]") String[] sentids, @RequestParam(value="query") String query, HttpSession hs) {
         SessionData sd = new SessionData(hs);
-
-        HashSet<String> group = new HashSet<>(Arrays.asList(sentids));
 
         Boolean showdefs = sd.showdefs;
         showdefs = !showdefs;
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return this.getAllHTML(group, sd);
+        return this.getAllHTML(Arrays.asList(sentids), query, sd);
     }
 
     /**
@@ -725,7 +732,7 @@ public class BootstrapController {
      * @param keyword
      * @return
      */
-    public static String getHTMLfromSent(Constituent sent, Dictionary dict, boolean showdefs){
+    public static String getHTMLfromSent(Constituent sent, String query, Dictionary dict, boolean showdefs){
 
         IntPair sentspan = sent.getSpan();
 
@@ -748,7 +755,12 @@ public class BootstrapController {
             if(showdefs && def != null) {
                 text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
             }else{
-                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+                // FIXME: this will only work for single word queries.
+                if(query.length() > 0 && text[t].startsWith(query)){
+                    text[t] = "<span class='token pointer emph' id='tok-" + t + "'>" + text[t] + "</span>";
+                }else{
+                    text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+                }
             }
         }
 

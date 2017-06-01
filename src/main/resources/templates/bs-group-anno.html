@@ -97,14 +97,9 @@
 
         <div class="row">
             <div th:utext="${html}" id="htmlcontainer" class="col-md-8">
-                <!--<div th:each="sentid : ${id2html.keySet()}" class="panel panel-default">-->
-                    <!--<div  th:text="${sentid}" class="panel-heading"></div>-->
-                    <!--<div class="panel-body text" th:id="${sentid}" th:utext="${id2html.get(sentid)}">-->
-                    <!--</div>-->
-                <!--</div>-->
             </div>
             <div class="col-md-4">
-                <div class="form-group">
+                <div class="form-group" data-spy="affix" data-offset-top="0">
                     <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
                     <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dict.</a>
 
@@ -183,7 +178,7 @@
             $.ajax({
                 method: "GET",
                 url: "/bootstrap/toggledefs",
-                data: {groupid: getParameterByName("groupid")}
+                data: {sentids: getsentids(), query: getParameterByName("query")}
             }).done(function (msg) {
                 console.log("successful toggle");
                 $("#htmlcontainer").html(msg);
@@ -283,11 +278,11 @@
         };
 
         function refreshsents(){
-            var groupid= getParameterByName("groupid");
+            var query= getParameterByName("query");
             $.ajax({
                 method: "POST",
                 url: "/bootstrap/gethtml",
-                data: {sentids: getsentids()}
+                data: {sentids: getsentids(), query: query}
             }).done(function (msg) {
                 $("#htmlcontainer").html(msg);
                 loadtok();
@@ -335,9 +330,6 @@
                 console.log("finished saving!");
                 $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
                 $("#savebutton").css({"border-color" : ""});
-
-
-
             });
 
         };
