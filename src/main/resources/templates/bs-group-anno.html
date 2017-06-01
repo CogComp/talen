@@ -353,9 +353,15 @@
             var groupid = getParameterByName("groupid");
             console.log("saving group: " + groupid);
 
+            var ids = $.map($(".text"), function(n, i){
+                return n.id;
+            });
+            console.log(ids);
+
             $.ajax({
                 url: "/bootstrap/save",
-                data: {groupid: groupid},
+                data: {groupid: groupid, sentids: ids},
+                method: "POST",
                 beforeSend: function() {
                     // setting a timeout
                     $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");

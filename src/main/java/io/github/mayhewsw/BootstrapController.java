@@ -480,7 +480,10 @@ public class BootstrapController {
     @RequestMapping(value="/addtextsave", method=RequestMethod.GET)
     public String addtextandsave(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
         addtext(text, label, groupid, hs, model);
-        save(groupid, hs, model);
+        //save(groupid, hs, model);
+        String[] a = new String[0];
+        // FIXME:!!!!!
+        save(groupid, a, hs, model);
 
         return "redirect:/bootstrap/sents";
     }
@@ -498,17 +501,16 @@ public class BootstrapController {
         return "redirect:/bootstrap/";
     }
 
-    @RequestMapping(value = "/save", method=RequestMethod.GET)
+    @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
-    public void save(@RequestParam(value="groupid", required=true) String groupid, HttpSession hs, Model model) throws IOException {
-        logger.info("Save has been called for group: " + groupid);
+    public void save(@RequestParam(value="groupid", required=true) String groupid, @RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs, Model model) throws IOException {
+        logger.info("Save has been called for list: " + sentids);
 
         SessionData sd = new SessionData(hs);
 
         HashMap<String, HashSet<String>> annosents = sd.annosents;
 
-        HashMap<String, HashSet<String>> groups = sd.groups;
-        HashSet<String> group = groups.get(groupid);
+        HashSet<String> group = new HashSet<>(Arrays.asList(sentids));
 
         HashSet<TextAnnotation> tas = new HashSet<>();
         for(String sentid : group){
@@ -522,7 +524,9 @@ public class BootstrapController {
             tas.add(sent.getTextAnnotation());
         }
 
-        annosents.put(groupid, group);
+        if(!groupid.startsWith("specialgroup-")) {
+            annosents.put(groupid, group);
+        }
 
         // convert the set (with no duplicates) into a list.
         List<TextAnnotation> talist = new ArrayList<>(tas);
