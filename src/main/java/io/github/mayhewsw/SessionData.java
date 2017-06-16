@@ -32,6 +32,7 @@ public class SessionData {
     HashMap<String, HashSet<String>> annosents;
 
     HashSet<String> terms;
+    List<String> labels;
 //    String folderpath;
     String indexpath;
 
@@ -56,7 +57,7 @@ public class SessionData {
         suffixes = (ArrayList<String>) hs.getAttribute("suffixes");
 
         prop = (Properties) hs.getAttribute("prop");
-
+        labels = (List<String>) hs.getAttribute("labels");
         ramDirectory = (RAMDirectory) hs.getAttribute("ramdirectory");
         terms = (HashSet<String>) hs.getAttribute("terms");
 

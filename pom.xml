@@ -26,6 +26,14 @@
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>CogcompSoftware</id>
+            <name>CogcompSoftware</name>
+            <url>http://cogcomp.cs.illinois.edu/m2repo/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -123,7 +131,24 @@
                     </execution>
                 </executions>
             </plugin>
-
+            <plugin>
+                <groupId>edu.illinois.cs.cogcomp</groupId>
+                <artifactId>lbjava-maven-plugin</artifactId>
+                <configuration>
+                    <lbjavaInputFileList>
+                        <param>src/main/lbjava/CandClassifier.lbj</param>
+                    </lbjavaInputFileList>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>clean</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

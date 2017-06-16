@@ -10,6 +10,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
@@ -38,12 +39,18 @@ public class SentenceCache extends HashMap<String, Constituent> {
     private final String folderpath;
 
     HashMap<String, HashSet<String>> allresults;
+    HashMap<String, HashSet<String>> alltexts;
+    public HashMap<String, String> sentid2text;
+    public HashMap<String, String> sentid2origtext;
     private IndexSearcher searcher;
 
     public SentenceCache(String folderpath, String indexdir) throws IOException {
         this.folderpath = folderpath;
         this.allresults = new HashMap<>();
-
+        this.alltexts = new HashMap<>();
+        this.sentid2text = new HashMap<>();
+        this.sentid2origtext = new HashMap<>();
+        
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
         searcher = new IndexSearcher(reader);
     }
@@ -82,6 +89,11 @@ public class SentenceCache extends HashMap<String, Constituent> {
         this.allresults.put(term, queryids);
     }
 
+
+    public HashSet<String> getAllResults(String term) throws IOException {
+        return getAllResults(term, false);
+    }
+
     /**
      * Get all sentence ids in the corpus which contain this term. If they are not loaded in the cache,
      * this will lazily load them.
@@ -89,13 +101,21 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * @return
      * @throws IOException
      */
-    public HashSet<String> getAllResults(String term) throws IOException {
+    public HashSet<String> getAllResults(String term, boolean exact) throws IOException {
         if(this.allresults.get(term) == null){
-            load(term);
+            load(term, exact);
         }
         return this.allresults.get(term);
     }
 
+    public HashSet<String> getAllTexts(String term, boolean exact) throws IOException {
+        if(this.alltexts.get(term) == null){
+            load(term, exact);
+        }
+        return this.alltexts.get(term);
+    }
+
+    
     public Set<String> getAllKeys(){
         return this.allresults.keySet();
     }
@@ -140,8 +160,17 @@ public class SentenceCache extends HashMap<String, Constituent> {
         // loadedsents will contain only those sentences which contain term, and which are already loaded.
         loadedsents.retainAll(fulllist);
 
+        int maxsentsize = 50;
+
         for(String sentid : loadedsents){
             if(displaylist.size() >= k) break;
+
+            if(this.getSentence(sentid).size() > maxsentsize){
+                //logger.debug("Skipping {} because size is {}", sentid, this.getSentence(sentid).size());
+                continue;
+            }
+
+
             displaylist.add(sentid);
         }
 
@@ -149,10 +178,33 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
         for(String sentid : fulllist){
             if(displaylist.size() >= k) break;
+
+            // don't include sentences with more than maxsentsize tokens
+            if(this.getSentence(sentid).size() > maxsentsize){
+                //logger.debug("Skipping {} because size is {}", sentid, this.getSentence(sentid).size());
+                continue;
+            }
+
+            logger.debug("Adding {} with size {}", sentid, this.getSentence(sentid).size());
             displaylist.add(sentid);
         }
 
         return displaylist;
+    }
+
+
+    private void load(String term) throws IOException {
+        load(term, false);
+    }
+
+    /**
+     * This searches for exact phrases.
+     * @param term
+     * @return
+     */
+    public int count(String term) throws IOException {
+        Query query = new TermQuery(new Term("body", term));
+        return searcher.count(query);
     }
 
     /**
@@ -160,10 +212,15 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * @param term
      * @throws IOException
      */
-    private void load(String term) throws IOException {
+    private void load(String term, boolean exact) throws IOException {
 
-        //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
-        Query query = new PrefixQuery(new Term("body", term));
+        // if it's not exact, it searches for prefix queries.
+        Query query;
+        if(exact) {
+            query = new TermQuery(new Term("body", term));
+        }else {
+            query = new PrefixQuery(new Term("body", term));
+        }
 
         // Assume a large text collection. We want to store EVERY SINGLE INSTANCE.
         int k = Integer.MAX_VALUE;
@@ -171,6 +228,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
         ScoreDoc[] hits = searchresults.scoreDocs;
 
         HashSet<String> queryids = new HashSet<>();
+        HashSet<String> querytexts = new HashSet<>();
 
         for (int i = 0; i < hits.length; ++i) {
             int luceneId = hits[i].doc;
@@ -184,12 +242,15 @@ public class SentenceCache extends HashMap<String, Constituent> {
                 continue;
             }
 
+            querytexts.add(d.get("body"));
             queryids.add(sentid);
+            this.sentid2text.put(sentid, d.get("body"));
+            this.sentid2origtext.put(sentid, d.get("origbody"));
         }
 
         logger.debug("Found {} results for term {}", queryids.size(), term);
 
-
         this.putQueryResult(term, queryids);
+        this.alltexts.put(term, queryids);
     }
 }

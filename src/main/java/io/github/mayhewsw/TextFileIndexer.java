@@ -76,7 +76,7 @@ public class TextFileIndexer {
     }
 
 
-    public static void buildsentenceindex(String conlldir, String indexDir) throws IOException {
+    public static void buildsentenceindex(String conlldir, String origfiledir, String indexDir) throws IOException {
         // we write to this open file object.
 
         FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
@@ -88,20 +88,39 @@ public class TextFileIndexer {
         TextAnnotation ta;
         File file = new File(conlldir);
 
+        int k =0;
+
         for(File fname : file.listFiles()){
             CoNLLNerReader cnr = new CoNLLNerReader(fname.getAbsolutePath());
+            CoNLLNerReader origcnr = new CoNLLNerReader(origfiledir + "/" + fname.getName());
 
             ta = cnr.next();
             View sentview = ta.getView(ViewNames.SENTENCE);
             List<Constituent> sentences = sentview.getConstituents();
 
-            for(Constituent sent : sentences){
+            ta = origcnr.next();
+            View origsentview = ta.getView(ViewNames.SENTENCE);
+            List<Constituent> origsentences = origsentview.getConstituents();
+
+            if(sentences.size() != origsentences.size()) {
+                System.err.println("Sentences aren't the same size!");
+                return;
+            }
+
+            for(int i = 0; i < sentences.size(); i++){
+                Constituent sent = sentences.get(i);
+                Constituent origsent = origsentences.get(i);
+
                 StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
 
                 Document d = new Document();
-                TextField tf = new TextField("body", sr);
+                TextField tf = new TextField("body", sent.getTokenizedSurfaceForm(), Field.Store.YES);
                 d.add(tf);
                 d.add(new StringField("filename", BootstrapController.getSentId(sent), Field.Store.YES));
+
+                TextField origtf = new TextField("origbody", origsent.getTokenizedSurfaceForm(), Field.Store.YES);
+                d.add(origtf);
+
                 writer.addDocument(d);
             }
         }
@@ -137,7 +156,7 @@ public class TextFileIndexer {
                 Query q = new PrefixQuery(new Term("body", s));
 
                 System.out.println(q);
-                TopScoreDocCollector collector = TopScoreDocCollector.create(50);
+                TopScoreDocCollector collector = TopScoreDocCollector.create(10);
                 searcher.search(q, collector);
                 ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
@@ -148,7 +167,8 @@ public class TextFileIndexer {
                 for(int i=0; i<hits.length; ++i) {
                     int docId = hits[i].doc;
                     Document d = searcher.doc(docId);
-                    System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
+                    System.out.println((i + 1) + ". " + d.get("body") + " score=" + hits[i].score);
+                    System.out.println((i + 1) + ". " + d.get("origbody") + " score=" + hits[i].score);
                 }
 
             } catch (Exception e) {
@@ -161,12 +181,19 @@ public class TextFileIndexer {
     }
 
     public static void main(String[] args) throws IOException {
-        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly";
-        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent2";
+        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly/";
+        String origfiledir = "/shared/corpora/ner/eval/column/mono-all/";
+        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent4";
 
-        //buildsentenceindex(filedir, indexdir);
+        //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
+        //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";
+
+        //buildsentenceindex(filedir, origfiledir, indexdir);
         testindex(indexdir);
     }
 
 
 }
+
+
+

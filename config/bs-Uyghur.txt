@@ -5,3 +5,4 @@ type	conll
 dictionary	/shared/experiments/mayhew2/lexicons/uig-eng.masterlex.txt.uly.gz
 labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
 terms   shi jinping,shinjang,xoten,kériye,rabiye qadir
+suffixes	ulghanda larning chiliki luqlar liqlar iyilik liqini chilik ghiche kidin kitin ning diki dila tiki ayli eyli liqi liri din gha lar men sen liq luq maq muq lik tin da ge de mu

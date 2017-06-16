@@ -11,6 +11,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.utils.SentenceCache;
+import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -162,6 +163,17 @@ public class BootstrapController {
             dict = new Dictionary();
         }
 
+        // this ensures that the suffixes item is never null.
+        String suffixlist = prop.getProperty("suffixes");
+        ArrayList<String> suffixes = new ArrayList<>();
+        if(suffixlist != null){
+            logger.info("Loading suffixes...");
+
+            for(String suff : suffixlist.split(" ")){
+                suffixes.add(suff);
+            }
+        }
+        hs.setAttribute("suffixes", suffixes);
 
         // FIXME: this folder contains entire files, many sentences of which are not annotated. When they are read back in, we will incorrectly mark sentences as annotated.
 
@@ -176,6 +188,9 @@ public class BootstrapController {
 
         // build groups here.
         HashMap<String, HashSet<String>> groups = new HashMap<>();
+
+        // Contains all TAs, used for updating patterns.
+        List<TextAnnotation> talist = new ArrayList<>();
 
         String sentidsfname = new File(folderpath).getParent() + "/annosents-" + sd.username + ".txt";
         if(new File(sentidsfname).exists()){
@@ -197,6 +212,8 @@ public class BootstrapController {
                 TextAnnotation ta = cnl.next();
                 View sents = ta.getView(ViewNames.SENTENCE);
 
+                talist.add(ta);
+
                 // this will overwrite whatever was previously there.
                 for (Constituent sent : sents.getConstituents()) {
                     String sentid = getSentId(sent);
@@ -205,7 +222,8 @@ public class BootstrapController {
                     cache.put(sentid, sent);
                     List<Constituent> nercons= sent.getTextAnnotation().getView(ViewNames.NER_CONLL).getConstituentsCovering(sent);
                     for(Constituent nercon : nercons){
-                        terms.add(nercon.getTokenizedSurfaceForm());
+                        String stemmed = Utils.stem(nercon.getTokenizedSurfaceForm(), sd.suffixes);
+                        terms.add(stemmed);
                     }
 
                 }
@@ -216,10 +234,10 @@ public class BootstrapController {
         hs.setAttribute("annosents", annosents);
         hs.setAttribute("terms", terms);
 
-        sd = new SessionData(hs);
+        HashMap<Pair<String, String>, Double> patterns = new HashMap<>();
+        hs.setAttribute("patterns", patterns);
 
-
-        updategroups2(sd.indexpath, terms, cache, groups);
+        updategroups2(indexpath, terms, cache, groups);
         hs.setAttribute("groups", groups);
 
         // use only if you have want an in-memory index (as opposed to a disk index)
@@ -241,6 +259,9 @@ public class BootstrapController {
         hs.setAttribute("labels", labels);
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("prop", prop);
+
+        // this needs to be after labels are created.
+        updateallpatterns(new SessionData(hs));
 
         return "redirect:/bootstrap/sents";
     }
@@ -460,6 +481,86 @@ public class BootstrapController {
         return "redirect:/bootstrap/";
     }
 
+    /**
+     * Update all the patterns. This is expensive... probably best to not use this.
+     * @param talist
+     * @param sd
+     */
+    public void updateallpatterns(SessionData sd) throws FileNotFoundException {
+        // update all patterns all the time.
+        logger.info("Updating all patterns...");
+        sd.patterns.clear();
+
+        HashMap<String, HashSet<String>> annosents = sd.annosents;
+        HashSet<TextAnnotation> alltas = new HashSet<>();
+        for(String term : annosents.keySet()){
+            for(String sentid : annosents.get(term)){
+                alltas.add(sd.cache.getSentence(sentid).getTextAnnotation());
+            };
+        }
+
+        // this maps label -> {prevword: count, prevword: count, ...}
+        HashMap<String, HashMap<String, Double>> labelcounts = new HashMap<>();
+
+        // Initialize
+        for(String label : sd.labels){
+            labelcounts.put(label, new HashMap<>());
+        }
+
+        HashMap<Pair<String, String>, Double> counts = new HashMap<>();
+        HashMap<String, Integer> featcounts = new HashMap<>();
+
+        // loop over all TAs.
+        for(TextAnnotation ta : alltas) {
+
+            // Extract features from this TA. This adds a new view called "feats"
+            FeatureExtractor.extract(ta);
+
+            View feats = ta.getView("feats");
+            View ner = ta.getView(ViewNames.NER_CONLL);
+            for(Constituent f : feats.getConstituents()){
+                // All features have exactly the same span as the NER constituent. This may be inefficient.
+                List<Constituent> nercs = ner.getConstituentsCoveringSpan(f.getStartSpan(), f.getEndSpan());
+
+                // assume that is length 1
+                // (should be by definition?)
+                if(nercs.size() > 0) {
+                    String label = nercs.get(0).getLabel();
+
+                    // increment the count for this (feature, label) combination.
+                    counts.merge(new Pair<>(f.getLabel(), label), 1., (oldValue, one) -> oldValue + one);
+                    // increment the count for this feature
+                    featcounts.merge(f.getLabel(), 1, (oldValue, one) -> oldValue + one);
+                }
+            }
+        }
+
+        int k = sd.labels.size();
+        // these values come directly from collins and singer paper.
+        double alpha = 0.1;
+        double threshold = 0.95;
+        double fullstringthreshold = 0.8;
+
+        for(Pair<String, String> fp : counts.keySet()){
+            String feat = fp.getFirst();
+            int featoccurrences = featcounts.get(feat);
+
+            double newvalue = (counts.get(fp) + alpha) / (featoccurrences + k*alpha);
+
+            // this allows that full-strings need only appear 2 or 3 times.
+            if(feat.startsWith("full-string") && newvalue > fullstringthreshold){
+                sd.patterns.put(fp, newvalue);
+            }
+            else if(newvalue > threshold){
+                sd.patterns.put(fp, newvalue);
+            }
+        }
+
+        logger.info("Done updating patterns.");
+
+    }
+
+
     @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
     public void save(@RequestParam(value="groupid", required=true) String groupid, @RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs, Model model) throws IOException {
@@ -478,7 +579,8 @@ public class BootstrapController {
             View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
             for(Constituent name : ner.getConstituentsCovering(sent)){
                 String surf = name.getTokenizedSurfaceForm();
-                sd.terms.add(surf);
+                String stemmed = Utils.stem(surf, sd.suffixes);
+                sd.terms.add(stemmed);
             };
             tas.add(sent.getTextAnnotation());
         }
@@ -489,6 +591,8 @@ public class BootstrapController {
 
         // convert the set (with no duplicates) into a list.
         List<TextAnnotation> talist = new ArrayList<>(tas);
+
+        updateallpatterns(sd);
 
         // write out to
         String username = sd.username;
@@ -611,6 +715,16 @@ public class BootstrapController {
                     labeledtokens += nercon.size();
                 }
             }
+
+            // This contains a list of strings that are high pattern matches along with their suggested label.
+            HashMap<Pair<String, String>, Double> patterncontexts = new HashMap<>();
+            for(Pair<String, String> pattern : sd.patterns.keySet()){
+                if(pattern.getFirst().startsWith("context")){
+                    patterncontexts.put(pattern, sd.patterns.get(pattern));
+                }
+            }
+
+            model.addAttribute("patterncontexts", patterncontexts);
 
             model.addAttribute("labeledtokens", labeledtokens);
             model.addAttribute("totaltokens", totaltokens);

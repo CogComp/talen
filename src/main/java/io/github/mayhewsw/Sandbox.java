@@ -1,41 +1,62 @@
 package io.github.mayhewsw;
 
+import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.xml.soap.Text;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by mayhew2 on 5/18/17.
  */
 public class Sandbox {
 
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        return map.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+    }
+
     public static void main(String[] args) {
 
-        String surf = "last year when barak obamaning was obama and obamagha had barak obama over for obama's lunch.";
-        String[] tok = surf.split(" ");
+        String folder = "/tmp/sents/";
 
-        String text = "barak obama";
+        CoNLLNerReader cnr = new CoNLLNerReader(folder);
 
+        HashMap<String, Integer> surfacecounts = new HashMap<>();
 
-        Pattern pattern = Pattern.compile("\\b"+text+"[^ ]*\\b", Pattern.CASE_INSENSITIVE);
-        // in case you would like to ignore case sensitivity,
-        // you could use this statement:
-        // Pattern pattern = Pattern.compile("\\s+", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(surf);
-        // check all occurance
-        while (matcher.find()) {
-            // these are character offsets.
-            int startind = StringUtils.countMatches(surf.substring(0, matcher.start()), " ");
-            int endind = startind + text.split(" ").length;
+        TextAnnotation ta;
+        while(cnr.hasNext()){
+            ta = cnr.next();
 
-            System.out.println(startind + ":" + endind);
+            View ner = ta.getView(ViewNames.NER_CONLL);
+            for(Constituent cons : ner.getConstituents()){
+                String surface = cons.getTokenizedSurfaceForm();
+                String label = cons.getLabel();
 
-            for(int i = startind; i < endind; i++){
-                System.out.println(tok[i]);
+                surfacecounts.merge(surface + ":::" + label, 1, (oldv,one) -> oldv + one);
             }
         }
 
+        for(Map.Entry<String, Integer> e : sortByValue(surfacecounts).entrySet()){
+            System.out.println(e.getKey() + "\t" + e.getValue());
+        }
 
     }
 }

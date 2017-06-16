@@ -13,13 +13,11 @@
 
     <div th:if="${groupid} == null">
 
-
-        <div>
-
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#unanno" aria-controls="unanno" role="tab" data-toggle="tab">Unannotated</a></li>
                 <li role="presentation"><a href="#anno" aria-controls="anno" role="tab" data-toggle="tab">Annotated</a></li>
+                <li role="presentation"><a href="#suggestions" aria-controls="suggestions" role="tab" data-toggle="tab">Suggestions</a></li>
             </ul>
 
             <!-- Tab panes -->
@@ -81,13 +79,37 @@
                     </div>
 
                 </div>
+
+
+
+                <!-- This set of sentences is all unannotated -->
+                <div role="tabpanel" class="tab-pane active" id="suggestions">
+
+                    <div class="spacer"></div>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="list-group">
+                                <div th:each="pattern : ${patterncontexts.keySet()}" class="list-group-item">
+
+                                    <!--<a th:each="label : ${labels}" th:href="@{/bootstrap/addtextsave(text=${groupid},label=${label},groupid=${groupid})}" th:class="${label} + ' badge'" th:text="${label}"></a>-->
+
+                                    <a th:href="'/bootstrap/search?query=' + ${pattern.getFirst().replaceAll('_', ' ').split('=')[1]}"><h4 th:text="'Pattern: ' + ${pattern.getFirst()} + ' for label:' + ${pattern.getSecond()}" class="list-group-item-heading"></h4></a>
+                                    <!--<p th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></p>-->
+                                    <!--<p th:text="${unannogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="spacer"></div>
+                            <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
+                            <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
+                            <p th:text="'Num anno sents: ' + ${numannosents}"></p>
+                            <p th:text="'Num sents in groups: ' + ${numsentsingroups}"></p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-        </div>
-
-
-
-
 
     </div>
 

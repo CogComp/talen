@@ -25,7 +25,6 @@ public class FeatureExtractor {
 
         View ner = ta.getView(ViewNames.NER_CONLL);
 
-
         View myfeats = new SpanLabelView("feats", ta);
 
         // TODO: this should all be in lowercase, but it messes up the pattern matching back in the ta
@@ -51,10 +50,10 @@ public class FeatureExtractor {
             String nextword = "_";
             String nextnextword = "_";
             if(span.getSecond() < ta.size() -1 ) {
-                nextword = ta.getToken(span.getFirst() + 1);
+                nextword = ta.getToken(span.getSecond() + 1);
             }
             if(span.getSecond() < ta.size()-2 ){
-                nextnextword = ta.getToken(span.getFirst()+2);
+                nextnextword = ta.getToken(span.getSecond()+2);
             }
 
             myfeats.addConstituent(new Constituent("context-after=" + nextword, "feats", ta, span.getFirst(), span.getSecond()));
