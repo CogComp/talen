@@ -158,7 +158,6 @@ public class BootstrapTest {
                                 if (names.contains(cand) || notnames.contains(cand)) continue;
 
                                 candidatecounts.merge(cand, 1., (oldValue, one) -> oldValue + one);
-
                             }
                         }
                         conind++;
@@ -191,22 +190,34 @@ public class BootstrapTest {
                 Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
                 Map.Entry<String, Double> entry;
 
-                Candidate[] namecands = new Candidate[Math.min(sorted.size(), limit)];
+                ArrayList<Candidate> namecands = new ArrayList<>();
 
-                int i = 0;
+                Random r = new Random();
+
                 // this builds the namedcands structure
-                while(iter.hasNext() && i < limit){
+                while(iter.hasNext() && namecands.size() < limit){
                     entry = iter.next();
                     Candidate c = new Candidate(entry.getKey(), getcontexts(entry.getKey()));
-                    namecands[i] = c;
-                    i++;
+
+                    double score = 0.0;
+                    if(trainer.trained && candlist.size() > 20) {
+                        score = trainer.cc.scores(c).get("true");
+                    }
+
+                    // keep all positive scored cands, and reject 70% of the negatives.
+                    if(score < 0 && r.nextDouble() < 0.80){
+                        // this path rejects candidate.
+                        continue;
+                    }else {
+                        namecands.add(c);
+                    }
                 }
 
                 System.out.println("Which of these are names? (input comma-sep ints, as in 1,2,5,8). Empty for none. Context: " + context);
                 System.out.println("Context score: " + contexts.get(context).doubleValue());
                 System.out.println("[#] freq. score  pmi");
-                for(int k = 0; k < namecands.length; k++){
-                    Candidate c = namecands[k];
+                for(int k = 0; k < namecands.size(); k++){
+                    Candidate c = namecands.get(k);
                     String[] skey = c.name.split(" ");
                     double pmi = 0;
                     if(skey.length == 2){
@@ -230,9 +241,9 @@ public class BootstrapTest {
                     // empty list means all candidates are wrong.
                     HashSet<String> selections = new HashSet<>(Arrays.asList(input.split(",")));
 
-                    for (int k = 0; k < limit; k++) {
-                        if(k >= namecands.length) break;
-                        Candidate cand = namecands[k];
+                    for (int k = 0; k < namecands.size(); k++) {
+                        //if(k >= namecands.length) break;
+                        Candidate cand = namecands.get(k);
 
                         if (selections.contains(k + "")) {
                             names.add(cand.name);
@@ -255,6 +266,12 @@ public class BootstrapTest {
 
         LineIO.write(path + "entities-"+lang+"." + type + ".found", names);
         //LineIO.write(path + "entities-"+lang+".NOT" + type + ".found", notnames);
+        LineIO.write(path + "contexts-" + lang + "." + type + ".found",
+                contexts.entrySet()
+                .stream()
+                .map((entry) -> entry.getKey() + "\t" + entry.getValue())
+                .collect(Collectors.toList()));
+
 
         trainer.trainClassifier(candlist);
 

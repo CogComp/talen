@@ -6,16 +6,18 @@ import java.util.*;
 
 discrete% Words(Candidate c) <-
 {
-    sense "first" : c.tokens.get(0);
-    sense "last" : c.tokens.get(c.tokens.size()-1);
-
+    //sense "first" : c.tokens.get(0);
+    //sense "last" : c.tokens.get(c.tokens.size()-1);
+    for(int i = 0; i < c.tokens.size(); i++){
+        sense c.tokens.get(i);
+    }
 }
 
 discrete% Contexts(Candidate c) <-
 {
     for(int i = 0; i < c.contexts.size(); i++){
-        sense c.contexts.get(i);
-    }
+            sense c.contexts.get(i);
+        }
 }
 
 discrete NumTokens(Candidate c) <-
@@ -28,7 +30,7 @@ discrete GoodCandidate(Candidate c) <- { return c.isgood; }
 
 discrete CandClassifier(Candidate c)  <-
 learn GoodCandidate
-  using Contexts
+  using Contexts,Words,NumTokens
 
   with new SparseNetworkLearner(new SparseAveragedPerceptron(.1, 0, 20))
 
