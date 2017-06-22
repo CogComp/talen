@@ -17,6 +17,7 @@ import java.util.*;
  */
 public class SessionData {
 
+    Bootstrap3 bs3;
     Dictionary dict;
     String username;
     Boolean showdefs;
@@ -32,6 +33,7 @@ public class SessionData {
     HashMap<String, HashSet<String>> annosents;
 
     HashSet<String> terms;
+    HashSet<String> contexts;
     List<String> labels;
 //    String folderpath;
     String indexpath;
@@ -61,10 +63,14 @@ public class SessionData {
         ramDirectory = (RAMDirectory) hs.getAttribute("ramdirectory");
         terms = (HashSet<String>) hs.getAttribute("terms");
 
+        contexts = (HashSet<String>) hs.getAttribute("contexts");
+
         cache = (SentenceCache) hs.getAttribute("cache");
         annosents = (HashMap<String, HashSet<String>>) hs.getAttribute("annosents");
 
         groups = (HashMap<String, HashSet<String>>) hs.getAttribute("groups");
+
+        bs3 = (Bootstrap3) hs.getAttribute("bs3");
 
     }
 

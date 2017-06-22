@@ -93,7 +93,7 @@
 
                                     <!--<a th:each="label : ${labels}" th:href="@{/bootstrap/addtextsave(text=${groupid},label=${label},groupid=${groupid})}" th:class="${label} + ' badge'" th:text="${label}"></a>-->
 
-                                    <a th:href="'/bootstrap/search?query=' + ${pattern.getFirst().replaceAll('_', ' ').split('=')[1]}"><h4 th:text="'Pattern: ' + ${pattern.getFirst()} + ' for label:' + ${pattern.getSecond()}" class="list-group-item-heading"></h4></a>
+                                    <a th:href="'/bootstrap/search?query=' + ${pattern.getFirst()}"><h4 th:text="'Pattern: ' + ${pattern.getFirst()} + ' for label:' + ${pattern.getSecond()}" class="list-group-item-heading"></h4></a>
                                     <!--<p th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></p>-->
                                     <!--<p th:text="${unannogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
 

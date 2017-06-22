@@ -14,7 +14,7 @@ public class Candidate {
     public ArrayList<String> contexts;
     public String name;
 
-    public Candidate(String name, HashMap<String, Integer> ctx) {
+    public Candidate(String name, HashMap<String, Double> ctx) {
         tokens = new ArrayList<>();
         tokens.addAll(Arrays.asList(name.split(" ")));
 

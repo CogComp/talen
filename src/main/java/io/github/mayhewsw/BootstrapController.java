@@ -107,7 +107,7 @@ public class BootstrapController {
         annovalues.retainAll(sents);
 
         // this is a special group.
-        String html = this.getAllHTML(new ArrayList<String>(annovalues), query, sd);
+        String html = this.getAllHTML(new ArrayList<String>(sents), query, sd);
 
         model.addAttribute("groupid", "specialgroup-" + query);
         model.addAttribute("html", html);
@@ -128,6 +128,9 @@ public class BootstrapController {
 
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
     public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
+
+        HashSet<String> contexts = new HashSet<>();
+        hs.setAttribute("contexts", contexts);
 
         Properties prop = datasets.get(dataname);
         // this refers to a folder containing a large number of unannotated conll files.
@@ -174,6 +177,8 @@ public class BootstrapController {
             }
         }
         hs.setAttribute("suffixes", suffixes);
+
+        sd = new SessionData(hs);
 
         // FIXME: this folder contains entire files, many sentences of which are not annotated. When they are read back in, we will incorrectly mark sentences as annotated.
 
@@ -260,8 +265,12 @@ public class BootstrapController {
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("prop", prop);
 
+        Bootstrap3 bs3 = new Bootstrap3(cache);
+        hs.setAttribute("bs3", bs3);
+
         // this needs to be after labels are created.
-        updateallpatterns(new SessionData(hs));
+//        updateallpatterns(new SessionData(hs));
+
 
         return "redirect:/bootstrap/sents";
     }
@@ -592,7 +601,18 @@ public class BootstrapController {
         // convert the set (with no duplicates) into a list.
         List<TextAnnotation> talist = new ArrayList<>(tas);
 
-        updateallpatterns(sd);
+//        updateallpatterns(sd);
+
+        LinkedHashMap<String, Double> sortedcontexts = sd.bs3.getcontexts(sd.terms, sd.contexts);
+        sd.bs3.topcontext(sortedcontexts, sd.contexts);
+
+        LinkedHashMap<String, Double> sortednames = sd.bs3.getnames(sd.terms, sd.contexts);
+
+        for(String t : sortednames.keySet()){
+            sd.patterns.put(new Pair<>(t, "PER"), 1.0);
+        }
+
+        //sd.bs3.manualclassifier(sortednames, terms);
 
         // write out to
         String username = sd.username;
@@ -719,9 +739,8 @@ public class BootstrapController {
             // This contains a list of strings that are high pattern matches along with their suggested label.
             HashMap<Pair<String, String>, Double> patterncontexts = new HashMap<>();
             for(Pair<String, String> pattern : sd.patterns.keySet()){
-                if(pattern.getFirst().startsWith("context")){
-                    patterncontexts.put(pattern, sd.patterns.get(pattern));
-                }
+                patterncontexts.put(pattern, sd.patterns.get(pattern));
+
             }
 
             model.addAttribute("patterncontexts", patterncontexts);
@@ -786,7 +805,7 @@ public class BootstrapController {
     @RequestMapping(value="/gethtml", method= RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String gethtml(@RequestParam(value="sentids[]", required=true) String[] sentids, String query, Model model, HttpSession hs){
+    public String gethtml(@RequestParam(value="sentids[]", required=true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
         return getAllHTML(Arrays.asList(sentids), query, sd);
     }
@@ -798,7 +817,7 @@ public class BootstrapController {
      * @param sd
      * @return
      */
-    public String getAllHTML(List<String> sentids, SessionData sd){
+    public String getAllHTML(List<String> sentids, SessionData sd) throws FileNotFoundException {
         return getAllHTML(sentids, "", sd);
     }
 
@@ -808,7 +827,7 @@ public class BootstrapController {
      * @param sd
      * @return
      */
-    public String getAllHTML(List<String> sentids, String query, SessionData sd){
+    public String getAllHTML(List<String> sentids, String query, SessionData sd) throws FileNotFoundException {
         HashMap<String, String> id2html = new HashMap<>();
 
         String ret = "";
@@ -818,7 +837,7 @@ public class BootstrapController {
                 "<div class=\"panel-body text\" id=%s>%s</div></div>";
 
         for (String sentid : sentids) {
-            String html = getHTMLfromSent(sd.cache.get(sentid), query, sd.dict, sd.showdefs);
+            String html = getHTMLfromSent(sd.cache.getSentence(sentid), query, sd.dict, sd.showdefs);
             //id2html.put(sentid, html);
             ret += String.format(htmltemplate, sentid, sentid, html) + "\n";
         }
@@ -829,7 +848,7 @@ public class BootstrapController {
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value="sentids[]") String[] sentids, @RequestParam(value="query") String query, HttpSession hs) {
+    public String toggledefs(@RequestParam(value="sentids[]") String[] sentids, @RequestParam(value="query") String query, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
 
         Boolean showdefs = sd.showdefs;

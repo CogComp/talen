@@ -1,45 +1,49 @@
 package io.github.mayhewsw;
 
-import edu.illinois.cs.cogcomp.core.datastructures.Pair;
-import edu.illinois.cs.cogcomp.core.io.LineIO;
 import io.github.mayhewsw.classifier.Candidate;
 import io.github.mayhewsw.classifier.Trainer;
 import io.github.mayhewsw.utils.SentenceCache;
-import org.apache.commons.math3.fraction.Fraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Created by mayhew2 on 6/9/17.
+ *
+ * This is a copy of BootstrapTest, in order to avoid massive conflicts next time I merge. :(
+ *
+ * Created by stephen on 6/21/17.
  */
-public class BootstrapTest {
-    private static Logger logger = LoggerFactory.getLogger(BootstrapTest.class);
+
+
+@SuppressWarnings("ALL")
+public class Bootstrap3 {
+
+    private static Logger logger = LoggerFactory.getLogger(Bootstrap3.class);
     private static final String punctuation = "!@#$%^&*()_-+=~`:;<>,./?|\\\"\'‹‹،";
 
-    LinkedHashMap<String, Fraction> contexts;
+    /**
+     * Internal datastructure to store patterns that are not contexts.
+     */
     HashSet<String> notcontexts;
 
-    HashSet<String> names;
+    /**
+     * Internal datastructure to store phrases that are not names.
+     */
     HashSet<String> notnames;
-    ArrayList<Candidate> candlist;
 
-    HashMap<String, HashMap<String, Double>> contextmap;
+    private ArrayList<Candidate> candlist;
 
-    SentenceCache sc;
+    private HashMap<String, HashMap<String, Double>> contextmap;
 
-    Trainer trainer;
+    private SentenceCache sc;
+
+    private Trainer trainer;
 
     int limit = 10;
-
-    String type = "PER";
-    String lang = "ug";
-    String path = "/tmp/";
 
     /**
      * This code effectively bootstraps lists of names and contexts, with human input.
@@ -47,68 +51,71 @@ public class BootstrapTest {
      * The essential parts of this are: given a list of names, gather a bunch of contexts for them.
      * @throws IOException
      */
-    public BootstrapTest() throws IOException {
-        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly";
-        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent4";
+//    public Bootstrap3() throws IOException {
+//        String filedir = "/shared/corpora/ner/eval/column/mono-all-uly";
+//        String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent4";
 
         //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
         //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";
 
-        sc = new SentenceCache(filedir, indexdir);
+//        sc = new SentenceCache(filedir, indexdir);
+//
+//        contexts = new LinkedHashMap<>();
+//        notcontexts = new HashSet<>();
+//
+//        String fname = path + "entities-"+lang+"." + type;
+//        File prev = new File(fname + ".foundGHOIHJLKWEJRLWKEJRLWKEJRLWEKJR");
+//        if(prev.exists()){
+//            names = new HashSet<>(LineIO.read(prev.getAbsolutePath()));
+//        }else{
+//            names = new HashSet<>(LineIO.read(fname));
+//        }
+//
+//        trainer = new Trainer();
+//        notnames = new HashSet<>(); //LineIO.read(path + "entities-"+lang+".NOT" + type));
+//
+//        candlist = new ArrayList<>();
+//
+//        contextmap = new HashMap<>();
 
-        contexts = new LinkedHashMap<>();
-        notcontexts = new HashSet<>();
+//    }
 
-        String fname = path + "entities-"+lang+"." + type;
-        File prev = new File(fname + ".foundGHOIHJLKWEJRLWKEJRLWKEJRLWEKJR");
-        if(prev.exists()){
-            names = new HashSet<>(LineIO.read(prev.getAbsolutePath()));
-        }else{
-            names = new HashSet<>(LineIO.read(fname));
-        }
-
-        trainer = new Trainer();
-        notnames = new HashSet<>(); //LineIO.read(path + "entities-"+lang+".NOT" + type));
-
-        candlist = new ArrayList<>();
-
-        contextmap = new HashMap<>();
-
-    }
-
-    public BootstrapTest(SentenceCache sc){
+    public Bootstrap3(SentenceCache sc){
         this.sc = sc;
 
-        // FIXME: need to update a whole bunch of other stuff too...
+        trainer = new Trainer();
+        candlist = new ArrayList<>();
+        contextmap = new HashMap<>();
 
+        notnames = new HashSet<>();
+        notcontexts = new HashSet<>();
     }
 
 
     /**
      * This assumes a list of contexts. Otherwise, nothing happens.
+     *
+     * Returns a hashmap of names, ranked by their frequencies.
+     *
      * @return
      * @throws IOException
      */
-    public boolean getnames() throws IOException {
+    public LinkedHashMap<String, Double> getnames(HashSet<String> names, HashSet<String> contexts) throws IOException {
 
-        // a set of contexts which should be removed.
-        HashSet<String> removethese = new HashSet<>();
+        HashMap<String, Double> candidatecounts = new HashMap<>();
 
-        for(String context : contexts.keySet()){
-
-            HashMap<String, Double> candidatecounts = new HashMap<>();
-
+        for(String context : contexts) {
             String term = context.split("@")[1];
 
             boolean exact = true;
             HashSet<String> allids;
-            if(context.startsWith("both@")){
+            if (context.startsWith("both@")) {
                 String[] terms = term.split("_");
                 HashSet<String> all1 = sc.getAllResults(terms[0], exact);
                 HashSet<String> all2 = sc.getAllResults(terms[1], exact);
                 all1.retainAll(all2);
                 allids = all1;
-            }else{
+            } else {
                 allids = sc.getAllResults(term, exact);
             }
 
@@ -122,26 +129,26 @@ public class BootstrapTest {
                 // boolean value for convenience.
                 boolean before = context.startsWith("before@");
 
-                if(context.startsWith("both@")){
+                if (context.startsWith("both@")) {
                     String[] terms = term.split("_");
                     String first = terms[0];
                     String last = terms[1];
 
                     int i = ssent.indexOf(first) + first.length();
                     int j = ssent.indexOf(last, i);
-                    if(i < 0 || j < 0){
+                    if (i < 0 || j < 0) {
                         continue;
                     }
 
                     String cand = ssent.substring(i, j).trim();
 
-                    if(cand.split(" ").length > 10) continue;
+                    if (cand.split(" ").length > 10) continue;
 
-                    if(!names.contains(cand) && !notnames.contains(cand)) {
+                    if (!names.contains(cand) && !notnames.contains(cand)) {
                         candidatecounts.merge(cand, 1., (oldValue, one) -> oldValue + one);
                     }
 
-                }else {
+                } else {
                     int conind = 0;
                     for (String con : sentcontexts) {
                         String[] scon = con.split(" ");
@@ -179,97 +186,79 @@ public class BootstrapTest {
                     }
                 }
             }
+        }
+
+        LinkedHashMap<String, Double> sorted = candidatecounts.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        return sorted;
+    }
+
+    public boolean manualclassifier(LinkedHashMap<String, Double> sorted, HashSet<String> names) throws IOException {
+        Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
+        Map.Entry<String, Double> entry;
+
+        Candidate[] namecands = new Candidate[Math.min(sorted.size(), limit)];
+
+        int i = 0;
+        // this builds the namedcands structure
+        while(iter.hasNext() && i < limit){
+            entry = iter.next();
+            Candidate c = new Candidate(entry.getKey(), getcontexts(entry.getKey()));
+            namecands[i] = c;
+            i++;
+        }
+
+        System.out.println("Which of these are names? (input comma-sep ints, as in 1,2,5,8). Empty for none.");
+        System.out.println("[#] freq. score ");
+        for(int k = 0; k < namecands.length; k++){
+            Candidate c = namecands[k];
+
+            double score = 0.0;
+            if(trainer.trained) {
+                score = trainer.cc.scores(c).get("true");
+            }
+
+            System.out.println(String.format("[%d] %5.1f %5.1f  %s", k, sorted.get(c.name), score, c.name));
+        }
 
 
-            // without this... the classifier is useless.
-//            if(trainer.trained) {
-//                for (String c : candidatecounts.keySet()) {
-//                    if(candidatecounts.get(c) > 1) {
-//                        Candidate cand = new Candidate(c, getcontexts(c));
-//                        candidatecounts.put(c, trainer.cc.scores(cand).get("true"));
-//                    }
-//                }
-//            }
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.nextLine().trim();
 
-            LinkedHashMap<String, Double> sorted = candidatecounts.entrySet()
-                    .stream()
-                    .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue,
-                            (e1, e2) -> e1,
-                            LinkedHashMap::new
-                    ));
+        if(input.equals("q") || input.equals("quit") || input.equals("exit")){
+            return false;
+        }else{
+            // empty list means all candidates are wrong.
+            HashSet<String> selections = new HashSet<>(Arrays.asList(input.split(",")));
 
-            if(sorted.size() > 0) {
-                Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
-                Map.Entry<String, Double> entry;
+            for (int k = 0; k < limit; k++) {
+                if(k >= namecands.length) break;
+                Candidate cand = namecands[k];
 
-                Candidate[] namecands = new Candidate[Math.min(sorted.size(), limit)];
-
-                int i = 0;
-                // this builds the namedcands structure
-                while(iter.hasNext() && i < limit){
-                    entry = iter.next();
-                    Candidate c = new Candidate(entry.getKey(), getcontexts(entry.getKey()));
-                    namecands[i] = c;
-                    i++;
+                if (selections.contains(k + "")) {
+                    names.add(cand.name);
+                    cand.isgood = true;
+                } else {
+                    notnames.add(cand.name);
+                    cand.isgood = false;
                 }
-
-                System.out.println("Which of these are names? (input comma-sep ints, as in 1,2,5,8). Empty for none. Context: " + context);
-                System.out.println("Context score: " + contexts.get(context).doubleValue());
-                System.out.println("[#] freq. score  pmi");
-                for(int k = 0; k < namecands.length; k++){
-                    Candidate c = namecands[k];
-                    String[] skey = c.name.split(" ");
-                    double pmi = 0;
-                    if(skey.length == 2){
-                        pmi = pmi(skey[0], skey[1]);
-                    }
-                    double score = 0.0;
-                    if(trainer.trained) {
-                        score = trainer.cc.scores(c).get("true");
-                    }
-
-                    System.out.println(String.format("[%d] %5.1f %5.1f %5.1f  %s", k, sorted.get(c.name), score, pmi, c.name));
-                }
-
-
-                Scanner scanner = new Scanner(System.in);
-                String input = scanner.nextLine().trim();
-
-                if(input.equals("q") || input.equals("quit") || input.equals("exit")){
-                    return false;
-                }else{
-                    // empty list means all candidates are wrong.
-                    HashSet<String> selections = new HashSet<>(Arrays.asList(input.split(",")));
-
-                    for (int k = 0; k < limit; k++) {
-                        if(k >= namecands.length) break;
-                        Candidate cand = namecands[k];
-
-                        if (selections.contains(k + "")) {
-                            names.add(cand.name);
-                            cand.isgood = true;
-                        } else {
-                            notnames.add(cand.name);
-                            cand.isgood = false;
-                        }
-                        candlist.add(cand);
-                    }
-
-                    // update context weight
-                    Fraction f = new Fraction(selections.size(), limit);
-
-                    contexts.merge(context.trim(), f,
-                            (oldValue, one) -> new Fraction(oldValue.getNumerator() + one.getNumerator(), oldValue.getDenominator() + one.getDenominator()));
-                }
+                candlist.add(cand);
             }
         }
 
-        LineIO.write(path + "entities-"+lang+"." + type + ".found", names);
-        //LineIO.write(path + "entities-"+lang+".NOT" + type + ".found", notnames);
+        return true;
+    }
 
+
+    public void trainclassifier(){
         trainer.trainClassifier(candlist);
 
         int correct = 0;
@@ -285,8 +274,8 @@ public class BootstrapTest {
         int total = correct + incorrect;
         logger.debug(correct + "/" + total + " are correct. This is: " + (100*correct / (float) total) + "%");
 
-        return true;
     }
+
 
     /**
      * Given a term, return the set of contexts it appears in.
@@ -367,7 +356,7 @@ public class BootstrapTest {
 
 
 
-    public boolean getcontexts() throws IOException {
+    public LinkedHashMap<String, Double> getcontexts(HashSet<String> names, HashSet<String> contexts) throws IOException {
         // start with some seed entities.
         HashMap<String, Double> featcounts = new HashMap<>();
 
@@ -388,43 +377,47 @@ public class BootstrapTest {
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
-        //logger.debug("Context candidates: " + sorted);
 
+
+
+        return sorted;
+    }
+
+    public void topcontext(LinkedHashMap<String, Double> sorted, HashSet<String> contexts){
         Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
 
         String ctx = iter.next().getKey();
-        while(contexts.containsKey(ctx) || ctx.split("@")[1].length() < 5 || notcontexts.contains(ctx)){
+        while(contexts.contains(ctx) || ctx.split("@")[1].length() < 5 || notcontexts.contains(ctx)){
             ctx = iter.next().getKey();
         }
         logger.debug("Going to add: " + ctx);
-        contexts.put(ctx, new Fraction(limit/2, limit));
-
-        // sort contexts here.
-        contexts = contexts.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1,
-                        LinkedHashMap::new
-                ));
-
-
-        return true;
+        contexts.add(ctx);
     }
 
-    public double pmi(String a, String b) throws IOException {
-        return Math.log(sc.count(a + " " + b) / (double)(sc.count(a)*sc.count(b)));
-    }
 
     public static void main(String[] args) throws IOException {
-        BootstrapTest bt = new BootstrapTest();
+
+        String filedir = "data/train-short/";
+        String indexdir = "data/train-short-indexsent4/";
+
+        SentenceCache sc = new SentenceCache(filedir,indexdir);
+
+        Bootstrap3 bt = new Bootstrap3(sc);
+
+        HashSet<String> names = new HashSet<>();
+        names.add("Pete Sampras");
+        names.add("Ronald Reagan");
+
+        HashSet<String> contexts = new HashSet<>();
 
         while(true) {
-            if(!bt.getcontexts()) break;
-            if(!bt.getnames()) break;
+            LinkedHashMap<String, Double> sortedcontexts = bt.getcontexts(names, contexts);
+            bt.topcontext(sortedcontexts, contexts);
+
+            LinkedHashMap<String, Double> sortednames = bt.getnames(names, contexts);
+            bt.manualclassifier(sortednames, names);
         }
 
     }
 }
+
