@@ -36,7 +36,7 @@ public class BootstrapTest {
     int numpos = 0;
     int numneg = 0;
 
-    HashMap<String, HashMap<String, Integer>> contextmap;
+    HashMap<String, HashMap<String, Double>> contextmap;
 
     SentenceCache sc;
 
@@ -329,14 +329,14 @@ public class BootstrapTest {
      * Given a term, return the set of contexts it appears in.
      * @param entity
      */
-    public HashMap<String, Integer> getcontexts(String entity) throws IOException {
+    public HashMap<String, Double> getcontexts(String entity) throws IOException {
 
         if(contextmap.containsKey(entity)){
             return contextmap.get(entity);
         }
 
         //logger.debug("Getting contexts for " + entity);
-        HashMap<String, Integer> featcounts = new HashMap<>();
+        HashMap<String, Double> featcounts = new HashMap<>();
         if(entity.length() <= 1){
             return featcounts;
         }
@@ -379,19 +379,19 @@ public class BootstrapTest {
                     if(prevbeforeterm.length() == 0) continue;
 
                     String both = "both@" + prevbeforeterm + "_" + after.split("@")[1];
-                    featcounts.merge(both, 1, (oldValue, one) -> oldValue + one);
+                    featcounts.merge(both, 1., (oldValue, one) -> oldValue + one);
                 }
 
                 if (k == 0) {
                     // use only before
-                    featcounts.merge(before, 1, (oldValue, one) -> oldValue + one);
+                    featcounts.merge(before, 1., (oldValue, one) -> oldValue + one);
                 } else if (k == sentcontexts.length - 1) {
                     // use only after
-                    featcounts.merge(after, 1, (oldValue, one) -> oldValue + one);
+                    featcounts.merge(after, 1., (oldValue, one) -> oldValue + one);
                 } else {
                     // use both before and after.
-                    featcounts.merge(before, 1, (oldValue, one) -> oldValue + one);
-                    featcounts.merge(after, 1, (oldValue, one) -> oldValue + one);
+                    featcounts.merge(before, 1., (oldValue, one) -> oldValue + one);
+                    featcounts.merge(after, 1., (oldValue, one) -> oldValue + one);
                 }
             }
         }
@@ -406,17 +406,17 @@ public class BootstrapTest {
 
     public boolean getcontexts() throws IOException {
         // start with some seed entities.
-        HashMap<String, Integer> featcounts = new HashMap<>();
+        HashMap<String, Double> featcounts = new HashMap<>();
 
         for(String entity : names) {
-            HashMap<String, Integer> entityfeatcounts = getcontexts(entity);
+            HashMap<String, Double> entityfeatcounts = getcontexts(entity);
 
             for(String feat : entityfeatcounts.keySet()){
                 featcounts.merge(feat, entityfeatcounts.get(feat), (oldValue, one) -> oldValue + one);
             }
         }
 
-        LinkedHashMap<String, Integer> sorted = featcounts.entrySet()
+        LinkedHashMap<String, Double> sorted = featcounts.entrySet()
                 .stream()
                 .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
                 .collect(Collectors.toMap(
@@ -427,7 +427,7 @@ public class BootstrapTest {
                 ));
         //logger.debug("Context candidates: " + sorted);
 
-        Iterator<Map.Entry<String, Integer>> iter = sorted.entrySet().iterator();
+        Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
 
         String ctx = iter.next().getKey();
         while(contexts.containsKey(ctx) || ctx.split("@")[1].length() < 5 || notcontexts.contains(ctx)){
