@@ -14,7 +14,7 @@ public class Candidate {
 
     public boolean isgood;
     public ArrayList<String> tokens;
-    public HashMap<String, Integer> contexts;
+    public HashMap<String, Double> contexts;
     public String name;
     public double totalcontexts;
 
@@ -25,7 +25,7 @@ public class Candidate {
         this.name = name;
 
         contexts = ctx;
-        totalcontexts = (double) ctx.values().stream().mapToInt(i -> i).sum();
+        totalcontexts = ctx.values().stream().mapToDouble(i -> i).sum();
     }
 
     @Override
