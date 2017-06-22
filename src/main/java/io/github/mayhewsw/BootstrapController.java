@@ -580,6 +580,8 @@ public class BootstrapController {
         HashMap<String, HashSet<String>> annosents = sd.annosents;
 
         HashSet<String> group = new HashSet<>(Arrays.asList(sentids));
+        HashSet<String> annogroup = new HashSet<>();
+
 
         HashSet<TextAnnotation> tas = new HashSet<>();
         for(String sentid : group){
@@ -596,11 +598,12 @@ public class BootstrapController {
             // only save those sentences that have some annotation.
             if(nerc.size() > 0) {
                 tas.add(sent.getTextAnnotation());
+                annogroup.add(sentid);
             }
         }
 
-        if(!groupid.startsWith("specialgroup-")) {
-            annosents.put(groupid, group);
+        if(groupid.trim().length() > 0 && !groupid.startsWith("specialgroup-")) {
+            annosents.put(groupid, annogroup);
         }
 
         // convert the set (with no duplicates) into a list.
@@ -630,8 +633,8 @@ public class BootstrapController {
 
         List<String> annolines = new ArrayList<>();
         for(String term : annosents.keySet()){
-            HashSet<String> annogroup = annosents.get(term);
-            String annoline = term + "\t" + StringUtils.join(annogroup, ",");
+            HashSet<String> annogroup2 = annosents.get(term);
+            String annoline = term + "\t" + StringUtils.join(annogroup2, ",");
             annolines.add(annoline);
         }
 

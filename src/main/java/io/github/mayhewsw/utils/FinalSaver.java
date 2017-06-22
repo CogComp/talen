@@ -56,6 +56,7 @@ public class FinalSaver {
                 TextAnnotation taorig = new CoNLLNerReader(origfolder + "/" + ta.getId()).next();
                 // this should overwrite the (empty) NER_CONLL view.
                 taorig.addView(ViewNames.NER_CONLL, ner);
+                View nerorig = taorig.getView(ViewNames.NER_CONLL);
                 View sents = taorig.getView(ViewNames.SENTENCE);
 
                 for (Constituent sent : sents.getConstituents()) {
@@ -63,6 +64,8 @@ public class FinalSaver {
 
                     // only keep those sentences that we have annotated.
                     if(!annosentids.contains(sentid)) continue;
+
+                    if(nerorig.getConstituentsCovering(sent).size() == 0) continue;
 
                     // how to rewrite this sentence as a textannotation.
                     SentToConll(sent, outfolder);
@@ -108,12 +111,13 @@ public class FinalSaver {
 //        String romanfolder = "/shared/corpora/ner/eval/column/mono-all-uly-sentanno-mayhew2";
 //        String sentencesfname = "/shared/corpora/ner/eval/column/annosents-mayhew2.txt";
 
+        String username = "test2";
 
         String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
         String origfolder = dir + "conll/";
-        String romanfolder = dir + "conll-pyrom-sentanno-test/";
-        String sentencesfname = dir + "annosents-test.txt";
-        String outpath = dir + "final";
+        String romanfolder = dir + "conll-pyrom-sentanno-"+username +"/";
+        String sentencesfname = dir + "annosents-"+username +".txt";
+        String outpath = dir + "final-"+username +"/";
 
         save(origfolder, romanfolder, sentencesfname, outpath);
 
