@@ -2,8 +2,12 @@ package io.github.mayhewsw;
 
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
+import edu.illinois.cs.cogcomp.lbjava.classify.TestDiscrete;
+import edu.illinois.cs.cogcomp.lbjava.parse.Parser;
+import io.github.mayhewsw.classifier.CandParser;
 import io.github.mayhewsw.classifier.Candidate;
 import io.github.mayhewsw.classifier.Trainer;
+import io.github.mayhewsw.classifier.lbjava.GoodCandidate;
 import io.github.mayhewsw.utils.SentenceCache;
 import org.apache.commons.math3.fraction.Fraction;
 import org.slf4j.Logger;
@@ -20,7 +24,7 @@ import java.util.stream.Collectors;
  */
 public class BootstrapTest {
     private static Logger logger = LoggerFactory.getLogger(BootstrapTest.class);
-    private static final String punctuation = "!@#$%^&*()_-+=~`:;<>,./?|\\\"\'‹‹،";
+    public static final String punctuation = "!@#$%^&*()_-+=~`:;<>,./?|\\\"\'‹‹››،[]{}";
 
     LinkedHashMap<String, Fraction> contexts;
     HashSet<String> notcontexts;
@@ -28,6 +32,9 @@ public class BootstrapTest {
     HashSet<String> names;
     HashSet<String> notnames;
     ArrayList<Candidate> candlist;
+
+    int numpos = 0;
+    int numneg = 0;
 
     HashMap<String, HashMap<String, Integer>> contextmap;
 
@@ -39,7 +46,11 @@ public class BootstrapTest {
     Pair<Double, Double> abovepmi = new Pair<>(0.,1.);
     Pair<Double, Double> belowpmi = new Pair<>(0.,1.);
 
-    int limit = 10;
+    // how many we select to reorder by classifier score
+    int limit = 500;
+
+    // how many we show to the user
+    int displaylimit = 10;
 
     String type = "PER";
     String lang = "ug";
@@ -58,7 +69,7 @@ public class BootstrapTest {
         notcontexts = new HashSet<>();
 
         String fname = path + "entities-"+lang+"." + type;
-        File prev = new File(fname + ".foundGHOIHJLKWEJRLWKEJRLWKEJRLWEKJR");
+        File prev = new File(fname + ".found");
         if(prev.exists()){
             names = new HashSet<>(LineIO.read(prev.getAbsolutePath()));
         }else{
@@ -75,15 +86,17 @@ public class BootstrapTest {
     }
 
 
+    /**
+    * This assumes a list of contexts, and gathers names from contexts, and has the user tag them.
+    */
     public boolean getnames() throws IOException {
 
         // a set of contexts which should be removed.
         HashSet<String> removethese = new HashSet<>();
 
+        HashMap<String, Double> candidatecounts = new HashMap<>();
+
         for(String context : contexts.keySet()){
-
-            HashMap<String, Double> candidatecounts = new HashMap<>();
-
             String term = context.split("@")[1];
 
             boolean exact = true;
@@ -164,103 +177,115 @@ public class BootstrapTest {
                     }
                 }
             }
+        }
+
+        // sorted is a hashmap, sorted by frequency counts.
+        // this is limited to the top candidates, as defined by field called limit
+        LinkedHashMap<String, Double> sorted = candidatecounts.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+            .limit(limit)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
 
 
-            // without this... the classifier is useless.
-//            if(trainer.trained) {
-//                for (String c : candidatecounts.keySet()) {
-//                    if(candidatecounts.get(c) > 1) {
-//                        Candidate cand = new Candidate(c, getcontexts(c));
-//                        candidatecounts.put(c, trainer.cc.scores(cand).get("true"));
-//                    }
-//                }
-//            }
+        boolean needmorecontexts = true;
 
-            LinkedHashMap<String, Double> sorted = candidatecounts.entrySet()
+        if(sorted.size() > 0) {
+            Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
+            Map.Entry<String, Double> entry;
+
+            // get top k of sorted, and resort by score.
+            LinkedHashMap<Candidate, Double> topkcands = new LinkedHashMap<>();
+
+            Random r = new Random();
+
+            // this will populate the topkcands map.
+            while(iter.hasNext()){
+                entry = iter.next();
+                Candidate c = new Candidate(entry.getKey(), getcontexts(entry.getKey()));
+
+                double score = 0.0;
+                if(trainer.trained && candlist.size() > 20 && numpos > 0 && numneg > 0) {
+                    score = trainer.cc.scores(c).get("true");
+                }
+
+                // keep all positive scored cands, and reject 70% of the negatives.
+                if(score < 0 && r.nextDouble() < 0.1){
+                    // this path rejects candidate.
+                    continue;
+                }else {
+                    //namecands.add(c);
+                    topkcands.put(c, score);
+                }
+            }
+
+            // this solves two problems: turn topkcands to a list, and limit to displaylimit size.
+            List<Map.Entry<Candidate, Double>> topklist = topkcands.entrySet()
                     .stream()
                     .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue,
-                            (e1, e2) -> e1,
-                            LinkedHashMap::new
-                    ));
+                .limit(displaylimit)
+                .collect(Collectors.toList());
 
-            if(sorted.size() > 0) {
-                Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
-                Map.Entry<String, Double> entry;
 
-                ArrayList<Candidate> namecands = new ArrayList<>();
+            System.out.println("Which of these are names? (input comma-sep ints, as in 1,2,5,8). Empty for none.");
+            //System.out.println("Context score: " + contexts.get(context).doubleValue());
+            System.out.println("[#] freq. score  pmi");
+            int j = 0;
+            //for(int k = 0; k < topkcands.size(); k++){
+            for(Map.Entry<Candidate, Double> e: topklist){;
+                Candidate c = e.getKey();
+                String[] skey = c.name.split(" ");
+                double pmi = 0;
+                if(skey.length == 2){
+                    pmi = pmi(skey[0], skey[1]);
+                }
+                double score = e.getValue();
+                double freq = sorted.get(c.name);
+                
+                System.out.println(String.format("[%d] %5.1f %5.1f %5.1f  %s", j++, freq, score, pmi, c.name));
+            }
 
-                Random r = new Random();
+            Scanner scanner = new Scanner(System.in);
+            String input = scanner.nextLine().trim();
 
-                // this builds the namedcands structure
-                while(iter.hasNext() && namecands.size() < limit){
-                    entry = iter.next();
-                    Candidate c = new Candidate(entry.getKey(), getcontexts(entry.getKey()));
+            if(input.equals("q") || input.equals("quit") || input.equals("exit")){
 
-                    double score = 0.0;
-                    if(trainer.trained && candlist.size() > 20) {
-                        score = trainer.cc.scores(c).get("true");
+                trainer.cc.save();
+
+                System.exit(1);
+            }else{
+                // empty list means all candidates are wrong.
+                HashSet<String> selections = new HashSet<>(Arrays.asList(input.split(",")));
+
+                for (int k = 0; k < topklist.size(); k++) {
+                    Map.Entry<Candidate, Double> e = topklist.get(k);
+                    Candidate cand = e.getKey();
+
+                    if (selections.contains(k + "")) {
+                        names.add(cand.name);
+                        cand.isgood = true;
+                        numpos++;
+
+                        // if you find any good names in this list, then keep hammering until you find none!
+                        needmorecontexts = false;
+                    } else {
+                        notnames.add(cand.name);
+                        cand.isgood = false;
+                        numneg++;
                     }
-
-                    // keep all positive scored cands, and reject 70% of the negatives.
-                    if(score < 0 && r.nextDouble() < 0.80){
-                        // this path rejects candidate.
-                        continue;
-                    }else {
-                        namecands.add(c);
-                    }
+                    candlist.add(cand);
                 }
 
-                System.out.println("Which of these are names? (input comma-sep ints, as in 1,2,5,8). Empty for none. Context: " + context);
-                System.out.println("Context score: " + contexts.get(context).doubleValue());
-                System.out.println("[#] freq. score  pmi");
-                for(int k = 0; k < namecands.size(); k++){
-                    Candidate c = namecands.get(k);
-                    String[] skey = c.name.split(" ");
-                    double pmi = 0;
-                    if(skey.length == 2){
-                        pmi = pmi(skey[0], skey[1]);
-                    }
-                    double score = 0.0;
-                    if(trainer.trained) {
-                        score = trainer.cc.scores(c).get("true");
-                    }
+                // update context weight
+                //Fraction f = new Fraction(selections.size(), limit);
 
-                    System.out.println(String.format("[%d] %5.1f %5.1f %5.1f  %s", k, sorted.get(c.name), score, pmi, c.name));
-                }
-
-
-                Scanner scanner = new Scanner(System.in);
-                String input = scanner.nextLine().trim();
-
-                if(input.equals("q") || input.equals("quit") || input.equals("exit")){
-                    return false;
-                }else{
-                    // empty list means all candidates are wrong.
-                    HashSet<String> selections = new HashSet<>(Arrays.asList(input.split(",")));
-
-                    for (int k = 0; k < namecands.size(); k++) {
-                        //if(k >= namecands.length) break;
-                        Candidate cand = namecands.get(k);
-
-                        if (selections.contains(k + "")) {
-                            names.add(cand.name);
-                            cand.isgood = true;
-                        } else {
-                            notnames.add(cand.name);
-                            cand.isgood = false;
-                        }
-                        candlist.add(cand);
-                    }
-
-                    // update context weight
-                    Fraction f = new Fraction(selections.size(), limit);
-
-                    contexts.merge(context.trim(), f,
-                            (oldValue, one) -> new Fraction(oldValue.getNumerator() + one.getNumerator(), oldValue.getDenominator() + one.getDenominator()));
-                }
+                //contexts.merge(context.trim(), f,
+                //        (oldValue, one) -> new Fraction(oldValue.getNumerator() + one.getNumerator(), oldValue.getDenominator() + one.getDenominator()));
             }
         }
 
@@ -273,6 +298,7 @@ public class BootstrapTest {
                 .collect(Collectors.toList()));
 
 
+        trainer.cc.forget();
         trainer.trainClassifier(candlist);
 
         int correct = 0;
@@ -285,10 +311,18 @@ public class BootstrapTest {
             }
 
         }
-        int total = correct + incorrect;
-        logger.debug(correct + "/" + total + " are correct. This is: " + (100*correct / (float) total) + "%");
 
-        return true;
+        if(trainer.trained) {
+            TestDiscrete tester = TestDiscrete.testDiscrete(trainer.cc, new GoodCandidate(), new CandParser(candlist));
+            tester.printPerformance(System.out);
+            //logger.debug("Precision: {}, Recall: {}, F1: {}", prf[0], prf[1], prf[2]);
+            logger.debug("Num pos: {}, Num neg: {}", numpos, numneg);
+
+            int total = correct + incorrect;
+            logger.debug(correct + "/" + total + " are correct. This is: " + (100 * correct / (float) total) + "%");
+        }
+
+        return needmorecontexts;
     }
 
     /**
@@ -301,7 +335,7 @@ public class BootstrapTest {
             return contextmap.get(entity);
         }
 
-        logger.debug("Getting contexts for " + entity);
+        //logger.debug("Getting contexts for " + entity);
         HashMap<String, Integer> featcounts = new HashMap<>();
         if(entity.length() <= 1){
             return featcounts;
@@ -361,7 +395,7 @@ public class BootstrapTest {
                 }
             }
         }
-        logger.debug("Done getting contexts...");
+        //logger.debug("Done getting contexts...");
 
         contextmap.put(entity, featcounts);
 
@@ -424,9 +458,13 @@ public class BootstrapTest {
     public static void main(String[] args) throws IOException {
         BootstrapTest bt = new BootstrapTest();
 
+        boolean needmorecontexts = true;
         while(true) {
-            if(!bt.getcontexts()) break;
-            if(!bt.getnames()) break;
+            if(needmorecontexts) {
+                bt.getcontexts();
+            }
+            // this has a system.exit in it. :( I know.
+            needmorecontexts = bt.getnames();
         }
 
     }

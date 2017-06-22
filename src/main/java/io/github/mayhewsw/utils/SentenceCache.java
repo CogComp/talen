@@ -222,12 +222,6 @@ public class SentenceCache extends HashMap<String, Constituent> {
             query = new PrefixQuery(new Term("body", term));
         }
 
-        int c = searcher.count(query);
-        if(c > 1000){
-            System.out.println("stop here!");
-        }
-
-
         // Assume a large text collection. We want to store EVERY SINGLE INSTANCE.
         int k = 1000;
         TopDocs searchresults = searcher.search(query, k);
@@ -254,7 +248,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
             this.sentid2origtext.put(sentid, d.get("origbody"));
         }
 
-        logger.debug("Found {} results for term {}", queryids.size(), term);
+        //logger.debug("Found {} results for term {}", queryids.size(), term);
 
         this.putQueryResult(term, queryids);
         this.alltexts.put(term, queryids);
