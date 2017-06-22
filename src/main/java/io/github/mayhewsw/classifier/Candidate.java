@@ -1,6 +1,9 @@
 package io.github.mayhewsw.classifier;
 
+import io.github.mayhewsw.BootstrapTest;
+import org.apache.catalina.startup.Bootstrap;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.math3.util.IterationEvent;
 
 import java.util.*;
 
@@ -11,8 +14,9 @@ public class Candidate {
 
     public boolean isgood;
     public ArrayList<String> tokens;
-    public ArrayList<String> contexts;
+    public HashMap<String, Integer> contexts;
     public String name;
+    public double totalcontexts;
 
     public Candidate(String name, HashMap<String, Double> ctx) {
         tokens = new ArrayList<>();
@@ -20,8 +24,8 @@ public class Candidate {
 
         this.name = name;
 
-        contexts = new ArrayList<>();
-        contexts.addAll(ctx.keySet());
+        contexts = ctx;
+        totalcontexts = (double) ctx.values().stream().mapToInt(i -> i).sum();
     }
 
     @Override
@@ -31,4 +35,14 @@ public class Candidate {
                 ", tokens=" + StringUtils.join(tokens, " ") +
                 '}';
     }
+
+    public boolean haspunc(){
+        for(String t : tokens){
+            if(BootstrapTest.punctuation.contains(t)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
