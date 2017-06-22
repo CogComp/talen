@@ -24,7 +24,7 @@ discrete% Contexts(Candidate c) <-
     Iterator iter = c.contexts.keySet().iterator();
     while(iter.hasNext()){
         String ctx = (String) iter.next();
-        int frequency = c.contexts.get(ctx);
+        double frequency = c.contexts.get(ctx);
         sense ctx ;
     }
 }

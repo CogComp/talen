@@ -330,8 +330,10 @@ public class Bootstrap3 {
 
                     if(prevbeforeterm.length() == 0) continue;
 
-                    String both = "both@" + prevbeforeterm + "_" + after.split("@")[1];
-                    featcounts.merge(both, 1., (oldValue, one) -> oldValue + one);
+                    if(after.split("@").length > 1) {
+                        String both = "both@" + prevbeforeterm + "_" + after.split("@")[1];
+                        featcounts.merge(both, 1., (oldValue, one) -> oldValue + one);
+                    }
                 }
 
                 if (k == 0) {

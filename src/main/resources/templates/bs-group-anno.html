@@ -187,10 +187,10 @@
             // on right click, change label to nothing.
             $("[id^=tok]").contextmenu(function(event){
                 event.preventDefault();
-                var spanid = event.currentTarget.id;
-                console.log("Right clicked on " + spanid);
+                var span = event.currentTarget;
+                console.log("Right clicked on " + span.id);
 
-                removelabel(spanid);
+                removelabel(span);
             });
         }
 
@@ -257,19 +257,17 @@
         }
 
         // Given a span, remove the label.
-        function removelabel(spanid) {
+        function removelabel(span) {
 
             $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
             $("#savebutton").css({"border-color" : "#c00"});
 
-            console.log("Removing label from: " + spanid);
-            var tok = $(document.getElementById(spanid));
-
-            var sentid = tok.parents(".panel-body")[0].id;
-            console.log(sentid);
+            var sentid = $(span).parents(".panel-body")[0].id;
 
             // returns just the number of the token. tok-4, returns 4.
-            var tokid = getnum(spanid);
+            var tokid = getnum(span.id);
+
+            console.log("Removing label from: " + sentid + ":" + tokid);
 
             $.ajax({
                 method: "POST",
@@ -277,8 +275,7 @@
                 data: {sentid: sentid, tokid: tokid}
             }).done(function (msg) {
                 console.log("successful removal.");
-                $(document.getElementById(sentid)).html(msg);
-                loadtok();
+                refreshsents();
             });
 
         }

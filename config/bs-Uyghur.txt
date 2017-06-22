@@ -1,6 +1,6 @@
 name	Uyghur
 folderpath	/shared/corpora/ner/eval/column/mono-all-uly
-indexpath	/shared/corpora/ner/eval/column/mono-all-uly-indexsent2
+indexpath	/shared/corpora/ner/eval/column/mono-all-uly-indexsent4
 type	conll
 dictionary	/shared/experiments/mayhew2/lexicons/uig-eng.masterlex.txt.uly.gz
 labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral

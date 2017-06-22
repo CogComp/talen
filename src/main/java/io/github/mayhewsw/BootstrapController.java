@@ -400,7 +400,7 @@ public class BootstrapController {
 
                 int sentstart = sent.getStartSpan();
 
-                Pattern pattern = Pattern.compile("\\b"+text+"[^ ]*", Pattern.CASE_INSENSITIVE);
+                Pattern pattern = Pattern.compile("[^ ]*"+text+"[^ ]*", Pattern.CASE_INSENSITIVE);
                 // in case you would like to ignore case sensitivity,
                 // you could use this statement:
                 // Pattern pattern = Pattern.compile("\\s+", Pattern.CASE_INSENSITIVE);
@@ -586,12 +586,17 @@ public class BootstrapController {
             Constituent sent = sd.cache.getSentence(sentid);
 
             View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
-            for(Constituent name : ner.getConstituentsCovering(sent)){
+            List<Constituent> nerc = ner.getConstituentsCovering(sent);
+            for(Constituent name : nerc){
                 String surf = name.getTokenizedSurfaceForm();
                 String stemmed = Utils.stem(surf, sd.suffixes);
                 sd.terms.add(stemmed);
             };
-            tas.add(sent.getTextAnnotation());
+
+            // only save those sentences that have some annotation.
+            if(nerc.size() > 0) {
+                tas.add(sent.getTextAnnotation());
+            }
         }
 
         if(!groupid.startsWith("specialgroup-")) {
@@ -601,16 +606,16 @@ public class BootstrapController {
         // convert the set (with no duplicates) into a list.
         List<TextAnnotation> talist = new ArrayList<>(tas);
 
-//        updateallpatterns(sd);
 
-        LinkedHashMap<String, Double> sortedcontexts = sd.bs3.getcontexts(sd.terms, sd.contexts);
-        sd.bs3.topcontext(sortedcontexts, sd.contexts);
-
-        LinkedHashMap<String, Double> sortednames = sd.bs3.getnames(sd.terms, sd.contexts);
-
-        for(String t : sortednames.keySet()){
-            sd.patterns.put(new Pair<>(t, "PER"), 1.0);
-        }
+        //// FIXME: add this functionality back in!
+//        LinkedHashMap<String, Double> sortedcontexts = sd.bs3.getcontexts(sd.terms, sd.contexts);
+//        sd.bs3.topcontext(sortedcontexts, sd.contexts);
+//
+//        LinkedHashMap<String, Double> sortednames = sd.bs3.getnames(sd.terms, sd.contexts);
+//
+//        for(String t : sortednames.keySet()){
+//            sd.patterns.put(new Pair<>(t, "PER"), 1.0);
+//        }
 
         //sd.bs3.manualclassifier(sortednames, terms);
 

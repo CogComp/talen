@@ -169,6 +169,8 @@ public class TextFileIndexer {
                     Document d = searcher.doc(docId);
                     System.out.println((i + 1) + ". " + d.get("body") + " score=" + hits[i].score);
                     System.out.println((i + 1) + ". " + d.get("origbody") + " score=" + hits[i].score);
+                    System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
+
                 }
 
             } catch (Exception e) {
@@ -186,8 +188,7 @@ public class TextFileIndexer {
 
         String filedir = dir + "conll-pyrom/";
         String origfiledir = dir + "conll/";
-        //String indexdir = "/shared/experiments/mayhew2/indices/amharic-indexsent/";
-        String indexdir = "/tmp/amharic-indexsent/";
+        String indexdir = "/shared/experiments/mayhew2/indices/amharic-indexsent/";
             
         
         //String filedir = "/shared/corpora/ner/eval/column/mono-all-uly/";
@@ -198,7 +199,7 @@ public class TextFileIndexer {
         //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
         //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";
 
-        buildsentenceindex(filedir, origfiledir, indexdir);
+//        buildsentenceindex(filedir, origfiledir, indexdir);
         testindex(indexdir);
     }
 
