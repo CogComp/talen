@@ -91,8 +91,13 @@ public class BootstrapController {
 
 
     @RequestMapping(value="/search", method=RequestMethod.GET)
-    public String search(@RequestParam(value="query", required=true) String query, HttpSession hs, Model model) throws IOException {
+    public String search(@RequestParam(value="query", required=true) String query,@RequestParam(value="searchinanno", required=false) String searchinanno, HttpSession hs, Model model) throws IOException {
         SessionData sd = new SessionData(hs);
+
+        boolean annosearch = false;
+        if(searchinanno != null){
+            annosearch = true;
+        }
 
         HashSet<String> sents = sd.cache.getAllResults(query);
         // serch only among annotated sentences.
@@ -104,10 +109,18 @@ public class BootstrapController {
             annovalues.addAll(v);
         }
 
-        annovalues.retainAll(sents);
+        ArrayList<String> grouplist = new ArrayList<String>();
+
+        // whether or not to display all, or just the annotated text.
+        if(annosearch) {
+            annovalues.retainAll(sents);
+            grouplist.addAll(annovalues);
+        }else{
+            grouplist.addAll(sents);
+        }
 
         // this is a special group.
-        String html = this.getAllHTML(new ArrayList<String>(sents), query, sd);
+        String html = this.getAllHTML(grouplist, query, sd);
 
         model.addAttribute("groupid", "specialgroup-" + query);
         model.addAttribute("html", html);
@@ -191,32 +204,31 @@ public class BootstrapController {
         // annosents format is: term<tab>sentence
         HashMap<String, HashSet<String>> annosents = new HashMap<>();
 
-        // build groups here.
-        HashMap<String, HashSet<String>> groups = new HashMap<>();
+
 
         // Contains all TAs, used for updating patterns.
         List<TextAnnotation> talist = new ArrayList<>();
 
-        String sentidsfname = new File(folderpath).getParent() + "/annosents-" + sd.username + ".txt";
-        if(new File(sentidsfname).exists()){
-            List<String> annolines = LineIO.read(sentidsfname);
+//        String sentidsfname = new File(folderpath).getParent() + "/annosents-" + sd.username + ".txt";
+//        if(new File(sentidsfname).exists()){
+//            List<String> annolines = LineIO.read(sentidsfname);
+//
+//            for(String annoline : annolines){
+//                String[] sannoline = annoline.split("\t");
+//                String term = sannoline[0];
+//                String[] sentids = sannoline[1].split(",");
+//
+//                groups.put(term, new HashSet<String>(Arrays.asList(sentids)));
+//                annosents.put(term, new HashSet<String>(Arrays.asList(sentids)));
+//            }
+//        }
 
-            for(String annoline : annolines){
-                String[] sannoline = annoline.split("\t");
-                String term = sannoline[0];
-                String[] sentids = sannoline[1].split(",");
-
-                groups.put(term, new HashSet<String>(Arrays.asList(sentids)));
-                annosents.put(term, new HashSet<String>(Arrays.asList(sentids)));
-            }
-        }
-
+        // Load file. Build annosents based on which sentences are annotated.
         if((new File(outfolder)).exists()) {
             CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
             while (cnl.hasNext()) {
                 TextAnnotation ta = cnl.next();
                 View sents = ta.getView(ViewNames.SENTENCE);
-
                 talist.add(ta);
 
                 // this will overwrite whatever was previously there.
@@ -229,11 +241,15 @@ public class BootstrapController {
                     for(Constituent nercon : nercons){
                         String stemmed = Utils.stem(nercon.getTokenizedSurfaceForm(), sd.suffixes);
                         terms.add(stemmed);
-                    }
 
+                        annosents.putIfAbsent(stemmed, new HashSet<>());
+                        annosents.get(stemmed).add(sentid);
+                    }
                 }
             }
         }
+        // groups becomes a shallow copy of annosents.
+        HashMap<String, HashSet<String>> groups = new HashMap<>(annosents);
 
         hs.setAttribute("cache", cache);
         hs.setAttribute("annosents", annosents);
@@ -314,7 +330,6 @@ public class BootstrapController {
 
         // all sentence ids that appear in groups.
         HashSet<String> allgroups = new HashSet<>();
-
         for(String term : groups.keySet()){
             allgroups.addAll(groups.get(term));
         }
@@ -593,6 +608,9 @@ public class BootstrapController {
                 String surf = name.getTokenizedSurfaceForm();
                 String stemmed = Utils.stem(surf, sd.suffixes);
                 sd.terms.add(stemmed);
+
+                annosents.putIfAbsent(stemmed, new HashSet<>());
+                annosents.get(stemmed).add(sentid);
             };
 
             // only save those sentences that have some annotation.
@@ -602,9 +620,9 @@ public class BootstrapController {
             }
         }
 
-        if(groupid.trim().length() > 0 && !groupid.startsWith("specialgroup-")) {
-            annosents.put(groupid, annogroup);
-        }
+//        if(groupid.trim().length() > 0 && !groupid.startsWith("specialgroup-")) {
+//            annosents.put(groupid, annogroup);
+//        }
 
         // convert the set (with no duplicates) into a list.
         List<TextAnnotation> talist = new ArrayList<>(tas);
@@ -631,14 +649,14 @@ public class BootstrapController {
         String foldertype = props.getProperty("type");
 
 
-        List<String> annolines = new ArrayList<>();
-        for(String term : annosents.keySet()){
-            HashSet<String> annogroup2 = annosents.get(term);
-            String annoline = term + "\t" + StringUtils.join(annogroup2, ",");
-            annolines.add(annoline);
-        }
-
-        LineIO.write(new File(folderpath).getParent() + "/annosents-" + username + ".txt", annolines);
+        // annosents-username.txt is deprecated.
+//        List<String> annolines = new ArrayList<>();
+//        for(String term : annosents.keySet()){
+//            HashSet<String> annogroup2 = annosents.get(term);
+//            String annoline = term + "\t" + StringUtils.join(annogroup2, ",");
+//            annolines.add(annoline);
+//        }
+//        LineIO.write(new File(folderpath).getParent() + "/annosents-" + username + ".txt", annolines);
 
         if(username != null && folderpath != null) {
             folderpath = folderpath.replaceAll("/$", "");

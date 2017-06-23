@@ -151,12 +151,15 @@ public class TextFileIndexer {
                 if (s.equalsIgnoreCase("q")) {
                     break;
                 }
-//                Query q = new QueryParser("body", analyzer).parse(s);
+                QueryParser parser = new QueryParser("body", analyzer);
+                parser.setAllowLeadingWildcard(true);
 
-                Query q = new PrefixQuery(new Term("body", s));
+                Query q = parser.parse("*" + s + "*");
+
+                //Query q = new PrefixQuery(new Term("body", s));
 
                 System.out.println(q);
-                TopScoreDocCollector collector = TopScoreDocCollector.create(10);
+                TopScoreDocCollector collector = TopScoreDocCollector.create(40);
                 searcher.search(q, collector);
                 ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
@@ -167,9 +170,19 @@ public class TextFileIndexer {
                 for(int i=0; i<hits.length; ++i) {
                     int docId = hits[i].doc;
                     Document d = searcher.doc(docId);
-                    System.out.println((i + 1) + ". " + d.get("body") + " score=" + hits[i].score);
-                    System.out.println((i + 1) + ". " + d.get("origbody") + " score=" + hits[i].score);
-                    System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
+
+                    String[] b = d.get("body").split(" ");
+                    String[] ob = d.get("origbody").split(" ");
+
+                    for(int j = 0; j < b.length; j++){
+                        if(b[j].contains(s)){
+                            System.out.println(b[j] + " " + ob[j]);
+                        }
+                    }
+
+                    //System.out.println((i + 1) + ". " + d.get("body") + " score=" + hits[i].score);
+                    //System.out.println((i + 1) + ". " + d.get("origbody") + " score=" + hits[i].score);
+                    //System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
 
                 }
 

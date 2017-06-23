@@ -28,23 +28,8 @@ import static io.github.mayhewsw.BootstrapController.getSentId;
  */
 public class FinalSaver {
 
-    public static void save(String origfolder, String romanfolder, String sentencesfname, String outfolder) throws IOException {
+    public static void save(String origfolder, String romanfolder, String outfolder) throws IOException {
 
-        String sentidsfname = sentencesfname;
-        HashSet<String> annosentids = new HashSet<>();
-        if(new File(sentidsfname).exists()){
-            List<String> annolines = LineIO.read(sentidsfname);
-
-            for(String annoline : annolines){
-                String sentidline = annoline.split("\t")[1];
-                annosentids.addAll(Arrays.asList(sentidline.split(",")));
-            }
-        }else{
-            System.err.println("No annotated sentences... exiting...");
-            return;
-        }
-
-        System.out.println(annosentids);
 
         if((new File(outfolder)).exists()) {
             CoNLLNerReader cnl = new CoNLLNerReader(romanfolder);
@@ -61,9 +46,6 @@ public class FinalSaver {
 
                 for (Constituent sent : sents.getConstituents()) {
                     String sentid = getSentId(sent);
-
-                    // only keep those sentences that we have annotated.
-                    if(!annosentids.contains(sentid)) continue;
 
                     if(nerorig.getConstituentsCovering(sent).size() == 0) continue;
 
@@ -116,10 +98,9 @@ public class FinalSaver {
         String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
         String origfolder = dir + "conll/";
         String romanfolder = dir + "conll-pyrom-sentanno-"+username +"/";
-        String sentencesfname = dir + "annosents-"+username +".txt";
         String outpath = dir + "final-"+username +"/";
 
-        save(origfolder, romanfolder, sentencesfname, outpath);
+        save(origfolder, romanfolder, outpath);
 
     }
 

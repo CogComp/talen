@@ -223,7 +223,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
         }
 
         // Assume a large text collection. We want to store EVERY SINGLE INSTANCE.
-        int k = 1000;
+        int k = Integer.MAX_VALUE;
         TopDocs searchresults = searcher.search(query, k);
         ScoreDoc[] hits = searchresults.scoreDocs;
 
