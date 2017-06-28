@@ -7,3 +7,5 @@ To get started, you need a folder that contains CoNLL column NER format files. T
  want to annotate.
 
 Open up TextFileIndexer.java.
+
+Run it! You are good to go.

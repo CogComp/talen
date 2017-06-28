@@ -5,7 +5,6 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -14,14 +13,12 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.analysis.shingle.ShingleAnalyzerWrapper;
 import org.apache.lucene.analysis.*;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -116,7 +113,7 @@ public class TextFileIndexer {
                 Document d = new Document();
                 TextField tf = new TextField("body", sent.getTokenizedSurfaceForm(), Field.Store.YES);
                 d.add(tf);
-                d.add(new StringField("filename", BootstrapController.getSentId(sent), Field.Store.YES));
+                d.add(new StringField("filename", SentenceController.getSentId(sent), Field.Store.YES));
 
                 TextField origtf = new TextField("origbody", origsent.getTokenizedSurfaceForm(), Field.Store.YES);
                 d.add(origtf);

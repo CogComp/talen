@@ -5,12 +5,11 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import io.github.mayhewsw.BootstrapController;
+import io.github.mayhewsw.SentenceController;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.FSDirectory;
 import org.slf4j.Logger;
@@ -60,7 +59,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * the entire document and caches all sentences in that document before returning just
      * the requested sentence.
      *
-     * This expects sentence ID to be of the form: docname:sentenceindex (see {@link BootstrapController#getSentId(Constituent) getSentId}).
+     * This expects sentence ID to be of the form: docname:sentenceindex (see {@link SentenceController#getSentId(Constituent) getSentId}).
      *
      * @param sentid
      * @return
@@ -74,7 +73,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
 
             View sentview = ta.getView(ViewNames.SENTENCE);
             for(Constituent sent : sentview.getConstituents()){
-                String id = BootstrapController.getSentId(sent);
+                String id = SentenceController.getSentId(sent);
                 if(!this.containsKey(id)) {
                     this.put(id, sent);
                 }

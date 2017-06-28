@@ -4,7 +4,6 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
-import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.apache.commons.io.FileUtils;
 
@@ -14,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader.conllline;
-import static io.github.mayhewsw.BootstrapController.getSentId;
+import static io.github.mayhewsw.SentenceController.getSentId;
 
 /**
  * This class is necessary because of the fact that most data we work with is non-Latin script, and we

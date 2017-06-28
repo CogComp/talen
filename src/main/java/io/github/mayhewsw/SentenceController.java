@@ -5,7 +5,6 @@ import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
-import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Sentence;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
@@ -13,11 +12,6 @@ import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.core.WhitespaceTokenizer;
-import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,27 +24,26 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by mayhew2 on 5/10/17.
  */
 @SuppressWarnings("ALL")
 @Controller
-@RequestMapping("/bootstrap")
-public class BootstrapController {
+@RequestMapping("/sentence/")
+public class SentenceController {
 
     // These are all common objects that don't change user by user.
     private HashMap<String, Properties> datasets;
 
-    private static Logger logger = LoggerFactory.getLogger(BootstrapController.class);
+    private static Logger logger = LoggerFactory.getLogger(SentenceController.class);
 
     /**
      * Load config files before anything else. This is the only object shared among user sessions.
      *
      * This only loads config files with the prefix 'bs-' (for bootstrap)
      */
-    public BootstrapController() {
+    public SentenceController() {
         File configfolder = new File("config");
 
         File[] configfiles = configfolder.listFiles();
@@ -77,18 +70,6 @@ public class BootstrapController {
             }
         }
     }
-
-    private static Analyzer analyzer =
-            new Analyzer() {
-                @Override
-                protected TokenStreamComponents createComponents(String fieldName) {
-                    Tokenizer source = new WhitespaceTokenizer();
-                    TokenStream filter = new ShingleFilter(source);
-                    //TokenStream filter2 = new NGramTokenFilter(filter, 1, 4);
-                    return new Analyzer.TokenStreamComponents(source, filter);
-                }
-            };
-
 
     @RequestMapping(value="/search", method=RequestMethod.GET)
     public String search(@RequestParam(value="query", required=true) String query,@RequestParam(value="searchinanno", required=false) String searchinanno, HttpSession hs, Model model) throws IOException {
@@ -155,25 +136,20 @@ public class BootstrapController {
 
         SentenceCache cache = new SentenceCache(folderpath, indexpath);
 
-        SessionData sd = new SessionData(hs);
-
         // Add terms to the session
-        // FIXME: don't add term prefixes.
         HashSet<String> terms = new HashSet<>();
         String[] termarray = prop.getProperty("terms").split(",");
         for(String term : termarray){
             terms.add(term);
         }
 
+        // load the dictionary, graceful fail if not there.
         String dictpath = prop.getProperty("dictionary");
         Dictionary dict;
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
             dict = new Dictionary(dataname, dictpath);
             hs.setAttribute("dict", dict);
-
-            // TODO: also load the user dictionary.
-
         }else{
             logger.info("No dictionary specified.");
             dict = new Dictionary();
@@ -191,7 +167,8 @@ public class BootstrapController {
         }
         hs.setAttribute("suffixes", suffixes);
 
-        sd = new SessionData(hs);
+        SessionData sd = new SessionData(hs);
+
 
         // FIXME: this folder contains entire files, many sentences of which are not annotated. When they are read back in, we will incorrectly mark sentences as annotated.
 
@@ -204,24 +181,8 @@ public class BootstrapController {
         // annosents format is: term<tab>sentence
         HashMap<String, HashSet<String>> annosents = new HashMap<>();
 
-
-
         // Contains all TAs, used for updating patterns.
         List<TextAnnotation> talist = new ArrayList<>();
-
-//        String sentidsfname = new File(folderpath).getParent() + "/annosents-" + sd.username + ".txt";
-//        if(new File(sentidsfname).exists()){
-//            List<String> annolines = LineIO.read(sentidsfname);
-//
-//            for(String annoline : annolines){
-//                String[] sannoline = annoline.split("\t");
-//                String term = sannoline[0];
-//                String[] sentids = sannoline[1].split(",");
-//
-//                groups.put(term, new HashSet<String>(Arrays.asList(sentids)));
-//                annosents.put(term, new HashSet<String>(Arrays.asList(sentids)));
-//            }
-//        }
 
         // Load file. Build annosents based on which sentences are annotated.
         if((new File(outfolder)).exists()) {
@@ -255,16 +216,8 @@ public class BootstrapController {
         hs.setAttribute("annosents", annosents);
         hs.setAttribute("terms", terms);
 
-        HashMap<Pair<String, String>, Double> patterns = new HashMap<>();
-        hs.setAttribute("patterns", patterns);
-
-        updategroups2(indexpath, terms, cache, groups);
+        updategroups(terms, cache, groups);
         hs.setAttribute("groups", groups);
-
-        // use only if you have want an in-memory index (as opposed to a disk index)
-        // it's important to load this again because of all the attributes added to hs.
-        //sd = new SessionData(hs);
-        //buildmemoryindex(sd);
 
         String labelsproperty = prop.getProperty("labels");
         List<String> labels = new ArrayList<>();
@@ -284,11 +237,7 @@ public class BootstrapController {
         Bootstrap3 bs3 = new Bootstrap3(cache);
         hs.setAttribute("bs3", bs3);
 
-        // this needs to be after labels are created.
-//        updateallpatterns(new SessionData(hs));
-
-
-        return "redirect:/bootstrap/sents";
+        return "redirect:/sentence/sents";
     }
 
     @RequestMapping("/")
@@ -321,12 +270,19 @@ public class BootstrapController {
         hs.setAttribute("username", user.getName());
 
 
-        return "redirect:/bootstrap/";
+        return "redirect:/sentence/";
     }
 
 
-    public static void updategroups2(String indexdir, HashSet<String> terms, SentenceCache cache, HashMap<String, HashSet<String>> groups) throws IOException {
-        logger.info("Updating groups2...");
+    /**
+     *
+     * @param terms
+     * @param cache
+     * @param groups
+     * @throws IOException
+     */
+    public static void updategroups(HashSet<String> terms, SentenceCache cache, HashMap<String, HashSet<String>> groups) throws IOException {
+        logger.info("Updating groups...");
 
         // all sentence ids that appear in groups.
         HashSet<String> allgroups = new HashSet<>();
@@ -360,10 +316,22 @@ public class BootstrapController {
                 }
             }
         }
-        logger.info("Done updating groups2...");
+        logger.info("Done updating groups...");
     }
 
 
+    /**
+     * This method is given a textannotation and some offsets. It looks up the offsets, and finds what the
+     * text to be annotated is. It then passes this text to addtext() to actually annotate the TAs.
+     * @param label
+     * @param starttokid
+     * @param endtokid
+     * @param sentid
+     * @param sentids
+     * @param hs
+     * @param model
+     * @throws Exception
+     */
     @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
@@ -416,11 +384,8 @@ public class BootstrapController {
                 int sentstart = sent.getStartSpan();
 
                 Pattern pattern = Pattern.compile("[^ ]*"+text+"[^ ]*", Pattern.CASE_INSENSITIVE);
-                // in case you would like to ignore case sensitivity,
-                // you could use this statement:
-                // Pattern pattern = Pattern.compile("\\s+", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = pattern.matcher(surf);
-                // check all occurance
+                // check all occurences
                 while (matcher.find()) {
                     // character offsets need to be converted to token offsets.
                     int startind = StringUtils.countMatches(surf.substring(0, matcher.start()), " ");
@@ -471,14 +436,22 @@ public class BootstrapController {
             }
 
             // an O label means don't add the constituent.
-            if (label.equals("O")) {
-                System.err.println("Should never happen: label is O");
-            } else{
+            if (!label.equals("O")) {
                 ner.addConstituent(cand);
             }
         }
     }
 
+    /**
+     * A convenience method that combines addtext() and save() into a single call.
+     * @param text
+     * @param label
+     * @param groupid
+     * @param hs
+     * @param model
+     * @return
+     * @throws IOException
+     */
     @RequestMapping(value="/addtextsave", method=RequestMethod.GET)
     public String addtextandsave(@RequestParam(value="text") String text, @RequestParam(value="label") String label, @RequestParam(value="groupid") String groupid, HttpSession hs, Model model) throws IOException {
 
@@ -492,7 +465,7 @@ public class BootstrapController {
 
         save(groupid, grouparray, hs, model);
 
-        return "redirect:/bootstrap/sents";
+        return "redirect:/sentence/sents";
     }
 
     @RequestMapping(value="/logout")
@@ -502,88 +475,8 @@ public class BootstrapController {
         // I think this is preferable.
         hs.invalidate();
 
-        return "redirect:/bootstrap/";
+        return "redirect:/sentence/";
     }
-
-    /**
-     * Update all the patterns. This is expensive... probably best to not use this.
-     * @param talist
-     * @param sd
-     */
-    public void updateallpatterns(SessionData sd) throws FileNotFoundException {
-        // update all patterns all the time.
-        logger.info("Updating all patterns...");
-        sd.patterns.clear();
-
-        HashMap<String, HashSet<String>> annosents = sd.annosents;
-        HashSet<TextAnnotation> alltas = new HashSet<>();
-        for(String term : annosents.keySet()){
-            for(String sentid : annosents.get(term)){
-                alltas.add(sd.cache.getSentence(sentid).getTextAnnotation());
-            };
-        }
-
-        // this maps label -> {prevword: count, prevword: count, ...}
-        HashMap<String, HashMap<String, Double>> labelcounts = new HashMap<>();
-
-        // Initialize
-        for(String label : sd.labels){
-            labelcounts.put(label, new HashMap<>());
-        }
-
-        HashMap<Pair<String, String>, Double> counts = new HashMap<>();
-        HashMap<String, Integer> featcounts = new HashMap<>();
-
-        // loop over all TAs.
-        for(TextAnnotation ta : alltas) {
-
-            // Extract features from this TA. This adds a new view called "feats"
-            FeatureExtractor.extract(ta);
-
-            View feats = ta.getView("feats");
-            View ner = ta.getView(ViewNames.NER_CONLL);
-            for(Constituent f : feats.getConstituents()){
-                // All features have exactly the same span as the NER constituent. This may be inefficient.
-                List<Constituent> nercs = ner.getConstituentsCoveringSpan(f.getStartSpan(), f.getEndSpan());
-
-                // assume that is length 1
-                // (should be by definition?)
-                if(nercs.size() > 0) {
-                    String label = nercs.get(0).getLabel();
-
-                    // increment the count for this (feature, label) combination.
-                    counts.merge(new Pair<>(f.getLabel(), label), 1., (oldValue, one) -> oldValue + one);
-                    // increment the count for this feature
-                    featcounts.merge(f.getLabel(), 1, (oldValue, one) -> oldValue + one);
-                }
-            }
-        }
-
-        int k = sd.labels.size();
-        // these values come directly from collins and singer paper.
-        double alpha = 0.1;
-        double threshold = 0.95;
-        double fullstringthreshold = 0.8;
-
-        for(Pair<String, String> fp : counts.keySet()){
-            String feat = fp.getFirst();
-            int featoccurrences = featcounts.get(feat);
-
-            double newvalue = (counts.get(fp) + alpha) / (featoccurrences + k*alpha);
-
-            // this allows that full-strings need only appear 2 or 3 times.
-            if(feat.startsWith("full-string") && newvalue > fullstringthreshold){
-                sd.patterns.put(fp, newvalue);
-            }
-            else if(newvalue > threshold){
-                sd.patterns.put(fp, newvalue);
-            }
-        }
-
-        logger.info("Done updating patterns.");
-
-    }
-
 
     @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
@@ -646,17 +539,6 @@ public class BootstrapController {
 
         Properties props = datasets.get(folder);
         String folderpath = props.getProperty("folderpath");
-        String foldertype = props.getProperty("type");
-
-
-        // annosents-username.txt is deprecated.
-//        List<String> annolines = new ArrayList<>();
-//        for(String term : annosents.keySet()){
-//            HashSet<String> annogroup2 = annosents.get(term);
-//            String annoline = term + "\t" + StringUtils.join(annogroup2, ",");
-//            annolines.add(annoline);
-//        }
-//        LineIO.write(new File(folderpath).getParent() + "/annosents-" + username + ".txt", annolines);
 
         if(username != null && folderpath != null) {
             folderpath = folderpath.replaceAll("/$", "");
@@ -680,20 +562,13 @@ public class BootstrapController {
 
             String html = this.getAllHTML(new ArrayList<String>(sentids), sd);
 
-//            HashMap<String, String> id2html = new HashMap<>();
-//            for (String sentid : sentids) {
-//                String html = getHTMLfromSent(sd.cache.get(sentid), sd.dict, sd.showdefs);
-//                id2html.put(sentid, html);
-//            }
-
             model.addAttribute("groupid", groupid);
             model.addAttribute("html", html);
 
         }else{
 
             // TODO: this is slow. Does it need to be here?
-            //updategroups(sd.indexpath, sd.terms, sd.cache, sd.annosents, groups);
-            updategroups2(sd.indexpath, sd.terms, sd.cache, groups);
+            updategroups(sd.terms, sd.cache, groups);
 
             // all sentence ids that appear in groups.
             HashSet<String> allgroups = new HashSet<>();
@@ -762,14 +637,6 @@ public class BootstrapController {
                 }
             }
 
-            // This contains a list of strings that are high pattern matches along with their suggested label.
-            HashMap<Pair<String, String>, Double> patterncontexts = new HashMap<>();
-            for(Pair<String, String> pattern : sd.patterns.keySet()){
-                patterncontexts.put(pattern, sd.patterns.get(pattern));
-
-            }
-
-            model.addAttribute("patterncontexts", patterncontexts);
 
             model.addAttribute("labeledtokens", labeledtokens);
             model.addAttribute("totaltokens", totaltokens);
