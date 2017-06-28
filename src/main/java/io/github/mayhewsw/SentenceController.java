@@ -557,6 +557,7 @@ public class SentenceController {
 
         HashMap<String, HashSet<String>> groups = sd.groups;
 
+        // this means we are looking at a specific sentence.
         if(groupid != null) {
             HashSet<String> sentids = groups.get(groupid);
 
