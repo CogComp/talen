@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class SessionData {
 
-    Bootstrap3 bs3;
+    HashMap<String, Bootstrap3> bs3map;
     Dictionary dict;
     String username;
     Boolean showdefs;
@@ -30,15 +30,14 @@ public class SessionData {
     Properties prop;
 
     SentenceCache cache;
-    HashMap<String, HashSet<String>> annosents;
+    //HashMap<String, Group> annosents;
 
-    HashSet<String> terms;
-    HashSet<String> contexts;
+    HashMap<String, Set<String>> contexts;
     List<String> labels;
 //    String folderpath;
     String indexpath;
 
-    HashMap<String, HashSet<String>> groups;
+    HashMap<String, Group> groups;
 
     public SessionData(HttpSession hs){
 
@@ -61,16 +60,15 @@ public class SessionData {
         prop = (Properties) hs.getAttribute("prop");
         labels = (List<String>) hs.getAttribute("labels");
         ramDirectory = (RAMDirectory) hs.getAttribute("ramdirectory");
-        terms = (HashSet<String>) hs.getAttribute("terms");
 
-        contexts = (HashSet<String>) hs.getAttribute("contexts");
+        contexts = (HashMap<String, Set<String>>) hs.getAttribute("contexts");
 
         cache = (SentenceCache) hs.getAttribute("cache");
-        annosents = (HashMap<String, HashSet<String>>) hs.getAttribute("annosents");
+        //annosents = (HashMap<String, HashSet<String>>) hs.getAttribute("annosents");
 
-        groups = (HashMap<String, HashSet<String>>) hs.getAttribute("groups");
+        groups = (HashMap<String, Group>) hs.getAttribute("groups");
 
-        bs3 = (Bootstrap3) hs.getAttribute("bs3");
+        bs3map = (HashMap<String, Bootstrap3>) hs.getAttribute("bs3map");
 
     }
 

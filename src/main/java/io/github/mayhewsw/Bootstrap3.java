@@ -100,7 +100,7 @@ public class Bootstrap3 {
      * @return
      * @throws IOException
      */
-    public LinkedHashMap<String, Double> getnames(HashSet<String> names, HashSet<String> contexts) throws IOException {
+    public LinkedHashMap<String, Double> getnames(Set<String> names, HashSet<String> contexts) throws IOException {
 
         HashMap<String, Double> candidatecounts = new HashMap<>();
 
@@ -201,7 +201,7 @@ public class Bootstrap3 {
         return sorted;
     }
 
-    public boolean manualclassifier(LinkedHashMap<String, Double> sorted, HashSet<String> names) throws IOException {
+    public boolean manualclassifier(LinkedHashMap<String, Double> sorted, Set<String> names) throws IOException {
         Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
         Map.Entry<String, Double> entry;
 
@@ -356,9 +356,12 @@ public class Bootstrap3 {
         return featcounts;
     }
 
+//    public LinkedHashMap<String, Double> getcontexts(Set<String> names) throws IOException {
+//        Map<String, String> mapnames = names.stream().collect(Collectors.toMap(x -> x, x -> "PER"));
+//        return getcontexts(new HashMap<>(mapnames));
+//    }
 
-
-    public LinkedHashMap<String, Double> getcontexts(HashSet<String> names, HashSet<String> contexts) throws IOException {
+    public LinkedHashMap<String, Double> getcontexts(Set<String> names) throws IOException {
         // start with some seed entities.
         HashMap<String, Double> featcounts = new HashMap<>();
 
@@ -366,7 +369,9 @@ public class Bootstrap3 {
             HashMap<String, Double> entityfeatcounts = getcontexts(entity);
 
             for(String feat : entityfeatcounts.keySet()){
-                featcounts.merge(feat, entityfeatcounts.get(feat), (oldValue, one) -> oldValue + one);
+                if(feat.split("@")[1].length() > 1) {
+                    featcounts.merge(feat, entityfeatcounts.get(feat), (oldValue, one) -> oldValue + one);
+                }
             }
         }
 
@@ -379,8 +384,6 @@ public class Bootstrap3 {
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
-
-
 
         return sorted;
     }
@@ -413,7 +416,7 @@ public class Bootstrap3 {
         HashSet<String> contexts = new HashSet<>();
 
         while(true) {
-            LinkedHashMap<String, Double> sortedcontexts = bt.getcontexts(names, contexts);
+            LinkedHashMap<String, Double> sortedcontexts = bt.getcontexts(names);
             bt.topcontext(sortedcontexts, contexts);
 
             LinkedHashMap<String, Double> sortednames = bt.getnames(names, contexts);

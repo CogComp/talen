@@ -38,12 +38,12 @@
             <div class="navbar-collapse navbar-ex1-collapse">
 
                 <ul class="nav navbar-nav" id="pagesbar">
-                    <li><a href="/bootstrap/">Bootstrap</a></li>
-                    <li><a href="/bootstrap/sents">Groups</a></li>
+                    <li><a href="/sentence/">Sentence</a></li>
+                    <li><a href="/sentence/sents">Groups</a></li>
 
                 </ul>
 
-                <form class="navbar-form navbar-right" action="search" method="get">
+                <form th:unless="${session.username} == null" class="navbar-form navbar-right" action="search" method="get">
                     <div class="input-group">
                         <span class="input-group-addon">
                             <input type="checkbox" id="searchinanno" name="searchinanno" /> Search in anno
@@ -60,7 +60,7 @@
                         <ul class="nav navbar-nav navbar-right">
                             <li><span class="navbar-text" th:text="${'Hi there ' + session.username + '!'}">Hi there</span></li>
                             <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
-                            <li><a href="/bootstrap/logout" id="logoutlink" th:text="Logout">Logout</a></li>
+                            <li><a href="/sentence/logout" id="logoutlink" th:text="Logout">Logout</a></li>
                         </ul>
                     </span>
 

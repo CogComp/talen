@@ -1,14 +1,14 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Bootstrap Home</title>
+    <title>Sentence Home</title>
     <div th:include="bs-base :: bs-head"></div>
 
 </head>
 <body>
 <div th:include="bs-base :: bs-nav"></div>
 <div class="container">
-    <h3>Bootstrap home</h3>
+    <h3>Sentence home</h3>
 
 
     <div class="row">
@@ -18,7 +18,7 @@
         <div class="col-md-4">
             <span th:if="${session.username} == null"> <!-- if customer is anonymous-->
 
-                <form th:action="@{/bootstrap/setname}" th:object="${user}" method="post">
+                <form th:action="@{/sentence/setname}" th:object="${user}" method="post">
                     <div class="form-group">
                         <label for="namefield">Please enter a username:</label>
                         <input type="text" class="form-control" id="namefield" th:field="*{name}" placeholder="Your name" />
@@ -31,7 +31,7 @@
             <span th:unless="${session.username} == null">
             <p>Please select an option:</p>
                 <div class="list-group">
-                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/bootstrap/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
+                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/sentence/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
                 </div>
 
             </span>

@@ -13,6 +13,16 @@
     border-radius: 5px;
 }
 
+.bestlabel {
+    border: black 1px solid;
+    color: black;
+}
+
+.ignorelabel {
+    color: darkgray;
+    background-color: white;
+}
+
 .suggestion {
     border-bottom: 1px dashed gray;
 }
