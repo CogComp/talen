@@ -100,6 +100,9 @@ public class SentenceController {
             grouplist.addAll(annovalues);
         } else {
             grouplist.addAll(sents);
+
+            // restrict the size of the list.
+            grouplist = new ArrayList<>(grouplist.subList(0,Math.min(300, grouplist.size())));
         }
 
         // this is a special group.
