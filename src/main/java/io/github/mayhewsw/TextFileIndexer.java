@@ -194,22 +194,22 @@ public class TextFileIndexer {
 
     public static void main(String[] args) throws IOException {
 
-        String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
+        //String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
 
-        String filedir = dir + "conll-pyrom/";
-        String origfiledir = dir + "conll/";
-        String indexdir = "/shared/experiments/mayhew2/indices/amharic-indexsent/";
+        //String filedir = dir + "conll-pyrom/";
+        //String origfiledir = dir + "conll/";
+        //String indexdir = "/shared/experiments/mayhew2/indices/amharic-indexsent/";
             
         
-        //String filedir = "/shared/corpora/ner/eval/column/mono-all-uly/";
-        //String origfiledir = "/shared/corpora/ner/eval/column/mono-all/";
-        //String indexdir = "/shared/corpora/ner/eval/column/mono-all-uly-indexsent4";
+        String filedir = "data/train-short";
+        String origfiledir = "data/train-short";
+        String indexdir = "data/train-short-indexsent4";
 
 
         //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
         //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";
 
-//        buildsentenceindex(filedir, origfiledir, indexdir);
+        buildsentenceindex(filedir, origfiledir, indexdir);
         testindex(indexdir);
     }
 

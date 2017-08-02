@@ -88,16 +88,16 @@ public class FinalSaver {
     }
 
     public static void main(String[] args) throws IOException {
-//        String origfolder = "/shared/corpora/ner/eval/column/mono-all";
-//        String romanfolder = "/shared/corpora/ner/eval/column/mono-all-uly-sentanno-mayhew2";
-//        String sentencesfname = "/shared/corpora/ner/eval/column/annosents-mayhew2.txt";
+        String username = "mayhew2";
+        String origfolder = "/shared/corpora/ner/eval/column/mono-all-uly";
+        String romanfolder = "/shared/corpora/ner/eval/column/mono-all-uly-sentanno-" + username;
+        String outpath = "/shared/corpora/ner/eval/column/final-" + username + "/";
 
-        String username = "test2";
 
-        String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
-        String origfolder = dir + "conll/";
-        String romanfolder = dir + "conll-pyrom-sentanno-"+username +"/";
-        String outpath = dir + "final-"+username +"/";
+        //String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
+        //String origfolder = dir + "conll/";
+        //String romanfolder = dir + "conll-pyrom-sentanno-"+username +"/";
+        //String outpath = dir + "final-"+username +"/";
 
         save(origfolder, romanfolder, outpath);
 

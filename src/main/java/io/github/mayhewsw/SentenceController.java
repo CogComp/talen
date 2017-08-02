@@ -9,6 +9,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,12 +41,17 @@ public class SentenceController {
 
     private static Logger logger = LoggerFactory.getLogger(SentenceController.class);
 
+    CooccuranceMapLinker linker;
+
     /**
      * Load config files before anything else. This is the only object shared among user sessions.
      * <p>
      * This only loads config files with the prefix 'bs-' (for bootstrap)
      */
     public SentenceController() {
+
+        linker= new CooccuranceMapLinker(true);
+
         File configfolder = new File("config");
 
         File[] configfiles = configfolder.listFiles();
@@ -102,7 +108,7 @@ public class SentenceController {
             grouplist.addAll(sents);
 
             // restrict the size of the list.
-            grouplist = new ArrayList<>(grouplist.subList(0,Math.min(300, grouplist.size())));
+            grouplist = new ArrayList<>(grouplist.subList(0,Math.min(75, grouplist.size())));
         }
 
         // this is a special group.
@@ -515,6 +521,8 @@ public class SentenceController {
     public void save(@RequestParam(value = "groupid", required = true) String groupid, @RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws IOException {
         logger.info("Save has been called for list: " + sentids);
 
+
+
         SessionData sd = new SessionData(hs);
 
         HashSet<String> group = new HashSet<>(Arrays.asList(sentids));
@@ -756,6 +764,41 @@ public class SentenceController {
     public String gethtml(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
         return getAllHTML(Arrays.asList(sentids), query, sd);
+    }
+
+    @RequestMapping(value = "/getsuggestions", method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public String getsuggestions(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
+        SessionData sd = new SessionData(hs);
+
+        Set<String> entities = new HashSet<String>();
+
+        for(String sentid : sentids){
+            Constituent sent = sd.cache.getSentence(sentid);
+            IntPair sentspan = sent.getSpan();
+
+            TextAnnotation ta = sent.getTextAnnotation();
+
+            View ner = ta.getView(ViewNames.NER_CONLL);
+            List<Constituent> cons = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            for(Constituent con : cons){
+                entities.add(con.getTokenizedSurfaceForm().replace(" ", "_"));
+            }
+        }
+
+        String[] ents = entities.toArray(new String[entities.size()]);
+
+        String ret = "";
+        String[] candIds = linker.getTopKRelatedNETitles(ents, 10);
+        for(String cand : candIds){
+            ret += cand + ", ";
+        }
+
+        System.out.println("Entities are: " + entities);
+        System.out.println("Suggestions are: " + ret);
+
+        return ret;
     }
 
 
