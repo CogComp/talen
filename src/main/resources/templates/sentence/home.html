@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="sentence/sent-base">
+<head>
+    <title>Choose a dataset</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+
+                <p>Please select an option:</p>
+                <div class="list-group">
+                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/sentence/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
+                </div>
+            </div>
+
+            <div class="col-md-4"></div>
+        </div>
+        <div id="spinner"><img style="border:1px solid gray" th:src="@{/img/loading.gif}"></div>
+    </div>
+
+
+    <script>
+        /*<![CDATA[*/
+        $(document).ready(function() {
+
+            $("#spinner").hide();
+
+            console.log("whooppss");
+
+            $("a").mousedown(function() {
+                console.log("clicked on a!");
+                $("#spinner").show();
+
+
+            });
+        });
+        /*]]>*/
+    </script>
+
+
+</div>
+
+</body>
+
+
+</html>

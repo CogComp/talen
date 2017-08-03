@@ -20,7 +20,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.HashAttributeSet;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.util.*;
@@ -50,7 +49,7 @@ public class SentenceController {
      */
     public SentenceController() {
 
-        linker= new CooccuranceMapLinker(true);
+        //linker= new CooccuranceMapLinker(true);
 
         File configfolder = new File("config");
 
@@ -60,7 +59,7 @@ public class SentenceController {
 
         for (File f : configfiles) {
             if (f.getName().endsWith("~")) continue;
-            if (!f.getName().startsWith("bs-")) continue;
+            if (!f.getName().startsWith("sent-")) continue;
 
             Properties prop = new Properties();
 
@@ -120,7 +119,7 @@ public class SentenceController {
         model.addAttribute("labels", hs.getAttribute("labels"));
         model.addAttribute("grouptype", "(unknown)");
 
-        return "bs-group-anno";
+        return "sentence/group-anno";
     }
 
 
@@ -174,7 +173,6 @@ public class SentenceController {
         hs.setAttribute("suffixes", suffixes);
 
         SessionData sd = new SessionData(hs);
-
 
         // now check the annotation folder to see what this user has already annotated.
         // if there is anything, load it here.
@@ -263,7 +261,7 @@ public class SentenceController {
             hs.setAttribute("dict", new Dictionary());
         }
 
-        return "bs-home";
+        return "sentence/home";
     }
 
     @RequestMapping(value = "/setname")
@@ -507,15 +505,7 @@ public class SentenceController {
         return "redirect:/sentence/sents";
     }
 
-    @RequestMapping(value = "/logout")
-    public String logout(HttpSession hs) {
-        logger.info("Logging out...");
 
-        // I think this is preferable.
-        hs.invalidate();
-
-        return "redirect:/sentence/";
-    }
 
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
@@ -705,7 +695,7 @@ public class SentenceController {
 
         model.addAttribute("labels", hs.getAttribute("labels"));
 
-        return "bs-group-anno";
+        return "sentence/group-anno";
     }
 
 
@@ -791,10 +781,10 @@ public class SentenceController {
         String[] ents = entities.toArray(new String[entities.size()]);
 
         String ret = "";
-        String[] candIds = linker.getTopKRelatedNETitles(ents, 10);
-        for(String cand : candIds){
-            ret += cand + ", ";
-        }
+//        String[] candIds = linker.getTopKRelatedNETitles(ents, 10);
+//        for(String cand : candIds){
+//            ret += cand + ", ";
+//        }
 
         System.out.println("Entities are: " + entities);
         System.out.println("Suggestions are: " + ret);
@@ -905,7 +895,7 @@ public class SentenceController {
         }
 
 
-        String out = StringUtils.join(text, "&nbsp;");
+        String out = StringUtils.join(text, "");
         return out;
     }
 

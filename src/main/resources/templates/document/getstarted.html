@@ -1,12 +1,11 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="document/doc-base">
 <head>
-    <title>Getting Started</title>
-    <div th:include="base :: head"></div>
-
+    <title>YOUR TITLE HERE</title>
 </head>
 <body>
-<div th:include="base :: nav"></div>
+
+<div layout:fragment="content">
 <div class="container">
     <h3>Let's get started</h3>
 
@@ -23,10 +22,11 @@
         <tr th:each="key : ${tamap.keySet()}" class="" th:classappend="${annotatedfiles.contains(key)} ? success : none">
             <td th:text="${key}"></td>
             <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
-            <td><a href="#" th:href="@{/annotation(taid=${key})}" th:text="${tamap.get(key).getText().substring(0,10)}"></a></td>
+            <td><a href="#" th:href="@{/document/annotation(taid=${key})}" th:text="${tamap.get(key).getText().substring(0,10)}"></a></td>
         </tr>
     </table>
 
+</div>
 </div>
 </body>
 

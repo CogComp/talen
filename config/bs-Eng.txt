@@ -1,7 +1,0 @@
-name	EnglishConll
-folderpath	data/train-short/
-indexpath	data/train-short-indexsent4/
-type	conll
-# dictionary
-labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral
-terms   Sampras

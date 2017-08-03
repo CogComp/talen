@@ -8,9 +8,26 @@
     height: 15px;
 }
 
+#spinner {
+    /*width: 100px;
+    height: 50px;*/
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -150px;
+    margin-left: -250px;
+}
+
 .cons {
-    padding: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
     border-radius: 5px;
+}
+
+.token {
+    padding-left: 2px;
+    padding-right: 2px;
+
 }
 
 .bestlabel {
@@ -54,6 +71,11 @@
 
 .text {
     font-size: 12pt;
+
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+
 }
 
 #text {
@@ -85,31 +107,6 @@
     font-weight: bold;
 }
 
-/*** Works on common browsers ***/
-::selection {
-    background-color: lightgray;
-    /*color: red;*/
-}
-
-/*** Mozilla based browsers ***/
-::-moz-selection {
-    background-color: #352e7e;
-    color: #fff;
-}
-
-/***For Other Browsers ***/
-::-o-selection {
-    background-color: #352e7e;
-    color: #fff;
-}
-
-::-ms-selection {
-    background-color: #352e7e;
-    color: #fff;
-}
-
-/*** For Webkit ***/
-::-webkit-selection {
-    background-color: #352e7e;
-    color: #fff;
+.highlighted {
+    background-color: #fff2ac;
 }

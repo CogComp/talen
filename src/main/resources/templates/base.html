@@ -1,11 +1,12 @@
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
 
-<body>
-
-<div th:fragment="head">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
@@ -17,60 +18,62 @@
     <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <!--<script th:src="@{/js/script.js}"></script>-->
-</div>
 
+</head>
+<body>
 
-<div th:fragment="nav">
-    <div class="navbar navbar-default">
-        <div class="container">
+<div class="navbar navbar-default">
+    <div class="container">
 
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
 
-                <a class="navbar-brand" href="/">NER Annotator</a>
+            <a class="navbar-brand" href="/">NER Annotator</a>
+        </div>
+
+        <div class="navbar-collapse navbar-ex1-collapse">
+
+            <div layout:fragment="navlinks">
+                <ul class="nav navbar-nav" id="pagesbar">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/annotation">All annotations</a></li>
+                    <li><a href="/dict">Dictionary</a></li>
+                </ul>
             </div>
 
-                <div class="navbar-collapse navbar-ex1-collapse">
+            <!--<form class="navbar-form navbar-right" action="search" method="get">-->
+            <!--<div class="input-group">-->
+            <!--<input type="text" class="form-control" name="query" placeholder="Search for..." />-->
+            <!--<span class="input-group-btn">-->
+            <!--<button class="btn btn-default" id="searchbutton" type="submit">Go!</button>-->
+            <!--</span>-->
+            <!--</div>&lt;!&ndash; /input-group &ndash;&gt;-->
 
-                    <ul class="nav navbar-nav" id="pagesbar">
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/annotation">All annotations</a></li>
-                        <li><a href="/dict">Dictionary</a></li>
+            <!--</form>-->
 
-                    </ul>
+            <ul th:unless="${#httpServletRequest.remoteUser}==null" class="nav navbar-nav navbar-right">
 
-                    <form class="navbar-form navbar-right" action="search" method="get">
-                        <div class="input-group">
-                            <input type="text" class="form-control" name="query" placeholder="Search for..." />
-                            <span class="input-group-btn">
-                                <button class="btn btn-default" id="searchbutton" type="submit">Go!</button>
-                            </span>
-                        </div><!-- /input-group -->
-
+                <li><span class="navbar-text" th:text="${'Hi there ' + #httpServletRequest.remoteUser + '!'}">Hi there</span></li>
+                <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
+                <li>
+                    <form th:action="@{/logout}" id="logoutform" method="post">
+                        <a class="navbar-text" href="#" onclick="document.getElementById('logoutform').submit()">Logout</a>
                     </form>
+                </li>
+            </ul>
 
-                    <span th:unless="${session.username} == null"> <!-- if customer is not anonymous(logged in)-->
-                        <ul class="nav navbar-nav navbar-right">
-                            <li><span class="navbar-text" th:text="${'Hi there ' + session.username + '!'}">Hi there</span></li>
-                            <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
-                            <li><a href="/logout" id="logoutlink" th:text="Logout">Logout</a></li>
-                        </ul>
-                    </span>
+        </div><!-- /.navbar-collapse -->
 
-                </div><!-- /.navbar-collapse -->
-
-
-
-
-        </div>
     </div>
 </div>
 
-</body>
 
+<div layout:fragment="content">NO CONTENT HERE</div>
+
+</body>
 </html>

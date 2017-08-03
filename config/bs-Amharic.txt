@@ -1,8 +1,0 @@
-name	Amharic
-folderpath	/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-pyrom/
-indexpath	/shared/experiments/mayhew2/indices/amharic-indexsent/
-type	conll
-dictionary	/shared/experiments/mayhew2/lexicons-v2/amh-eng.all.txt.pyrom.gz
-labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
-terms   'amerika,ʾiteyop'eya,mulatu tasoma,'adise 'ababa,hayelamareyame dasalañe
-suffixes    me

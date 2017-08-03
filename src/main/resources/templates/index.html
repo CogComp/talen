@@ -1,0 +1,47 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="base">
+<head>
+    <title>Annotation Home</title>
+
+
+</head>
+<body>
+
+<div layout:fragment="navlinks">
+    <ul class="nav navbar-nav" id="pagesbar">
+        <li><a href="/">Home</a></li>
+        <li><a href="/annotation">All annotations</a></li>
+        <li><a href="/dict">Dictionary</a></li>
+    </ul>
+</div>
+
+<div layout:fragment="content">
+    <div class="container">
+
+
+        <div class="row">
+            <div class="col-md-4"></div>
+
+            <div class="col-md-4">
+
+                <h2 th:inline="text">Hello [[${#httpServletRequest.remoteUser}]]!</h2>
+
+                <p>Choose to annotate at:</p>
+
+                <a href="/document/" class="btn btn-default">Document Level</a>
+                <a href="/sentence/" class="btn btn-default">Sentence Level</a>
+
+
+            </div>
+
+
+            <div class="col-md-4"></div>
+
+        </div>
+    </div>
+
+</div>
+</body>
+
+
+</html>

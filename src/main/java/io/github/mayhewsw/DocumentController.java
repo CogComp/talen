@@ -5,7 +5,6 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
-import edu.illinois.cs.cogcomp.core.datastructures.trees.Tree;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
@@ -13,11 +12,8 @@ import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
-import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
-import org.apache.lucene.analysis.ngram.NGramTokenFilter;
 import org.apache.lucene.analysis.shingle.ShingleFilter;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -39,16 +35,16 @@ import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This contains the main logic of the whole thing.
  */
 @SuppressWarnings("ALL")
 @Controller
-public class AnnotationController {
+@RequestMapping("/document/")
+public class DocumentController {
 
-    private static Logger logger = LoggerFactory.getLogger(AnnotationController.class);
+    private static Logger logger = LoggerFactory.getLogger(DocumentController.class);
 
     // These are all common objects that don't change user by user.
     private HashMap<String, Properties> datasets;
@@ -66,7 +62,7 @@ public class AnnotationController {
      *
      * @throws FileNotFoundException
      */
-    public AnnotationController() throws IOException {
+    public DocumentController() throws IOException {
 
         File configfolder = new File("config");
 
@@ -76,6 +72,9 @@ public class AnnotationController {
 
         for(File f : configfiles){
             if(f.getName().endsWith("~")) continue;
+
+            if(!f.getName().startsWith("doc-")) continue;
+
             System.out.println(f);
             Properties prop = new Properties();
 
@@ -106,7 +105,7 @@ public class AnnotationController {
         if(hs.getAttribute("dict") == null) {
             hs.setAttribute("dict", new Dictionary());
         }
-        return "home";
+        return "document/home";
     }
 
     /**
@@ -353,7 +352,7 @@ public class AnnotationController {
         updateallpatterns(sd);
         buildmemoryindex(sd);
 
-        return "redirect:/annotation";
+        return "redirect:/document/annotation";
     }
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
@@ -512,18 +511,18 @@ public class AnnotationController {
         return "redirect:/";
     }
 
-    @RequestMapping(value="/logout")
-    public String logout(HttpSession hs){
-        logger.info("Logging out...");
-//        hs.removeAttribute("username");
-//        hs.removeAttribute("dataname");
-//        hs.removeAttribute("tas");
-
-        // I think this is preferable.
-        hs.invalidate();
-
-        return "redirect:/";
-    }
+//    @RequestMapping(value="/logout")
+//    public String logout(HttpSession hs){
+//        logger.info("Logging out...");
+////        hs.removeAttribute("username");
+////        hs.removeAttribute("dataname");
+////        hs.removeAttribute("tas");
+//
+//        // I think this is preferable.
+//        hs.invalidate();
+//
+//        return "redirect:/";
+//    }
 
     @RequestMapping(value="/search", method=RequestMethod.GET)
     public String search(@RequestParam(value="query", required=true) String query, HttpSession hs, Model model) throws IOException, ParseException {
@@ -551,7 +550,7 @@ public class AnnotationController {
 
         model.addAttribute("tamap", newtas);
         model.addAttribute("annotatedfiles", annotatedfiles);
-        return "getstarted";
+        return "document/getstarted";
 
     }
 
@@ -633,7 +632,7 @@ public class AnnotationController {
 
         // Go to the homepage.
         if(tas == null){
-            return "redirect:/";
+            return "redirect:/document";
         }
 
         // If there's no taid, then return the getstarted page (not a redirect).
@@ -657,11 +656,11 @@ public class AnnotationController {
 
             model.addAttribute("tamap", sd.tas);
             model.addAttribute("annotatedfiles", annotatedfiles);
-            return "getstarted";
+            return "document/getstarted";
         }
 
         if(!tas.containsKey(taid)){
-            return "redirect:/annotation";
+            return "redirect:/document/annotation";
         }
 
         TextAnnotation ta = tas.get(taid);
@@ -713,7 +712,7 @@ public class AnnotationController {
 
         model.addAttribute("docwords", docwords.subList(0, Math.min(50, docwords.size())));
 
-        return "annotation";
+        return "document/annotation";
     }
 
 
@@ -1046,7 +1045,7 @@ public class AnnotationController {
 
 
     public static void main(String[] args) throws Exception {
-        AnnotationController c = new AnnotationController();
+        DocumentController c = new DocumentController();
 
     }
 

@@ -1,7 +1,0 @@
-name	EnglishConll
-path	data/train-short/
-type	conll
-# dictionary
-suffixes	ing
-prefixes	pre un re
-labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral
