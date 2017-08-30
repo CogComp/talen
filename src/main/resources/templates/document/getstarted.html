@@ -22,7 +22,7 @@
         <tr th:each="key : ${tamap.keySet()}" class="" th:classappend="${annotatedfiles.contains(key)} ? success : none">
             <td th:text="${key}"></td>
             <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
-            <td><a href="#" th:href="@{/document/annotation(taid=${key})}" th:text="${tamap.get(key).getText().substring(0,10)}"></a></td>
+            <td><a href="#" th:href="@{/document/annotation(taid=${key})}" th:text="${tamap.get(key).getText().substring(0,2)}"></a></td>
         </tr>
     </table>
 

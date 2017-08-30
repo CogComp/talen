@@ -199,11 +199,14 @@ public class TextFileIndexer {
         //String filedir = dir + "conll-pyrom/";
         //String origfiledir = dir + "conll/";
         //String indexdir = "/shared/experiments/mayhew2/indices/amharic-indexsent/";
-            
-        
-        String filedir = "data/train-short";
-        String origfiledir = "data/train-short";
-        String indexdir = "data/train-short-indexsent4";
+
+        // IL6
+        //String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E29_LORELEI_IL6_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
+        String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E27_LORELEI_IL5_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
+
+        String filedir = dir + "conll-set0-rom";
+        String origfiledir = dir + "conll-set0";
+        String indexdir = dir + "conll-set0-indexsent";
 
 
         //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";

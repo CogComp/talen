@@ -22,7 +22,7 @@
         <repository>
             <id>CogcompSoftware</id>
             <name>CogcompSoftware</name>
-            <url>http://legolas.cs.illinois.edu/srv/data/cogcomp/html/m2repo/</url>
+            <url>http://legolas.cs.illinois.edu/m2repo/</url>
         </repository>
     </repositories>
 
@@ -30,7 +30,7 @@
         <pluginRepository>
             <id>CogcompSoftware</id>
             <name>CogcompSoftware</name>
-            <url>http://legolas.cs.illinois.edu/srv/data/cogcomp/html/m2repo/</url>
+            <url>http://legolas.cs.illinois.edu/m2repo/</url>
         </pluginRepository>
     </pluginRepositories>
 

@@ -29,6 +29,13 @@
                     </div>
                 </div>
 
+
+                <div th:if="${engtext != null}" class="panel panel-default">
+                    <div class="panel-body" >
+                        <div th:utext="${engtext}" id="englishtext">SOME STUFF</div>
+                    </div>
+                </div>
+
             </div>
             <div class="col-md-4" >
 
@@ -43,8 +50,8 @@
 
                     <div class="form-group">
                         <div class="btn-group" role="group" aria-label="Next and previous">
-                            <a th:if="${previd} != -1" th:href="@{/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
-                            <a th:if="${nextid} != -1" th:href="@{/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+                            <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+                            <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
                         </div>
                     </div>
 
@@ -191,7 +198,7 @@
             $("#dictbutton").click(function(){
                 $.ajax({
                     method: "GET",
-                    url: "/toggledefs",
+                    url: "/document/toggledefs",
                     data: {taid: getParameterByName("taid")}
                 }).done(function (msg) {
                     console.log("successful toggle");
@@ -225,7 +232,7 @@
                 var suff = $("#newsuffix").val();
                 $.ajax({
                     method: "GET",
-                    url: "/addsuffix",
+                    url: "/document/addsuffix",
                     data: {suffix: suff, taid: getParameterByName("taid")}
                 }).done(function (msg) {
                     console.log("successful addition");
@@ -245,7 +252,7 @@
                     $("#savebutton").css({"border-color" : "#c00"});
                     $.ajax({
                         method: "POST",
-                        url: "/removeall",
+                        url: "/document/removeall",
                         data: {id: getParameterByName("taid")}
                     }).done(function (msg) {
                         console.log("successful removal.");
@@ -261,7 +268,7 @@
                 var ruleobj = this;
                 $.ajax({
                     method: "GET",
-                    url: "/applyrule",
+                    url: "/document/applyrule",
                     data: {rule: this.id, id: getParameterByName("taid")},
                     success: function (msg) {
                         console.log("successful additions");
@@ -362,7 +369,7 @@
 
                     $.ajax({
                         method: "POST",
-                        url: "/removetoken",
+                        url: "/document/removetoken",
                         data: {tokid: tokid, id: getParameterByName("taid")}
                     }).done(function (msg) {
                         console.log("successful removal.");
@@ -381,7 +388,7 @@
 
                 $.ajax({
                     method: "POST",
-                    url: "/addspan",
+                    url: "/document/addspan",
                     data: {label: newclass, starttokid: getnum(starttokid), endtokid:getnum(endtokid), id: getParameterByName("taid")}
                 }).done(function (msg) {
                     $("#text").html(msg);
@@ -394,7 +401,7 @@
                 console.log("saving ta: " + taid);
 
                 $.ajax({
-                    url: "/save",
+                    url: "/document/save",
                     data: {taid: taid},
                     beforeSend: function() {
                         // setting a timeout

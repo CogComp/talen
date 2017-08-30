@@ -621,7 +621,7 @@ public class DocumentController {
 
 
     @RequestMapping(value="/annotation", method=RequestMethod.GET)
-    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) {
+    public String annotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) throws FileNotFoundException {
 
         SessionData sd = new SessionData(hs);
 
@@ -711,6 +711,17 @@ public class DocumentController {
                 .forEachOrdered(x -> docwords.add(x.getKey()));
 
         model.addAttribute("docwords", docwords.subList(0, Math.min(50, docwords.size())));
+
+        String parallelpath = sd.prop.getProperty("parallelpath");
+        if(parallelpath!= null){
+            // assume path looks like: ti-XXXX.conll
+            String parid = taid.split("-")[1].split("\\.")[0];
+
+            String file = LineIO.slurp(parallelpath + "/en-" + parid);
+            System.out.println("Trying to read: " + parallelpath + "/en-" + parid);
+
+            model.addAttribute("engtext", file);
+        }
 
         return "document/annotation";
     }
@@ -886,11 +897,10 @@ public class DocumentController {
         }
 
         // TODO: remove this because it is slow!!!
-        updateallpatterns(sd);
+        //updateallpatterns(sd);
 
         String out = this.getHTMLfromTA(ta, sd);
         return out;
-
     }
 
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
@@ -938,7 +948,7 @@ public class DocumentController {
         }
 
         // TODO: remove this because it is slow!!!
-        updateallpatterns(sd);
+        //updateallpatterns(sd);
 
         String out = this.getHTMLfromTA(ta, sd);
         return out;

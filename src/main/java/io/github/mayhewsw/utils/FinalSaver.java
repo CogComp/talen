@@ -52,6 +52,8 @@ public class FinalSaver {
                     SentToConll(sent, outfolder);
                 }
             }
+        }else{
+            System.out.println(outfolder + " does not exist. Not doing anything.");
         }
 
     }
@@ -88,10 +90,13 @@ public class FinalSaver {
     }
 
     public static void main(String[] args) throws IOException {
-        String username = "mayhew2";
-        String origfolder = "/shared/corpora/ner/eval/column/mono-all-uly";
-        String romanfolder = "/shared/corpora/ner/eval/column/mono-all-uly-sentanno-" + username;
-        String outpath = "/shared/corpora/ner/eval/column/final-" + username + "/";
+        String username = "steve";
+
+        String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E29_LORELEI_IL6_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
+
+        String origfolder = dir + "conll-set0-sentanno-" + username;
+        String romanfolder = dir + "conll-set0-sentanno-" + username;
+        String outpath = dir + "final-" + username + "/";
 
 
         //String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";

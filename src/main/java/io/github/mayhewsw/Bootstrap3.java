@@ -369,7 +369,8 @@ public class Bootstrap3 {
             HashMap<String, Double> entityfeatcounts = getcontexts(entity);
 
             for(String feat : entityfeatcounts.keySet()){
-                if(feat.split("@")[1].length() > 1) {
+                String[] fs = feat.split("@");
+                if(fs.length > 1 && fs[1].length() > 1) {
                     featcounts.merge(feat, entityfeatcounts.get(feat), (oldValue, one) -> oldValue + one);
                 }
             }
