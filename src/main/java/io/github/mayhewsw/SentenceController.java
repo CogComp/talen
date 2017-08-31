@@ -21,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.swing.text.html.HTML;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -112,7 +113,8 @@ public class SentenceController {
         }
 
         // this is a special group.
-        String html = this.getAllHTML(grouplist, query, sd);
+        //String html = HtmlGenerator.getAllHTML(grouplist, query, sd);
+        String html = this.gethtml(grouplist.toArray(new String[grouplist.size()]), query, model, hs);
 
         model.addAttribute("groupid", "specialgroup-" + query);
         model.addAttribute("html", html);
@@ -499,7 +501,7 @@ public class SentenceController {
 
         addtext(text, label, grouparray, hs, model);
 
-        save(groupid, grouparray, hs, model);
+        save(grouparray, hs, model);
 
         return "redirect:/sentence/sents";
     }
@@ -508,10 +510,8 @@ public class SentenceController {
 
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
-    public void save(@RequestParam(value = "groupid", required = true) String groupid, @RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws IOException {
+    public void save(@RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws IOException {
         logger.info("Save has been called for list: " + sentids);
-
-
 
         SessionData sd = new SessionData(hs);
 
@@ -606,7 +606,8 @@ public class SentenceController {
         if (groupid != null) {
             Group sentids = groups.get(groupid);
 
-            String html = this.getAllHTML(new ArrayList<String>(sentids), sd);
+            //String html = HtmlGenerator.getAllHTML(new ArrayList<String>(sentids), sd);
+            String html = this.gethtml(sentids.toArray(new String[sentids.size()]), "", model, hs);
 
             model.addAttribute("groupid", groupid);
             model.addAttribute("grouptype", sentids.maxType());
@@ -745,7 +746,7 @@ public class SentenceController {
         }
 
         String query = "";
-        return getHTMLfromSent(sd.cache.get(sentid), query, sd.dict, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs);
     }
 
     @RequestMapping(value = "/gethtml", method = RequestMethod.POST)
@@ -753,7 +754,15 @@ public class SentenceController {
     @ResponseBody
     public String gethtml(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
-        return getAllHTML(Arrays.asList(sentids), query, sd);
+
+        String ret = "";
+        for(String sentid : sentids){
+            Constituent sent = sd.cache.getSentence(sentid);
+            String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs);
+            ret += html + "\n";
+        }
+
+        return ret;
     }
 
     @RequestMapping(value = "/getsuggestions", method = RequestMethod.POST)
@@ -792,46 +801,9 @@ public class SentenceController {
     }
 
 
-    /**
-     * Convenience function with no query.
-     *
-     * @param sentids
-     * @param sd
-     * @return
-     */
-    public String getAllHTML(List<String> sentids, SessionData sd) throws FileNotFoundException {
-        return getAllHTML(sentids, "", sd);
-    }
-
-    /**
-     * This returns one large HTML string for all sentences.
-     *
-     * @param sentids
-     * @param sd
-     * @return
-     */
-    public String getAllHTML(List<String> sentids, String query, SessionData sd) throws FileNotFoundException {
-        HashMap<String, String> id2html = new HashMap<>();
-
-        String ret = "";
-
-        String htmltemplate = "<div class=\"panel panel-default\">" +
-                "<div class=\"panel-heading\">%s</div>" +
-                "<div class=\"panel-body text\" id=%s>%s</div></div>";
-
-        for (String sentid : sentids) {
-            String html = getHTMLfromSent(sd.cache.getSentence(sentid), query, sd.dict, sd.showdefs);
-            //id2html.put(sentid, html);
-            ret += String.format(htmltemplate, sentid, sentid, html) + "\n";
-        }
-
-        return ret;
-    }
-
-
     @RequestMapping(value = "/toggledefs", method = RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value = "sentids[]") String[] sentids, @RequestParam(value = "query") String query, HttpSession hs) throws FileNotFoundException {
+    public String toggledefs(@RequestParam(value = "sentids[]") String[] sentids, @RequestParam(value = "query") String query, Model model, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
 
         Boolean showdefs = sd.showdefs;
@@ -839,64 +811,10 @@ public class SentenceController {
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return this.getAllHTML(Arrays.asList(sentids), query, sd);
+        String html = this.gethtml(sentids, query, model, hs);
+        return html;
     }
 
-    /**
-     * Given a sentence, produce the HTML for display. .
-     *
-     * @param sent
-     * @param keyword
-     * @return
-     */
-    public static String getHTMLfromSent(Constituent sent, String query, Dictionary dict, boolean showdefs) {
-
-        IntPair sentspan = sent.getSpan();
-
-        TextAnnotation ta = sent.getTextAnnotation();
-
-        View ner = ta.getView(ViewNames.NER_CONLL);
-
-        // take just the
-        String[] text = Arrays.copyOfRange(ta.getTokenizedText().split(" "), sentspan.getFirst(), sentspan.getSecond());
-
-        // add spans to every word that is not a constituent.
-        for (int t = 0; t < text.length; t++) {
-            String def = null;
-            if (dict != null && dict.containsKey(text[t])) {
-                def = dict.get(text[t]).get(0);
-            }
-
-            String id = getSentId(sent);
-
-            if (showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
-            } else {
-                // FIXME: this will only work for single word queries.
-                if (query.length() > 0 && text[t].startsWith(query)) {
-                    text[t] = "<span class='token pointer emph' id='tok-" + t + "'>" + text[t] + "</span>";
-                } else {
-                    text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
-                }
-            }
-        }
-
-        List<Constituent> sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
-
-        for (Constituent c : sentner) {
-
-            int start = c.getStartSpan() - sentspan.getFirst();
-            int end = c.getEndSpan() - sentspan.getFirst();
-
-            // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
-            text[end - 1] += "</span>";
-        }
-
-
-        String out = StringUtils.join(text, "");
-        return out;
-    }
 
     @RequestMapping(value = "/annotateall", method = RequestMethod.GET)
     public String annotateall(HttpSession hs, Model model) throws IOException {
@@ -909,7 +827,7 @@ public class SentenceController {
             String[] grouparray = group.toArray(new String[group.size()]);
 
             addtext(groupid, groups.get(groupid).maxType(), grouparray, hs, model);
-            save(groupid, grouparray, hs, model);
+            save(grouparray, hs, model);
         }
 
         return "redirect:/sentence/sents";

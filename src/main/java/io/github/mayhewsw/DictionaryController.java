@@ -74,7 +74,7 @@ public class DictionaryController {
             sd.dict.add(key, val);
         }
 
-        return DocumentController.getHTMLfromTA(ta, sd);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
     }
 
 

@@ -9,9 +9,15 @@
 
     <div class="container">
 
-        <p>Please select an option:</p>
-        <div class="list-group">
-            <a th:each="dataname : ${datasets}" href="#" th:href="@{/document/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+                <p>Please select an option:</p>
+                <div class="list-group">
+                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/document/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
+                </div>
+            </div>
+            <div class="col-md-4"></div>
         </div>
 
     </div>

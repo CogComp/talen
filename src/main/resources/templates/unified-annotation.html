@@ -8,16 +8,9 @@
 <div layout:fragment="content">
     <div class="container">
 
-        <h3 th:text="${textid}"></h3>
-
         <div class="row">
             <div class="col-md-8">
-                <div class="panel panel-default">
-                    <div class="panel-body" >
-                        <div th:utext="${html}" id="htmlcontainer" class="text">
-                        </div>
-                    </div>
-                </div>
+                <div th:utext="${html}" id="htmlcontainer"></div>
             </div>
             <div class="col-md-4">
                 <div class="form-group" data-spy="affix" data-offset-top="0">

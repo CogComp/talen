@@ -245,9 +245,10 @@ $(document).ready(function() {
                 endtokid:getnum(endtokid),
                 sentid: sentid,
                 sentids: getsentids(),
-                id: "eng.train.proc-6",
+                id: "eng.train.proc-62",
                 propagate: srch == srchanno }
         }).done(function (msg) {
+            console.log(msg);
             refreshsents();
             //resetrange();
         });
@@ -296,7 +297,7 @@ $(document).ready(function() {
 
         $.ajax({
             url: "/"+controller+"/save",
-            data: {groupid: groupid, sentids: getsentids()},
+            data: {sentids: getsentids()},
             method: "POST",
             beforeSend: function() {
                 // setting a timeout

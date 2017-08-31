@@ -347,12 +347,12 @@ public class DocumentController {
         updateallpatterns(sd);
         buildmemoryindex(sd);
 
-        return "redirect:/document/trysomeunianno";
+        return "redirect:/document/annotation/";
     }
 
-    @RequestMapping(value = "/save", method=RequestMethod.GET)
+    @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
-    public HashMap<String, Double> save(@RequestParam(value="taid", required=true) String taid, HttpSession hs) throws IOException, ParseException {
+    public HashMap<String, Double> save(@RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs) throws IOException, ParseException {
 
         SessionData sd = new SessionData(hs);
 
@@ -363,6 +363,9 @@ public class DocumentController {
         Properties props = datasets.get(folder);
         String folderpath = props.getProperty("path");
         String foldertype = props.getProperty("type");
+
+        assert(sentids.length == 1);
+        String taid = sentids[0];
 
         if(username != null && folderpath != null) {
 
@@ -615,17 +618,14 @@ public class DocumentController {
 
     @RequestMapping(value="/trysomeunianno", method=RequestMethod.GET)
     public String unifiedannotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) throws FileNotFoundException {
-        System.out.println(taid);
         SessionData sd = new SessionData(hs);
         Map.Entry<String, TextAnnotation> entry = sd.tas.firstEntry();
         TextAnnotation ta = entry.getValue();
 
-        String html = getHTMLfromTA(ta, sd);
+        String html = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
 
-        model.addAttribute("textid", taid);
         model.addAttribute("html", html);
 
-        System.out.println(labels);
 
         model.addAttribute("labels", labels);
 
@@ -673,13 +673,12 @@ public class DocumentController {
         }
 
         if(!tas.containsKey(taid)){
-            return "redirect:/document/annotation";
+            return "redirect:/unified-annotation";
         }
 
         TextAnnotation ta = tas.get(taid);
 
         model.addAttribute("ta", ta);
-        model.addAttribute("taid", taid);
 
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
@@ -689,8 +688,8 @@ public class DocumentController {
         logger.info("Constituents: " + ner.getConstituents());
 
         // set up the html string.
-        String out = this.getHTMLfromTA(ta, sd);
-        model.addAttribute("htmlstring", out);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        model.addAttribute("html", out);
 
         if(!tas.firstKey().equals(taid)) {
             model.addAttribute("previd", tas.lowerKey(taid));
@@ -736,90 +735,8 @@ public class DocumentController {
             model.addAttribute("engtext", file);
         }
 
-        return "document/annotation";
+        return "unified-annotation";
     }
-
-
-    /**
-     * Given a TA, this returns the HTML string.
-     * @param
-     * @return
-     */
-    public static String getHTMLfromTA(TextAnnotation ta, SessionData sd){
-
-        View ner = ta.getView(ViewNames.NER_CONLL);
-        View sents = ta.getView(ViewNames.SENTENCE);
-
-        String[] text = ta.getTokenizedText().split(" ");
-
-        ArrayList<String> suffixes = sd.suffixes;
-
-        if(suffixes == null){
-            new ArrayList<>();
-        }else{
-            suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
-        }
-
-        // add spans to every word that is not a constituent.
-        for(int t = 0; t < text.length; t++){
-            String def = null;
-            if(sd.dict != null && sd.dict.containsKey(text[t])){
-                def = sd.dict.get(text[t]).get(0);
-            }
-
-            for(String suffix : suffixes){
-                if(text[t].endsWith(suffix)){
-                    //System.out.println(text[t] + " ends with " + suffix);
-                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span class='suffix'>" + suffix + "</span>";
-                    break;
-                }
-            }
-
-            if(sd.showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
-            }else{
-                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
-            }
-        }
-
-        for(Constituent c : ner.getConstituents()){
-
-            int start = c.getStartSpan();
-            int end = c.getEndSpan();
-
-            // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
-            text[end-1] += "</span>";
-        }
-
-        List<Suggestion> suggestions = getdocsuggestions(ta, sd);
-
-        for(Suggestion s : suggestions){
-
-            int start = s.getStartSpan();
-            int end = s.getEndSpan();
-
-            // don't suggest spans that cover already tagged areas.
-            if(ner.getConstituentsCoveringSpan(start, end).size() > 0) continue;
-
-            System.out.println(start + " " + end + ": " + s.reason + " " + s);
-
-            // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='pointer suggestion' data-toggle=\"tooltip\" title='%s' id='cons-%d-%d'>%s", s.reason, start, end, text[start]);
-            text[end-1] += "</span>";
-        }
-
-        for(Constituent c : sents.getConstituents()){
-            int start = c.getStartSpan();
-            int end = c.getEndSpan();
-            text[start] = "<p>" + text[start];
-            text[end-1] += "</p>";
-        }
-
-        String out = StringUtils.join("", text);
-        return out;
-    }
-
 
     /**
      * This should never get label O
@@ -834,7 +751,7 @@ public class DocumentController {
     @RequestMapping(value="/addspan", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    public void addspan(@RequestParam(value="label") String label, @RequestParam(value="starttokid") String starttokid, @RequestParam(value="endtokid") String endtokid, @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: change span %s-%s to label: %s.", idstring, starttokid,endtokid, label));
 
@@ -850,8 +767,8 @@ public class DocumentController {
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = this.getHTMLfromTA(ta, sd);
-            return out;
+            String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+            return;
         }
 
         String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
@@ -912,8 +829,8 @@ public class DocumentController {
         // TODO: remove this because it is slow!!!
         //updateallpatterns(sd);
 
-        String out = this.getHTMLfromTA(ta, sd);
-        return out;
+        //String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        //return out;
     }
 
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
@@ -963,7 +880,7 @@ public class DocumentController {
         // TODO: remove this because it is slow!!!
         //updateallpatterns(sd);
 
-        String out = this.getHTMLfromTA(ta, sd);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
         return out;
     }
 
@@ -986,7 +903,7 @@ public class DocumentController {
             ner.removeConstituent(c);
         }
 
-        String out = this.getHTMLfromTA(ta, sd);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
         return out;
     }
 
@@ -1003,7 +920,7 @@ public class DocumentController {
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return this.getHTMLfromTA(ta, sd);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
     }
 
     @RequestMapping(value="/addsuffix", method= RequestMethod.GET)
@@ -1043,7 +960,7 @@ public class DocumentController {
 
         }
 
-        return this.getHTMLfromTA(ta, sd);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
     }
 
 
@@ -1064,6 +981,22 @@ public class DocumentController {
         }
 
         return suggestions;
+    }
+
+    @RequestMapping(value = "/gethtml", method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    @ResponseBody
+    public String gethtml(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
+        SessionData sd = new SessionData(hs);
+
+        String ret = "";
+        for(String sentid : sentids){
+            TextAnnotation ta = sd.tas.get(sentid);
+            String html = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+            ret += html + "\n";
+        }
+
+        return ret;
     }
 
 
