@@ -54,11 +54,7 @@ public class DocumentController {
     private final String FOLDERCONLL = "conll";
 
     /**
-     * When this class is loaded, it reads a file called config/folders.txt. This is made up
-     * of lines formatted as:
-     *    name path
-     * The name is an identifier, the path is the absolute path to the folder. This
-     * folder path must contain TextAnnotations.
+     * When this class is loaded, it looks for files in config.
      *
      * @throws FileNotFoundException
      */
@@ -308,7 +304,6 @@ public class DocumentController {
         }
 
 
-
         // this ensures that the suffixes item is never null.
         String suffixlist = prop.getProperty("suffixes");
         ArrayList<String> suffixes = new ArrayList<>();
@@ -352,7 +347,7 @@ public class DocumentController {
         updateallpatterns(sd);
         buildmemoryindex(sd);
 
-        return "redirect:/document/annotation";
+        return "redirect:/document/trysomeunianno";
     }
 
     @RequestMapping(value = "/save", method=RequestMethod.GET)
@@ -576,7 +571,6 @@ public class DocumentController {
 
             Document d = new Document();
             TextField tf = new TextField("body", sr);
-            System.out.println(tf);
             d.add(tf);
             d.add(new StringField("filename", ta.getId(), Field.Store.YES));
             writer.addDocument(d);
@@ -617,6 +611,25 @@ public class DocumentController {
 
         return ret;
 
+    }
+
+    @RequestMapping(value="/trysomeunianno", method=RequestMethod.GET)
+    public String unifiedannotation(@RequestParam(value="taid", required=false) String taid, HttpSession hs, Model model) throws FileNotFoundException {
+        System.out.println(taid);
+        SessionData sd = new SessionData(hs);
+        Map.Entry<String, TextAnnotation> entry = sd.tas.firstEntry();
+        TextAnnotation ta = entry.getValue();
+
+        String html = getHTMLfromTA(ta, sd);
+
+        model.addAttribute("textid", taid);
+        model.addAttribute("html", html);
+
+        System.out.println(labels);
+
+        model.addAttribute("labels", labels);
+
+        return "unified-annotation";
     }
 
 
@@ -803,7 +816,7 @@ public class DocumentController {
             text[end-1] += "</p>";
         }
 
-        String out = StringUtils.join(" ", text);
+        String out = StringUtils.join("", text);
         return out;
     }
 

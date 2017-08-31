@@ -41,7 +41,7 @@
 }
 
 .suggestion {
-    border-bottom: 1px dashed gray;
+    border-bottom: 1px solid gray;
 }
 
 .tooltip-inner {
@@ -107,6 +107,30 @@
     font-weight: bold;
 }
 
-.highlighted {
-    background-color: #fff2ac;
+
+.highlightstart {
+    border-right: none;
+    border-left: lightgray solid 1px;
+    border-top: lightgray solid 1px;
+    border-bottom: lightgray solid 1px;
+    border-radius: 3px 0 0 3px;
 }
+
+.highlighted {
+    border-right: none;
+    border-left: none;
+    border-top: lightgray solid 1px;
+    border-bottom: lightgray solid 1px;
+}
+
+.highlightend {
+    border-left: none;
+    border-right: lightgray solid 1px;
+    border-top: lightgray solid 1px;
+    border-bottom: lightgray solid 1px;
+    border-radius: 0 3px 3px 0;
+}
+
+/*.highlighted {*/
+    /*background-color: #fff2ac;*/
+/*}*/

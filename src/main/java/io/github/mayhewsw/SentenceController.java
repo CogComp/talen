@@ -9,7 +9,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
+//import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +40,7 @@ public class SentenceController {
 
     private static Logger logger = LoggerFactory.getLogger(SentenceController.class);
 
-    CooccuranceMapLinker linker;
+    //CooccuranceMapLinker linker;
 
     /**
      * Load config files before anything else. This is the only object shared among user sessions.
@@ -136,7 +136,6 @@ public class SentenceController {
 
     @RequestMapping(value = "/loaddata", method = RequestMethod.GET)
     public String loaddata(@RequestParam(value = "dataname") String dataname, HttpSession hs) throws Exception {
-
 
         Properties prop = datasets.get(dataname);
         // this refers to a folder containing a large number of unannotated conll files.

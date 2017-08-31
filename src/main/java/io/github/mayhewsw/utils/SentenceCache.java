@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  *
- * The sentence cache is a hashmap that maps from sentence ids to actual sentence constituents. All editiing
+ * The sentence cache is a hashmap that maps from sentence ids to actual sentence constituents. All editing
  * of sentence constituents must be done through this map. All other data structures only store references
  * via sentence ids.
  *
