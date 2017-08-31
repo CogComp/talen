@@ -111,9 +111,9 @@ public class HtmlGenerator {
 
         String html = StringUtils.join(text, "");
 
-        String htmltemplate = "<div class=\"panel panel-default\">" +
-                "<div class=\"panel-heading\">%s</div>" +
-                "<div class=\"panel-body text\" id=%s>%s</div></div>";
+        String htmltemplate = "<div class=\"card\">" +
+                "<div class=\"card-header\">%s</div>" +
+                "<div class=\"card-body text\" id=%s>%s</div></div>";
         String out = String.format(htmltemplate, id, id, html) + "\n";
 
 

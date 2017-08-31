@@ -13,9 +13,9 @@
 
             <!-- Nav tabs -->
             <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#unanno" aria-controls="unanno" role="tab" data-toggle="tab">Unannotated</a></li>
-                <li role="presentation"><a href="#anno" aria-controls="anno" role="tab" data-toggle="tab">Annotated</a></li>
-                <li role="presentation"><a href="#suggestions" aria-controls="suggestions" role="tab" data-toggle="tab">Suggestions</a></li>
+                <li role="presentation" class="nav-item"><a href="#unanno" class="nav-link active" aria-controls="unanno" role="tab" data-toggle="tab">Unannotated</a></li>
+                <li class="nav-item" role="presentation"><a href="#anno" class="nav-link" aria-controls="anno" role="tab" data-toggle="tab">Annotated</a></li>
+                <li class="nav-item" role="presentation"><a href="#suggestions" class="nav-link" aria-controls="suggestions" role="tab" data-toggle="tab">Suggestions</a></li>
             </ul>
 
             <!-- Tab panes -->
@@ -28,19 +28,21 @@
                     <div class="row">
                         <div class="col-md-9">
                             <div class="list-group">
-                                <div th:each="groupid : ${unannogroups.keySet()}" class="list-group-item">
-                                    <a th:href="@{/sentence/removeterm(term=${groupid})}" th:class="badge" th:text="Remove"></a>
-                                    <a th:each="label : ${labels}"
-                                       th:href="@{/sentence/addtextsave(text=${groupid},label=${label},groupid=${groupid})}"
-                                       th:class="${label} + ' badge'"
-                                       th:classappend="${session.groups.get(groupid).maxType()} == ${label} ? bestlabel : ignorelabel"
-                                       th:text="${label}"></a>
+                                <div th:each="groupid : ${unannogroups.keySet()}" class="list-group-item flex-column">
 
+                                    <div class="d-flex">
 
-                                    <a th:href="'/sentence/sents?groupid=' + ${groupid}"><h4 th:text="'Group: ' + ${groupid} + ' (' + ${unannogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h4></a>
-                                    <p th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></p>
-                                    <!--<p th:text="${unannogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
+                                        <a th:href="'/sentence/sents?groupid=' + ${groupid}" class="mr-1"><h5 th:text="'Group: ' + ${groupid} + ' (' + ${unannogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h5></a>
+                                        <span class="mr-auto" th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></span>
 
+                                        <a th:each="label : ${labels}"
+                                           th:href="@{/sentence/addtextsave(text=${groupid},label=${label},groupid=${groupid})}"
+                                           th:class="${label} + ' btn btn-outline-secondary btn-sm ml-1'"
+                                           th:classappend="${session.groups.get(groupid).maxType()} == ${label} ? bestlabel : ignorelabel"
+                                           th:text="${label}"></a>
+                                        <a th:href="@{/sentence/removeterm(term=${groupid})}" class="btn btn-outline-secondary btn-sm ml-1" th:text="Remove"></a>
+
+                                    </div>
 
                                 </div>
                             </div>

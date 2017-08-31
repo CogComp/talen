@@ -103,6 +103,10 @@
     font-style: italic;
 }
 
+body {
+    margin-top: 70px;
+}
+
 .emph {
     font-weight: bold;
 }

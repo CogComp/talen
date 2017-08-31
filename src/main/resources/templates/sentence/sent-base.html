@@ -8,24 +8,24 @@
 <!--This just updates the links in the header.-->
 
 <div layout:fragment="navlinks">
-    <ul class="nav navbar-nav" id="pagesbar">
-        <li><a href="/sentence/">Sentence</a></li>
-        <li><a href="/sentence/sents">Groups</a></li>
-
+    <ul class="navbar-nav mr-auto" id="pagesbar">
+        <li class="nav-item"><a class="nav-link" href="/sentence/">Sentence</a></li>
+        <li class="nav-item"><a class="nav-link" href="/sentence/sents">Groups</a></li>
     </ul>
 
-    <form th:unless="${session.username} == null" class="navbar-form navbar-right" action="search" method="get">
-        <div class="input-group">
-                        <span class="input-group-addon">
-                            <input type="checkbox" id="searchinanno" name="searchinanno" /> Search in anno
-                        </span>
-            <input type="text" class="form-control" name="query" placeholder="Search for..." />
-                        <span class="input-group-btn">
-                            <button class="btn btn-default" id="searchbutton" type="submit">Go!</button>
-                        </span>
-        </div><!-- /input-group -->
 
-    </form>
+
+    <!--<form th:unless="${session.username} == null" class="form-inline mr-auto" action="search" method="get">-->
+        <!--<div class="input-group">-->
+            <!--<span class="input-group-addon">-->
+                <!--<input type="checkbox" id="searchinanno" name="searchinanno" /> Search in anno-->
+            <!--</span>-->
+            <!--<input type="text" class="form-control" name="query" placeholder="Search ffor..." />-->
+            <!--<span class="input-group-btn">-->
+                <!--<button class="btn btn-default" id="searchbutton" type="submit">Go!</button>-->
+            <!--</span>-->
+        <!--</div>&lt;!&ndash; /input-group &ndash;&gt;-->
+    <!--</form>-->
 </div>
 
 

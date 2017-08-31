@@ -9,65 +9,37 @@
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous" />-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
 
     <link rel="stylesheet" href="#" th:href="@{/css/style.css}" />
     <link rel="stylesheet" href="#" th:href="@{/css/labels.css}" />
 
-    <script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <!--<script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>-->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>-->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
     <!--<script th:src="@{/js/script.js}"></script>-->
 
 </head>
 <body>
 
-<div class="navbar navbar-default">
+<div class="navbar navbar-light fixed-top bg-light navbar-expand-lg">
     <div class="container">
 
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
+        <a class="navbar-brand" href="/">NER Annotator</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-            <a class="navbar-brand" href="/">NER Annotator</a>
-        </div>
+        <!--This is replaced in full by sub classes. -->
+        <div layout:fragment="navlinks" class="mr-auto"></div>
 
-        <div class="navbar-collapse navbar-ex1-collapse">
+        <div th:replace="fragments/nav :: logoutlinks"></div>
 
-            <div layout:fragment="navlinks">
-                <ul class="nav navbar-nav" id="pagesbar">
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/annotation">All annotations</a></li>
-                    <li><a href="/dict">Dictionary</a></li>
-                </ul>
-            </div>
-
-            <!--<form class="navbar-form navbar-right" action="search" method="get">-->
-            <!--<div class="input-group">-->
-            <!--<input type="text" class="form-control" name="query" placeholder="Search for..." />-->
-            <!--<span class="input-group-btn">-->
-            <!--<button class="btn btn-default" id="searchbutton" type="submit">Go!</button>-->
-            <!--</span>-->
-            <!--</div>&lt;!&ndash; /input-group &ndash;&gt;-->
-
-            <!--</form>-->
-
-            <ul th:unless="${#httpServletRequest.remoteUser}==null" class="nav navbar-nav navbar-right">
-
-                <li><span class="navbar-text" th:text="${'Hi there ' + #httpServletRequest.remoteUser + '!'}">Hi there</span></li>
-                <li th:unless="${session.dataname} == null"><span class="navbar-text">Editing: <span th:text="${session.dataname}"></span></span></li>
-                <li>
-                    <form th:action="@{/logout}" id="logoutform" method="post">
-                        <a class="navbar-text" href="#" onclick="document.getElementById('logoutform').submit()">Logout</a>
-                    </form>
-                </li>
-            </ul>
-
-        </div><!-- /.navbar-collapse -->
 
     </div>
 </div>
@@ -75,5 +47,9 @@
 
 <div layout:fragment="content">NO CONTENT HERE</div>
 
+
+
+
 </body>
 </html>
+

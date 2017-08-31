@@ -1,0 +1,23 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div class="navbar-nav" th:fragment="logoutlinks">
+    <span class="navbar-text" th:text="${'Hi there ' + #httpServletRequest.remoteUser + '!'}">Hi there</span>
+    <span th:unless="${session.dataname} == null" class="navbar-text ml-3">Editing: <span th:text="${session.dataname}"></span></span>
+    <form th:action="@{/logout}" id="logoutform" method="post">
+        <a class="navbar-text ml-3" href="#" onclick="document.getElementById('logoutform').submit()">Logout</a>
+    </form>
+</div>
+
+
+</body>
+</html>

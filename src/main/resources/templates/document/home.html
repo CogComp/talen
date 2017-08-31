@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="document/doc-base">
 <head>
-    <title>YOUR TITLE HERE</title>
+    <title>Choose a dataset</title>
 </head>
 <body>
 
@@ -14,7 +14,7 @@
             <div class="col-md-4">
                 <p>Please select an option:</p>
                 <div class="list-group">
-                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/document/loaddata(dataname=${dataname})}" class="list-group-item"  th:text="${dataname}"></a>
+                    <a th:each="dataname : ${datasets}" href="#" th:href="@{/document/loaddata(dataname=${dataname})}" class="list-group-item list-group-item-action"  th:text="${dataname}"></a>
                 </div>
             </div>
             <div class="col-md-4"></div>

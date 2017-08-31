@@ -89,7 +89,8 @@ $(document).ready(function() {
                 return "Labeled: " + t.className + ", id: " + t.id;
             },
             html: true,
-            trigger: "manual"
+            trigger: "focus",
+            container: "#eng-train.proc-62"
         });
 
         //$("[id^=tok]").off("mouseup");
@@ -176,7 +177,10 @@ $(document).ready(function() {
 
         //var spanid = $(this).parents("[id^=popovertok]")[0].id;
 
-        var sentid = $(this).parents(".panel-body")[0].id;
+        console.log($(this).parents());
+
+        var sentid = $(this).parents(".card-body")[0].id;
+
 
         console.log(sentid);
         console.log("Clicked on a button..." + buttonvalue);
@@ -208,7 +212,7 @@ $(document).ready(function() {
         $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
         $("#savebutton").css({"border-color" : "#c00"});
 
-        var sentid = $(span).parents(".panel-body")[0].id;
+        var sentid = $(span).parents(".card-body")[0].id;
 
         // returns just the number of the token. tok-4, returns 4.
         var tokid = getnum(span.id);

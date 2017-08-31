@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{sentence/sent-base}">
 <head>
-    <title>Annotation</title>
+    <title>Unified Annotation</title>
 </head>
 <body>
 
@@ -25,7 +25,7 @@
                             th:text="${label}"></button>
                     <div class="spacer"></div>
 
-                    <a style="color:gray" href="#top">Back to top</a>
+                    <a style="color:gray" id="back2top" href="#top">Back to top</a>
 
                 </div>
 
@@ -51,10 +51,10 @@
             <div th:each="label,iterStat : ${labels}" th:if="${iterStat.index % 2 == 0}" class="form-group">
                 <div class="row">
                     <div class="col-md-4">
-                        <button type="button" th:id="${labels[iterStat.index]}" class="btn labelbutton" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
+                        <button type="button" th:id="${labels[iterStat.index]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
                     </div>
                     <div class="col-md-4" th:if="${iterStat.index+1} &lt; ${labels.size()}">
-                        <button type="button" th:id="${labels[iterStat.index+1]}" class="btn labelbutton" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
+                        <button type="button" th:id="${labels[iterStat.index+1]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
                     </div>
                 </div>
             </div>
@@ -62,7 +62,7 @@
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-4">
-                        <button type="button" id="O" class="btn btn-default" value="O">No label</button>
+                        <button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>
                     </div>
                 </div>
             </div>
