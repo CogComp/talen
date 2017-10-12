@@ -168,24 +168,24 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--<plugin>-->
-                <!--<groupId>edu.illinois.cs.cogcomp</groupId>-->
-                <!--<artifactId>lbjava-maven-plugin</artifactId>-->
-                <!--<configuration>-->
-                    <!--<lbjavaInputFileList>-->
-                        <!--<param>src/main/lbjava/CandClassifier.lbj</param>-->
-                    <!--</lbjavaInputFileList>-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<phase>compile</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>clean</goal>-->
-                            <!--<goal>compile</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>edu.illinois.cs.cogcomp</groupId>
+                <artifactId>lbjava-maven-plugin</artifactId>
+                <configuration>
+                    <lbjavaInputFileList>
+                        <param>src/main/lbjava/CandClassifier.lbj</param>
+                    </lbjavaInputFileList>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>clean</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
