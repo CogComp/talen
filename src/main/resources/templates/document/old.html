@@ -1,0 +1,478 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="document/doc-base">
+<head>
+    <title>Annotation</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <div class="container">
+
+        <div class="page-header">
+            <h2 th:text="${taid}"></h2>
+
+        </div>
+
+        <div id="tagdescriptions">
+            Labels:
+            <span th:each="label : ${labels}" th:class="${label}" th:text="${label}"></span>
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+
+                <div class="panel panel-default">
+                    <div class="panel-body" >
+                        <div th:utext="${htmlstring}" id="text" />
+                    </div>
+                </div>
+
+
+                <div th:if="${engtext != null}" class="panel panel-default">
+                    <div class="panel-body" >
+                        <div th:utext="${engtext}" id="englishtext">SOME STUFF</div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-4" >
+
+                <!--<div data-spy="affix" data-offset-top="0" data-offset-bottom="20">-->
+                <div>
+                    <!-- Save, dictionary button group -->
+                    <div class="form-group">
+                        <a id="savebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span> Save</a>
+                        <a id="removebutton" class="btn btn-default" role="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Clear All</a>
+                        <a id="dictbutton" class="btn btn-default" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Toggle Dict.</a>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="btn-group" role="group" aria-label="Next and previous">
+                            <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-default saveclass" role="button"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span> Previous</a>
+                            <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-default saveclass" role="button">Next <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span></a>
+                        </div>
+                    </div>
+
+
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingTwo">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                        Dictionary
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                <ul class="list-group">
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-lg-4">
+                                                <strong>Word</strong>
+                                            </div>
+                                            <div class="col-lg-8">
+                                                <strong>Translation</strong>
+                                            </div>
+                                        </div>
+                                    </li>
+
+                                    <li th:each="word : ${docwords}" class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-lg-4" th:text="${word}">Word</div>
+                                            <div class="col-lg-8" th:if="${session.dict.containsKey(word)}" th:text="${session.dict.get(word)}" th:id="'div-'+${word}">
+                                            </div>
+
+                                            <div class="col-lg-8" th:unless="${session.dict.containsKey(word)}" th:id="'div-'+${word}">
+                                                <div class="input-group">
+                                                    <input type="text" th:id="'def-'+${word}" class="form-control" placeholder="English" />
+                                                  <span class="input-group-btn">
+                                                      <button class="btn btn-default" th:id="'submit-'+${word}" type="button">Add!</button>
+                                                  </span>
+                                                </div><!-- /input-group -->
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingThree">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                        Affixes
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                <div class="panel-body">
+                                    <span th:each="suffix : ${session.suffixes}" th:text="'-' + ${suffix} + ', '"></span>
+
+                                    <div style="height: 20px"></div>
+
+                                    <form class="form-inline">
+                                        <div class="form-group">
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" id="newsuffix" placeholder="Suffix" />
+                                              <span class="input-group-btn">
+                                                  <button class="btn btn-default" id="suffixsubmit" type="button">Add!</button>
+                                              </span>
+                                            </div><!-- /input-group -->
+                                        </div>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingFour">
+                                <h4 class="panel-title">
+                                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                        Next Docs
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                                <div id="nextdocs">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <script>
+        /*<![CDATA[*/
+
+        $(document).ready(function() {
+
+            function loadtok(){
+
+                $(function () {
+                    $('[data-toggle="tooltip"]').tooltip()
+                })
+
+
+                $("[id^=tok]").popover({
+                    placement: "bottom",
+                    content: function () {
+                        var html = $("#buttons").html();
+                        var out = "<div id='" + $(this)[0].id + "'>" + html + "</div>";
+                        return out;
+                    },
+                    title: function () {
+                        var t = $(this)[0];
+                        return "Labeled: " + t.className + ", id: " + t.id;
+                    },
+                    html: true,
+                    trigger: "manual"
+                });
+
+                $("[id^=tok]").mouseup(function(event){
+                    // only toggle on the left click.
+                    if(event.which == 1) {
+                        $(this).popover("toggle");
+                    }
+
+                });
+
+                // on right click, change label to nothing.
+                $("[id^=tok]").contextmenu(function(event){
+                    event.preventDefault();
+                    var spanid = event.currentTarget.id;
+                    console.log("Right clicked on " + spanid);
+
+                    removelabel(spanid);
+                });
+            }
+
+            loadtok();
+
+            $("#dictbutton").click(function(){
+                $.ajax({
+                    method: "GET",
+                    url: "/document/toggledefs",
+                    data: {taid: getParameterByName("taid")}
+                }).done(function (msg) {
+                    console.log("successful toggle");
+                    $("#text").html(msg);
+                    loadtok();
+                });
+
+            });
+
+            $("[id^=submit-]").click(function(){
+                console.log("Clicked on:" + this.id)
+                var key = this.id.split("-")[1];
+                var val = $("#def-" + key).val();
+                console.log("you want to submit: " + key + ", " + val);
+                $.ajax({
+                    method: "GET",
+                    url: "/dict/add",
+                    data: {key:key, val:val, taid: getParameterByName("taid")}
+                }).done(function (msg) {
+                    console.log("successful addition");
+                    $("#text").html(msg);
+                    loadtok();
+
+                    // this is the simplest option... although it is something of a hack.
+                    $("#div-" + key).html("[" + val + "]");
+
+                });
+            });
+
+            $("#suffixsubmit").click(function(){
+                var suff = $("#newsuffix").val();
+                $.ajax({
+                    method: "GET",
+                    url: "/document/addsuffix",
+                    data: {suffix: suff, taid: getParameterByName("taid")}
+                }).done(function (msg) {
+                    console.log("successful addition");
+                    $("#text").html(msg);
+                    $("#newsuffix").val("");
+                    loadtok();
+
+                    // somehow refresh just the suffix part.
+
+                });
+            });
+
+
+            $("#removebutton").click(function(){
+                if (confirm('Are you sure you want to remove all?')) {
+                    $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+                    $("#savebutton").css({"border-color" : "#c00"});
+                    $.ajax({
+                        method: "POST",
+                        url: "/document/removeall",
+                        data: {id: getParameterByName("taid")}
+                    }).done(function (msg) {
+                        console.log("successful removal.");
+                        $("#text").html(msg);
+                        loadtok();
+                    });
+                }
+            });
+
+            $(".ruleitem").click(function(){
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+                $("#savebutton").css({"border-color" : "#c00"});
+                var ruleobj = this;
+                $.ajax({
+                    method: "GET",
+                    url: "/document/applyrule",
+                    data: {rule: this.id, id: getParameterByName("taid")},
+                    success: function (msg) {
+                        console.log("successful additions");
+                        $("#text").html(msg);
+                        loadtok();
+
+                        $(ruleobj).append("<span class='badge'>Applied</span>");
+                    }
+                });
+
+//            $.ajax({
+//                method: "GET",
+//                url: "/updaterules",
+//                data: {taid: getParameterByName("taid")}
+//            }).done(function (msg) {
+//                console.log(msg)
+//            });
+            });
+
+
+            // this runs when you click on a single button.
+            $(".container").on("click", "button", function(){
+
+                var buttonvalue = $(this)[0].value;
+
+                var spanid = $(this).parents("[id^=tok]")[0].id;
+
+                console.log("Clicked on a button..." + buttonvalue);
+                console.log("refers to: " + spanid);
+
+                $("#" + spanid).popover("hide");
+
+                var sel = document.getSelection();
+
+                var fid = sel.anchorNode.parentElement.id;
+                var lid = sel.focusNode.parentElement.id;
+
+                // check if these ids are actual nodes.
+                if(fid.startsWith("tok-") && lid.startsWith("tok-") && lid != fid){
+                    console.log(this);
+                    console.log("Showing popover for span: " + fid + "-" + lid)
+                    var startid = fid;
+                    var endid = "tok-" + (getnum(lid) + 1);
+
+                }else{
+                    var startid = $(this).parents("[id^=tok]")[0].id;
+                    var endid = "tok-" + (getnum(startid) + 1);
+                }
+
+                addlabel(startid, endid, buttonvalue);
+            });
+
+//        $('body').on('click', function (e) {
+//
+//            $('[id^=tok]').each(function () {
+//                //the 'is' for buttons that trigger popups
+//                //the 'has' for icons within a button that triggers a popup
+//                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+//                    $(this).popover('hide');
+//                }
+//            });
+//
+//        });
+
+            function getParameterByName(name) {
+                var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+                return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+            }
+
+            // given a span id (e.g. tok-4), return the integer
+            function getnum(spanid){
+                return parseInt(spanid.split("-")[1]);
+            }
+
+            // check if s is labeled...
+            // this expects a string.
+            function isLabeled(spanid){
+                if(!spanid.startsWith("#")){
+                    spanid = "#" + spanid;
+                }
+                var p = $(spanid).parent();
+                return p.hasClass("cons");
+            }
+
+
+            // Given a span, remove the label.
+            function removelabel(spanid) {
+
+                // not sure if this check is necessary?
+                if (isLabeled(spanid)) {
+                    $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+                    $("#savebutton").css({"border-color" : "#c00"});
+
+                    console.log("Removing label from: " + spanid);
+
+                    // returns just the number of the token. tok-4, returns 4.
+                    var tokid = getnum(spanid);
+
+                    $.ajax({
+                        method: "POST",
+                        url: "/document/removetoken",
+                        data: {tokid: tokid, id: getParameterByName("taid")}
+                    }).done(function (msg) {
+                        console.log("successful removal.");
+                        $("#text").html(msg);
+                        loadtok();
+                    });
+                }
+            }
+
+            // run this function when you click on a token.
+            function addlabel(starttokid, endtokid, newclass) {
+                console.log("Adding " + newclass + " to " + starttokid + ":" + endtokid);
+
+                $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+                $("#savebutton").css({"border-color" : "#c00"});
+
+                $.ajax({
+                    method: "POST",
+                    url: "/document/addspan",
+                    data: {label: newclass, starttokid: getnum(starttokid), endtokid:getnum(endtokid), id: getParameterByName("taid")}
+                }).done(function (msg) {
+                    $("#text").html(msg);
+                    loadtok();
+                });
+            };
+
+            function save(){
+                var taid = getParameterByName("taid");
+                console.log("saving ta: " + taid);
+
+                $.ajax({
+                    url: "/document/save",
+                    data: {taid: taid},
+                    beforeSend: function() {
+                        // setting a timeout
+                        $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");
+                    }
+                }).done(function (msg) {
+                    console.log("finished saving!");
+                    $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
+                    $("#savebutton").css({"border-color" : ""});
+
+                    console.log(msg);
+
+                    $("#nextdocs").empty();
+
+                    for(var fileid in msg){
+                        console.log(fileid);
+                        var score = msg[fileid].toFixed(2);
+                        $("#nextdocs").append("<a href='/annotation?taid=" + fileid + "' class='list-group-item' role='button'>"+fileid+ ": " + score + "</a>");
+                    }
+
+                    // collapse all
+                    $('[id^=collapse]').collapse('hide');
+
+                    // show just the necessary one.
+                    $('#collapseFour').collapse('show');
+
+
+                });
+
+            }
+            $( ".saveclass" ).click(save);
+            $( "#savebutton" ).click(save);
+
+            $(window).on('beforeunload', function() {
+                //return 'you are an idiot!';
+                save()
+            });
+
+
+        });
+
+
+        /*]]>*/
+    </script>
+
+    <template id="buttons">
+        <div class="container-fluid">
+
+            <div th:each="label,iterStat : ${labels}" th:if="${iterStat.index % 2 == 0}" class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" th:id="${labels[iterStat.index]}" class="btn" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
+                    </div><x></x>
+                    <div class="col-md-4" th:if="${iterStat.index+1} &lt; ${labels.size()}">
+                        <button type="button" th:id="${labels[iterStat.index+1]}" class="btn" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="O" class="btn btn-default" value="O">No label</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </template>
+
+</div>
+
+</body>
+
+</html>

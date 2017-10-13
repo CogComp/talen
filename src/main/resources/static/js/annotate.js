@@ -90,7 +90,7 @@ $(document).ready(function() {
             },
             html: true,
             trigger: "focus",
-            container: "#eng-train.proc-62"
+            container: $(".text")
         });
 
         //$("[id^=tok]").off("mouseup");
@@ -118,11 +118,15 @@ $(document).ready(function() {
 
 //                    $(this).removeClass("highlighted");
 
+            console.log(event.which);
+
             // only toggle on the left click.
             if(event.which == 1) {
                 $("[id^=tok]").not($(this)).popover('hide');
                 $(this).popover("toggle");
             }
+
+            console.log("mouseup");
 
             highlighting = false;
 
@@ -172,10 +176,12 @@ $(document).ready(function() {
     });
 
     // this runs when you click on a single button.
-    $("body").on("click", '.popover button', function(){
+    $("body").on("click", '.popover button', function(event){
         var buttonvalue = $(this)[0].value;
 
         //var spanid = $(this).parents("[id^=popovertok]")[0].id;
+
+        console.log(event);
 
         console.log($(this).parents());
 
@@ -234,9 +240,8 @@ $(document).ready(function() {
     function addlabel(sentid, starttokid, endtokid, newclass) {
         console.log("Adding " + newclass + " to " + starttokid + "---" + endtokid + ", sentid=" + sentid);
 
-        $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+        $("#savebutton").html("<i class=\"fa fa-floppy-o\" aria-hidden=\"true\"></i> Save");
         $("#savebutton").css({"border-color" : "#c00"});
-
 
         var srch = window.location.pathname.endsWith("/search");
         var srchanno = getParameterByName("searchinanno") == "on";
@@ -249,7 +254,7 @@ $(document).ready(function() {
                 endtokid:getnum(endtokid),
                 sentid: sentid,
                 sentids: getsentids(),
-                id: "eng.train.proc-62",
+                id: sentid,
                 propagate: srch == srchanno }
         }).done(function (msg) {
             console.log(msg);
@@ -275,7 +280,7 @@ $(document).ready(function() {
         var label = $(this).text();
         var text= getParameterByName("groupid");
 
-        $("#savebutton").html("<span class=\"glyphicon glyphicon-floppy-disk\" aria-hidden=\"true\"></span> Save");
+        $("#savebutton").html("<span class=\"fa fa-floppy-o\" aria-hidden=\"true\"></span> Save");
         $("#savebutton").css({"border-color" : "#c00"});
 
         $.ajax({
@@ -305,11 +310,11 @@ $(document).ready(function() {
             method: "POST",
             beforeSend: function() {
                 // setting a timeout
-                $("#savebutton").html("<span class=\"fa fa-spinner fa-spin\"></span> Saving...");
+                $("#savebutton").html("<i class=\"fa fa-spinner fa-spin\"></i> Saving...");
             }
         }).done(function (msg) {
             console.log("finished saving!");
-            $("#savebutton").html("<span class=\"glyphicon glyphicon-ok\" aria-hidden=\"true\"></span> Saved!");
+            $("#savebutton").html("<i class=\"fa fa-check\" aria-hidden=\"true\"></i> Saved!");
             $("#savebutton").css({"border-color" : ""});
         });
 

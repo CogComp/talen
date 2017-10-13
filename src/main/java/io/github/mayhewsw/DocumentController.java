@@ -73,6 +73,8 @@ public class DocumentController {
 
             System.out.println(f);
             Properties prop = new Properties();
+            // there's probably a better way to set defaults...
+            prop.setProperty("type", FOLDERCONLL);
 
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
@@ -120,6 +122,7 @@ public class DocumentController {
         Properties props = datasets.get(dataname);
         String folderurl = props.getProperty("path");
         String foldertype = props.getProperty("type");
+
 
         File f = new File(folderurl);
 
@@ -673,7 +676,7 @@ public class DocumentController {
         }
 
         if(!tas.containsKey(taid)){
-            return "redirect:/unified-annotation";
+            return "redirect:document/annotation";
         }
 
         TextAnnotation ta = tas.get(taid);
@@ -735,7 +738,7 @@ public class DocumentController {
             model.addAttribute("engtext", file);
         }
 
-        return "unified-annotation";
+        return "document/annotation";
     }
 
     /**
@@ -836,7 +839,7 @@ public class DocumentController {
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="sentid") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
 
