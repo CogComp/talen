@@ -444,7 +444,7 @@ public class DocumentController {
                         // therefore: don't look at this document.
                         if(c.getTokenizedSurfaceForm().equals(text)){
                             add = false;
-                             break;
+                            break;
                         }
                     }
 
@@ -979,7 +979,7 @@ public class DocumentController {
 
         List<Suggestion> contextsuggestions = new ArrayList<>();
         if(sd.patterns != null) {
-             contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
+            contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
             suggestions.addAll(contextsuggestions);
         }
 

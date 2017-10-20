@@ -161,16 +161,8 @@ $(document).ready(function() {
     loadtok();
 
     $("#dictbutton").click(function(){
-        $.ajax({
-            method: "GET",
-            url: baseurl + "/" + controller + "/toggledefs",
-            data: {sentids: getsentids(), query: getParameterByName("query")}
-        }).done(function (msg) {
-            console.log("successful toggle");
-            $("#htmlcontainer").html(msg);
-            loadtok();
-        });
-
+        // ideal: store definition as part of the span, just switch between attributes.
+        console.log("Do it locally!")
     });
 
     $("#loadtokbutton").click(function(){
@@ -214,6 +206,26 @@ $(document).ready(function() {
         return parseInt(spanid.split("-").slice(-1)[0]);
     }
 
+
+    // run this function when you click on a token.
+    function addlabel(sentid, starttokid, endtokid, newclass) {
+        console.log("Adding " + newclass + " to " + starttokid + "---" + endtokid + ", sentid=" + sentid);
+
+        $("#savebutton").html("<i class=\"fa fa-floppy-o\" aria-hidden=\"true\"></i> Save");
+        $("#savebutton").css({"border-color" : "#c00"});
+
+        var srch = window.location.pathname.endsWith("/search");
+        var srchanno = getParameterByName("searchinanno") == "on";
+
+        // here, instead of going to the serer, we just update the javascript immediately.
+        console.log("do it locally!!")
+        var cardtext = $("#" + sentid);
+        var toks = cardtext.find("[id^='tok']");
+        var spanslabels = getspanslabels(toks, cardtext);
+        producetext(toks, spanslabels);
+    };
+
+
     // Given a span, remove the label.
     function removelabel(span) {
 
@@ -226,101 +238,30 @@ $(document).ready(function() {
         var tokid = getnum(span.id);
 
         console.log("Removing label from: " + sentid + ":" + tokid);
-
-        $.ajax({
-            method: "POST",
-            url: baseurl + "/"+controller+"/removetoken",
-            data: {sentid: sentid, tokid: tokid}
-        }).done(function (msg) {
-            console.log("successful removal.");
-            refreshsents();
-        });
-
+        console.log("remove locally!!");
     }
 
-    // run this function when you click on a token.
-    function addlabel(sentid, starttokid, endtokid, newclass) {
-        console.log("Adding " + newclass + " to " + starttokid + "---" + endtokid + ", sentid=" + sentid);
-
-        $("#savebutton").html("<i class=\"fa fa-floppy-o\" aria-hidden=\"true\"></i> Save");
-        $("#savebutton").css({"border-color" : "#c00"});
-
-        var srch = window.location.pathname.endsWith("/search");
-        var srchanno = getParameterByName("searchinanno") == "on";
-
-        $.ajax({
-            method: "POST",
-            url: baseurl + "/"+controller+"/addspan",
-            data: {label: newclass,
-                starttokid: getnum(starttokid),
-                endtokid:getnum(endtokid),
-                sentid: sentid,
-                sentids: getsentids(),
-                id: sentid,
-                blahblah: "blahblahbalh",
-                propagate: srch == srchanno }
-        }).done(function (msg) {
-            console.log(msg);
-            refreshsents();
-            //resetrange();
-        });
-    };
-
-    function refreshsents(){
-        var query= getParameterByName("query");
-        $.ajax({
-            method: "POST",
-            url: baseurl+"/"+controller+"/gethtml",
-            data: {sentids: getsentids(), query: query}
-        }).done(function (msg) {
-            $("#htmlcontainer").html(msg);
-            loadtok();
-        });
+    function getspanslabels(htmlstring){
+        // this function will: take a current string, abstract spans and labels
+        var cons = $(htmlstring).find("[id^='cons']")
+        console.log(cons);
+        var ret = $.map(cons, function(c){
+            var rets = "";
+            c.classList.remove("pointer")
+            c.classList.remove("cons")
+            rets += c.classList;
+            var idarr = c.id.split("-")
+            rets += "(";
+            rets += idarr[1] + ",";
+            rets += idarr[2] + ")";
+            return rets;
+        })
+        console.log(ret);
+        return ret;
     }
 
-    $("[id^=addlabel-]").click(function(d){
+    function producetext(toks, spanslabels){
+        // this will: create a new html string with additional spans and labels added or removed.
 
-        var label = $(this).text();
-        var text= getParameterByName("groupid");
-
-        $("#savebutton").html("<span class=\"fa fa-floppy-o\" aria-hidden=\"true\"></span> Save");
-        $("#savebutton").css({"border-color" : "#c00"});
-
-        $.ajax({
-            method: "GET",
-            url: baseurl+"/"+controller+"/addtext",
-            data: {text: text, label: label, sentids: getsentids()}
-        }).done(function (msg) {
-            console.log(msg);
-            refreshsents();
-        });
-    });
-
-    function getsentids(){
-        var ids = $.map($(".text"), function(n, i){
-            return n.id;
-        });
-        return ids;
     }
-
-    function save(){
-        var groupid = getParameterByName("groupid");
-        console.log("saving group: " + groupid);
-
-        $.ajax({
-            url: baseurl+"/"+controller+"/save",
-            data: {sentids: getsentids()},
-            method: "POST",
-            beforeSend: function() {
-                // setting a timeout
-                $("#savebutton").html("<i class=\"fa fa-spinner fa-spin\"></i> Saving...");
-            }
-        }).done(function (msg) {
-            console.log("finished saving!");
-            $("#savebutton").html("<i class=\"fa fa-check\" aria-hidden=\"true\"></i> Saved!");
-            $("#savebutton").css({"border-color" : ""});
-        });
-
-    };
-    $( "#savebutton" ).click(save);
 });

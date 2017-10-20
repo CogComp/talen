@@ -1,0 +1,120 @@
+<!-- HIT template: Writing-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
+<meta content="width=device-width,initial-scale=1" name="viewport" />
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous" />
+<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />-->
+
+<script src="https://use.fontawesome.com/abbf5a27e7.js"></script>
+
+<link rel="stylesheet" href="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/css/style.css" />
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+
+
+<script inline="javascript">
+    /*<![CDATA[*/
+
+    var controller = "mturk";
+    var baseurl = "http://158.130.62.97:8009";
+
+
+    /*]]>*/
+</script>
+
+<!--<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate.js"></script>-->
+<script src="src/main/resources/static/js/annotate-local.js"></script>
+
+<style>
+    .${LABEL1}{ background-color: greenyellow; }
+    .${LABEL2}{ background-color: yellow; }
+    .${LABEL3}{ background-color: lightblue; }
+    .${LABEL4}{ background-color: coral; }
+</style>
+
+<section class="container" id="Writing">
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-12" id="htmlcontainer1">
+                    <div class="card">
+                        <div class="card-header">${DOCID1}</div>
+                        <div class="card-body text" id="${DOCID1}">
+                            ${HTMLTEXT1}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="col-md-12" id="htmlcontainer2">
+                    <div class="card">
+                        <div class="card-header">${DOCID2}</div>
+                        <div class="card-body text2" id="${DOCID2}">
+                            ${HTMLTEXT2}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="col-md-12" id="htmlcontainer3">
+                    <div class="card">
+                        <div class="card-header">${DOCID3}</div>
+                        <div class="card-body text3" id="${DOCID3}">
+                            ${HTMLTEXT3}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <a id="dictbutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
+            </div>
+
+        </div>
+    </div>
+
+    <template id="buttons">
+        <div class="container-fluid">
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL1}" class="btn pointer btn-light labelbutton ${LABEL1}" field="${LABEL1}" value="${LABEL1}">${LABEL1}</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL2}" class="btn pointer btn-light labelbutton ${LABEL2}" field="${LABEL2}" value="${LABEL2}">${LABEL2}</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL3}" class="btn pointer btn-light labelbutton ${LABEL3}" field="${LABEL3}" value="${LABEL3}" >${LABEL3}</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL4}" class="btn pointer btn-light labelbutton ${LABEL4}" field="${LABEL4}" value="${LABEL4}">${LABEL4}</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </template>
+
+</section>
+
+<input type="text" name="finalsubmission" style="display:none;" />
+
+
