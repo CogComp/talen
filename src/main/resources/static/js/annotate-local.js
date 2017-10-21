@@ -5,8 +5,6 @@
 
 $(document).ready(function() {
     console.log("loading stuff...");
-    console.log("baseurl: " + baseurl);
-    console.log("controller: " + controller);
 
     var highlighting = false;
     var range = {start:-1, end:-1}
@@ -211,18 +209,21 @@ $(document).ready(function() {
     function addlabel(sentid, starttokid, endtokid, newclass) {
         console.log("Adding " + newclass + " to " + starttokid + "---" + endtokid + ", sentid=" + sentid);
 
-        $("#savebutton").html("<i class=\"fa fa-floppy-o\" aria-hidden=\"true\"></i> Save");
-        $("#savebutton").css({"border-color" : "#c00"});
-
-        var srch = window.location.pathname.endsWith("/search");
-        var srchanno = getParameterByName("searchinanno") == "on";
+        if(newclass == "O"){
+            return;
+        }
 
         // here, instead of going to the serer, we just update the javascript immediately.
-        console.log("do it locally!!")
         var cardtext = $("#" + sentid);
         var toks = cardtext.find("[id^='tok']");
-        var spanslabels = getspanslabels(toks, cardtext);
-        producetext(toks, spanslabels);
+        var spanslabels = getspanslabels(cardtext);
+
+        var newspanlabel = newclass + "-" + getnum(starttokid) + "-" + getnum(endtokid);
+        spanslabels.push(newspanlabel);
+        var newhtml = producetext(toks, spanslabels);
+
+        cardtext.html(newhtml);
+        loadtok();
     };
 
 
@@ -247,21 +248,36 @@ $(document).ready(function() {
         console.log(cons);
         var ret = $.map(cons, function(c){
             var rets = "";
-            c.classList.remove("pointer")
-            c.classList.remove("cons")
-            rets += c.classList;
+            var label = c.className.replace("pointer", "").replace("cons", "").trim();
+            rets += label;
             var idarr = c.id.split("-")
-            rets += "(";
-            rets += idarr[1] + ",";
-            rets += idarr[2] + ")";
+            rets += "-";
+            rets += idarr[1] + "-";
+            rets += idarr[2];
             return rets;
         })
-        console.log(ret);
         return ret;
     }
 
     function producetext(toks, spanslabels){
         // this will: create a new html string with additional spans and labels added or removed.
 
+        var stoks = $.map(toks, function(c){
+            return c.outerHTML;
+        });
+
+        $.each(spanslabels, function(i,d){
+            var sd = d.split("-");
+            var label = sd[0];
+            var start = sd[1];
+            var end = sd[2];
+            var newid = d.replace(label, "cons");
+            var template = "<span class='LAB pointer cons' id='ID'>".replace("LAB",label).replace("ID", newid);
+
+            stoks[start] =  template + stoks[start];
+            stoks[end-1] += "</span>";
+        });
+
+        return stoks.join("");
     }
 });
