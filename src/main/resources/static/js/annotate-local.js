@@ -204,6 +204,17 @@ $(document).ready(function() {
         return parseInt(spanid.split("-").slice(-1)[0]);
     }
 
+    function checkoverlap(spana, spanb){
+
+        var ssa = spana.split("-");
+        var ssb = spanb.split("-");
+        var a1 = parseInt(ssa[1]);
+        var a2 = parseInt(ssa[2])-1;
+        var b1 = parseInt(ssb[1]);
+        var b2 = parseInt(ssb[2])-1;
+
+        return a1 <= b2 && b1 <= a2;
+    };
 
     // run this function when you click on a token.
     function addlabel(sentid, starttokid, endtokid, newclass) {
@@ -218,8 +229,47 @@ $(document).ready(function() {
         var toks = cardtext.find("[id^='tok']");
         var spanslabels = getspanslabels(cardtext);
 
+        // perhaps we have plenty of newspanlabel, but for now just one.
         var newspanlabel = newclass + "-" + getnum(starttokid) + "-" + getnum(endtokid);
-        spanslabels.push(newspanlabel);
+        var removed = false;
+        var overlap = false;
+        var removethese = [];
+        $.each(spanslabels, function(i, old){
+            // can we add this???
+            if(checkoverlap(newspanlabel, old)){
+                overlap = true;
+                var ssa = newspanlabel.split("-");
+                var ssb = old.split("-");
+                var a = parseInt(ssa[1]);
+                var b = parseInt(ssa[2]);
+                var c = parseInt(ssb[1]);
+                var d = parseInt(ssb[2]);
+
+                if(a == c && b >= d){
+                    // remove old from the list
+                    removed = true;
+                    removethese.push(i);
+                }else if(a <= c && b == d){
+                    // remove old from the list
+                    removed = true;
+                    removethese.push(i);
+                }
+            }
+        });
+
+
+        // remove elements that have been identified.
+        // d is the index of the element in spanslabels.
+        $.each(removethese, function(i,d){
+            spanslabels.splice(d, 1);
+        });
+
+        // add if: no overlap
+        // or if: overlap && removed.
+        if(!overlap || (overlap && removed)) {
+            spanslabels.push(newspanlabel);
+        }
+        
         var newhtml = producetext(toks, spanslabels);
 
         cardtext.html(newhtml);
