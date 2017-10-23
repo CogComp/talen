@@ -2,20 +2,38 @@
  * Created by stephen on 8/30/17.
  */
 
+function getspanslabels(htmlstring){
+    // this function will: take a current string, abstract spans and labels
+    var cons = $(htmlstring).find("[id^='cons']")
+    var ret = $.map(cons, function(c){
+        var rets = "";
+        var label = c.className.replace("pointer", "").replace("cons", "").trim();
+        rets += label;
+        var idarr = c.id.split("-");
+        rets += "-";
+        rets += idarr[1] + "-";
+        rets += idarr[2];
+        return rets;
+    })
+    return ret;
+}
 
 $(document).ready(function() {
     console.log("loading stuff...");
 
     var highlighting = false;
-    var range = {start:-1, end:-1}
+
+    // id represents the card id that this range appears in.
+    var range = {start:-1, end:-1, id:""}
 
     function resetrange(){
-        range = {start:-1, end:-1};
+        range = {start:-1, end:-1, id:""};
         highlightrange();
     }
 
     function highlightrange(){
 
+        $(".highlightsingle").removeClass("highlightsingle");
         $(".highlighted").removeClass("highlighted");
         $(".highlightstart").removeClass("highlightstart");
         $(".highlightend").removeClass("highlightend");
@@ -23,13 +41,17 @@ $(document).ready(function() {
             // do nothing.
         }else{
             for(var i = range.start; i <= range.end; i++){
-                if(i == range.start){
-                    $("#tok-" + i).addClass("highlightstart");    
+
+                if (i== range.start && i == range.end){
+                    $("#tok-" + range.id + "-" + i).addClass("highlightsingle");
+                }
+                else if(i == range.start){
+                    $("#tok-" + range.id + "-" + i).addClass("highlightstart");
                 }
                 else if(i == range.end){
-                    $("#tok-" + i).addClass("highlightend");
+                    $("#tok-" + range.id + "-" + i).addClass("highlightend");
                 }else{
-                    $("#tok-" + i).addClass("highlighted");
+                    $("#tok-" + range.id + "-" + i).addClass("highlighted");
                 }
             }
         }
@@ -37,11 +59,13 @@ $(document).ready(function() {
 
     /** This returns true if the range has been changed. **/
     function updaterange(id){
-        var intid = parseInt(id.split("-")[1]);
+        var docid = id.split("-")[1];
+        var intid = parseInt(id.split("-")[2]);
         var ret = false;
         if(range.start == -1 && range.end == -1){
             range.start = intid;
             range.end = intid;
+            range.id = docid;
             ret = true;
         }
 
@@ -60,6 +84,17 @@ $(document).ready(function() {
         return ret;
     }
 
+    // click on anything but a letter, and they hide.
+    $(document).mousedown(function(e){
+
+        var hasclass = $(e.target).hasClass("labelbutton");
+
+        if(!e.target.id.startsWith("tok") && !hasclass) {
+            console.log("extraneous click");
+            $("[id^=tok]").popover("hide");
+            resetrange();
+        }
+    });
 
     function loadtok(){
         console.log("loadtok called...");
@@ -68,14 +103,7 @@ $(document).ready(function() {
             highlighting = false;
         });
 
-
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
-
-
-        // just clean everything out first...
-
+        $("[id^=tok]").popover("dispose");
 
         $("[id^=tok]").popover({
             placement: "bottom",
@@ -84,13 +112,13 @@ $(document).ready(function() {
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
             },
-            title: function () {
+            title: function () {;
                 var t = $(this)[0];
                 return "Labeled: " + t.className + ", id: " + t.id;
             },
             html: true,
             trigger: "focus",
-            container: $(".text")
+            container: 'body'
         });
 
         //$("[id^=tok]").off("mouseup");
@@ -102,23 +130,7 @@ $(document).ready(function() {
             }
         });
 
-        // click on anything but a letter, and they hide.
-        $(document).mousedown(function(e){
-
-            var hasclass = $(e.target).hasClass("labelbutton");
-
-            if(!e.target.id.startsWith("tok") && !hasclass) {
-                console.log("extraneous click");
-                $("[id^=tok]").popover("hide");
-                resetrange();
-            }
-        });
-
         $("[id^=tok]").mouseup(function(event){
-
-//                    $(this).removeClass("highlighted");
-
-            console.log(event.which);
 
             // only toggle on the left click.
             if(event.which == 1) {
@@ -126,14 +138,11 @@ $(document).ready(function() {
                 $(this).popover("toggle");
             }
 
-            console.log("mouseup");
-
             highlighting = false;
 
         });
 
         $("[id^=tok]").mousedown(function(event){
-            console.log($(this));
             highlighting = true;
             resetrange();
             updaterange(this.id);
@@ -177,15 +186,15 @@ $(document).ready(function() {
 
         console.log($(this).parents());
 
-        var sentid = $(this).parents(".card-body")[0].id;
+        //var sentid = $(this).parents(".card-body")[0].id;
+        var sentid = range.id;
 
-
-        console.log(sentid);
+        console.log(range.id);
         console.log("Clicked on a button..." + buttonvalue);
         console.log(range);
 
-        var startid = "tok-" + range.start;
-        var endid = "tok-" + (range.end+1);
+        var startid = "tok-" + range.id + "-" + range.start;
+        var endid = "tok-" + range.id + "-" + (range.end+1);
 
         $("[id^=tok]").popover("hide");
         resetrange();
@@ -215,6 +224,13 @@ $(document).ready(function() {
 
         return a1 <= b2 && b1 <= a2;
     };
+
+    function getsentids(){
+        var ids = $.map($(".text"), function(n, i){
+            return n.id;
+        });
+        return ids;
+    }
 
     // run this function when you click on a token.
     function addlabel(sentid, starttokid, endtokid, newclass) {
@@ -269,10 +285,16 @@ $(document).ready(function() {
         if(!overlap || (overlap && removed)) {
             spanslabels.push(newspanlabel);
         }
-        
+
         var newhtml = producetext(toks, spanslabels);
 
         cardtext.html(newhtml);
+
+        $.each(getsentids(), function(i,d){
+            var old = $("#" + d).html();
+            $("#" + d).html(old);
+        });
+
         loadtok();
     };
 
@@ -285,28 +307,48 @@ $(document).ready(function() {
 
         var sentid = $(span).parents(".card-body")[0].id;
 
+        var cardtext = $("#" + sentid);
+        var toks = cardtext.find("[id^='tok']");
+        var spanslabels = getspanslabels(cardtext);
+
         // returns just the number of the token. tok-4, returns 4.
         var tokid = getnum(span.id);
 
         console.log("Removing label from: " + sentid + ":" + tokid);
-        console.log("remove locally!!");
-    }
 
-    function getspanslabels(htmlstring){
-        // this function will: take a current string, abstract spans and labels
-        var cons = $(htmlstring).find("[id^='cons']")
-        console.log(cons);
-        var ret = $.map(cons, function(c){
-            var rets = "";
-            var label = c.className.replace("pointer", "").replace("cons", "").trim();
-            rets += label;
-            var idarr = c.id.split("-")
-            rets += "-";
-            rets += idarr[1] + "-";
-            rets += idarr[2];
-            return rets;
-        })
-        return ret;
+        $.each(spanslabels, function(i,d){
+            var sd = d.split("-");
+            var label = sd[0];
+            var start = parseInt(sd[1]);
+            var end = parseInt(sd[2]);
+
+            if(tokid == start && tokid == end-1){
+                // remove whole span.
+                spanslabels[i] = "";
+            }
+            else if(tokid == start){
+                spanslabels[i] = label + "-" + (start+1) + "-" + end;
+            }else if(tokid == end-1){
+                spanslabels[i] = label + "-" + start + "-" + (end-1);
+            }
+
+            // otherwise, just don't do anything.
+
+        });
+
+        console.log(spanslabels);
+
+        var newhtml = producetext(toks, spanslabels);
+
+        cardtext.html(newhtml);
+
+        $.each(getsentids(), function(i,d){
+            var old = $("#" + d).html();
+            $("#" + d).html(old);
+        });
+
+        loadtok();
+
     }
 
     function producetext(toks, spanslabels){

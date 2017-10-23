@@ -17,7 +17,22 @@ with open("data/mturk.csv") as csvfile:
             header = row
             continue
 
-        for k, v in zip(header, row):
+        d = dict(zip(header, row))
+        
+        for k in header:
+            v = d[k]
+            if "HTMLTEXT" in k:
+                num = k[-1]
+                docid = d["DOCID" + num]
+                htmlformat = "<span class='token pointer' id='{0}'>{1}</span>"
+                htmlstring = ""
+                i = 0
+                for tok in d[k].split(" "):
+                    tokid = "tok-{}-{}".format(docid, i)
+                    htmlstring += htmlformat.format(tokid, tok)
+                    i += 1
+                    
+                v = htmlstring
             template = template.replace("${{{}}}".format(k), v)
 
 

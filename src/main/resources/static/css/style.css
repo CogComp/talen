@@ -111,6 +111,10 @@ body {
     font-weight: bold;
 }
 
+.highlightsingle {
+    border: lightgray solid 1px;
+    border-radius: 3px;
+}
 
 .highlightstart {
     border-right: none;
