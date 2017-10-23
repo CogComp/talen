@@ -22,7 +22,6 @@ function getsentends(htmlstring){
     // this function will: take a current string, abstract spans and labels
     var ps = $(htmlstring).find("p");
     var ret = $.map(ps, function(p){
-        console.log(p);
         return p.id.slice(1);
     });
 
@@ -252,11 +251,25 @@ $(document).ready(function() {
             return;
         }
 
-        // here, instead of going to the serer, we just update the javascript immediately.
+        // here, instead of going to the server, we just update the javascript immediately.
         var cardtext = $("#" + sentid);
         var toks = cardtext.find("[id^='tok']");
         var spanslabels = getspanslabels(cardtext);
         var sentends = getsentends(cardtext);
+
+        // get all the spans here.
+        var wordtoks = toks.slice(getnum(starttokid), getnum(endtokid));
+
+        var name = wordtoks.toArray().reduce(function(sum, value){
+            return sum + " " + $(value).text();
+        }, "");
+
+
+        var alltext = toks.toArray().reduce(function(sum, value){
+            return sum + " " + $(value).text();
+        }, "");
+
+
 
 
         // perhaps we have plenty of newspanlabel, but for now just one.
