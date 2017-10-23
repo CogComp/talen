@@ -9,7 +9,7 @@ import csv
 with open("src/main/resources/templates/mturkTemplate.html") as f:
     template = f.read()
 
-with open("data/mturk.csv") as csvfile:
+with open("data/mturk-bengali.csv") as csvfile:
     reader = csv.reader(csvfile)
 
     for i, row in enumerate(reader):
@@ -21,19 +21,19 @@ with open("data/mturk.csv") as csvfile:
         
         for k in header:
             v = d[k]
-            if "HTMLTEXT" in k:
-                num = k[-1]
-                docid = d["DOCID" + num]
-                htmlformat = "<span class='token pointer' id='{0}'>{1}</span>"
-                htmlstring = ""
-                i = 0
-                for tok in d[k].split(" "):
-                    tokid = "tok-{}-{}".format(docid, i)
-                    htmlstring += htmlformat.format(tokid, tok)
-                    i += 1
+            # if "HTMLTEXT" in k:
+            #     docid = d["DOCID"]
+            #     htmlformat = "<span class='token pointer' id='{0}'>{1}</span>"
+            #     htmlstring = ""
+            #     i = 0
+            #     for tok in d[k].split(" "):
+            #         tokid = "tok-{}-{}".format(docid, i)
+            #         htmlstring += htmlformat.format(tokid, tok)
+            #         i += 1
                     
-                v = htmlstring
+            #     v = htmlstring
             template = template.replace("${{{}}}".format(k), v)
+        break
 
 
 with open("tmp.html", "w") as out:

@@ -18,6 +18,18 @@ function getspanslabels(htmlstring){
     return ret;
 }
 
+function getsentends(htmlstring){
+    // this function will: take a current string, abstract spans and labels
+    var ps = $(htmlstring).find("p");
+    var ret = $.map(ps, function(p){
+        console.log(p);
+        return p.id.slice(1);
+    });
+
+    console.log(ret);
+    return ret;
+}
+
 $(document).ready(function() {
     console.log("loading stuff...");
 
@@ -244,6 +256,8 @@ $(document).ready(function() {
         var cardtext = $("#" + sentid);
         var toks = cardtext.find("[id^='tok']");
         var spanslabels = getspanslabels(cardtext);
+        var sentends = getsentends(cardtext);
+
 
         // perhaps we have plenty of newspanlabel, but for now just one.
         var newspanlabel = newclass + "-" + getnum(starttokid) + "-" + getnum(endtokid);
@@ -286,7 +300,7 @@ $(document).ready(function() {
             spanslabels.push(newspanlabel);
         }
 
-        var newhtml = producetext(toks, spanslabels);
+        var newhtml = producetext(toks, spanslabels, sentends);
 
         cardtext.html(newhtml);
 
@@ -310,6 +324,7 @@ $(document).ready(function() {
         var cardtext = $("#" + sentid);
         var toks = cardtext.find("[id^='tok']");
         var spanslabels = getspanslabels(cardtext);
+        var sentends = getsentends(cardtext);
 
         // returns just the number of the token. tok-4, returns 4.
         var tokid = getnum(span.id);
@@ -338,7 +353,7 @@ $(document).ready(function() {
 
         console.log(spanslabels);
 
-        var newhtml = producetext(toks, spanslabels);
+        var newhtml = producetext(toks, spanslabels, sentends);
 
         cardtext.html(newhtml);
 
@@ -351,7 +366,7 @@ $(document).ready(function() {
 
     }
 
-    function producetext(toks, spanslabels){
+    function producetext(toks, spanslabels, sentends){
         // this will: create a new html string with additional spans and labels added or removed.
 
         var stoks = $.map(toks, function(c){
@@ -370,6 +385,11 @@ $(document).ready(function() {
             stoks[end-1] += "</span>";
         });
 
-        return stoks.join("");
+        stoks[0] = "<p id='p0'>" + stoks[0];
+        $.each(sentends, function(i,d){
+            stoks[d] =  "</p><p id='p" + d + "'>" + stoks[d];
+        });
+
+        return stoks.join("") + "</p>";
     }
 });

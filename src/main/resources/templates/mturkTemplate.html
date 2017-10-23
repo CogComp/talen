@@ -14,22 +14,25 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 
 
-<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate-local.js"></script>
-<!--<script src="src/main/resources/static/js/annotate-local.js" type="text/javascript"></script>-->
+<!--<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate-local.js"></script>-->
+<script src="src/main/resources/static/js/annotate-local.js" type="text/javascript"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#submit").click(function () {
-            var html1 = $("#${DOCID1}");
+        $("#submitButton").click(function () {
+
+            var ret = {};
+
+            var html0 = $("#id0");
+            var spanslabels0 = getspanslabels(html0);
+            console.log(spanslabels0);
+            ret["id0"] = spanslabels0;
+
+            var html1 = $("#${DOCID}");
             var spanslabels1 = getspanslabels(html1);
             console.log(spanslabels1);
+            ret["${DOCID}"] = spanslabels1;
 
-            var html2 = $("#${DOCID2}");
-            var spanslabels2 = getspanslabels(html2);
-            console.log(spanslabels2);
-
-            var html3 = $("#${DOCID3}");
-            var spanslabels3 = getspanslabels(html3);
-            console.log(spanslabels3);
+            $("#finalsubmission").val(JSON.stringify(ret));
         });
 
     });
@@ -39,59 +42,126 @@
     .${LABEL1}{ background-color: greenyellow; }
     .${LABEL2}{ background-color: yellow; }
     .${LABEL3}{ background-color: lightblue; }
-    .${LABEL4}{ background-color: coral; }
 </style>
 
 <section class="container" id="Writing">
 
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-md-12" id="instructions">
+                    <div class="card border-dark mb-3">
+                        <div class="card-header">
+                            <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Instructions! (click to expand/collapse)
+                            </a>
+                        </div>
+                        <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
+                            <div class="card-body">
+
+                                <p>Please read these instructions carefully, and complete the test at the bottom.</p>
+
+                                <h4>The Task</h4>
+                                <p>The goal of this task is to have non-speakers of
+                                    <a href="https://en.wikipedia.org/wiki/${LANGUAGE}_language" target="_blank">${LANGUAGE}</a> find names in
+                                    text, and annotate them as one of:</p>
+                                <ul>
+                                    <li><span class="cons LOC">Location</span>, examples: Jerusalem, Atlantic Ocean, Pakistan, Europe, Kansas</li>
+                                    <li><span class="cons PER">Person</span>, examples: Donald Rumsfeld, Saddam Hussein, George Bush</li>
+                                    <li><span class="cons ORG">Organization</span>, examples: United Nations, UNESCO, BBC, ABC News</li>
+                                </ul>
+
+                                Some tips:
+                                <ul>
+                                    <li>Do not tag titles (president, secretary, Mr.), or pronouns (he, her, them) as person.</li>
+                                    <li>Do tag last names when they appear alone</li>
+                                    <li><b>Important: only tag something if you are sure that it is a name.</b> If you are not sure, leave it untagged.</li>
+                                </ul>
+
+                                <p>${LANGUAGE} has it's own script, but the document below is written using the English alphabet (Latin characters) so that non-speakers
+                                    can read it.</p>
+
+                                <p>English Example:</p>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <span class="cons ORG">UN</span> president <span class="cons PER">Kofi Annan</span> visited
+                                            <span class="cons LOC">NYC</span> earlier this week. Mr. <span class="cons PER">Annan</span>
+                                            recently traveled from <span class="cons LOC">Spain</span>.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="spacer"></div>
+
+                                <h4>Strategies</h4>
+
+                                <p>Annotating a language you do not speak or understand can be difficult. Some strategies to help:</p>
+
+                                <ul>
+                                    <li>Look for words that look unusual in context</li>
+                                    <li>Read the text out loud, and listen for words that sound familiar</li>
+                                    <li>Look for repeated patterns in the document</li>
+                                    <li>Feel free to Google words that may be names</li>
+                                    <li>Guess at what other names might be present (e.g. if Kofi Annan, then look for UN)</li>
+                                </ul>
+
+                                <p>Some documents may have no names, but please look very carefully for at least 1 minute. <b>We will
+                                    automatically reject empty documents that took less than 1 minute to annotate</b>.</p>
+
+                                <h4>The Tool</h4>
+                                How to annotate:
+                                <ul>
+                                    <li>Click on a token to open a selection popover</li>
+                                    <li>Select the appropriate tag from the popover</li>
+                                    <li>Click anywhere to make the popover go away</li>
+                                    <li>Click and drag to select a span</li>
+                                    <li>Right click to remove a label (one token at a time)</li>
+                                </ul>
+
+                                <h4>Test</h4>
+                                <p>Annotate this sentence correctly.</p>
+                                <div class="card">
+                                    <div class="card-body text" id="id0">
+                                        <span class='token pointer' id='tok-id0-0'>My</span><span class='token pointer' id='tok-id0-1'>name</span><span class='token pointer' id='tok-id0-2'>is</span><span class='token pointer' id='tok-id0-3'>Mr.</span><span class='token pointer' id='tok-id0-4'>John</span><span class='token pointer' id='tok-id0-5'>Smith</span><span class='token pointer' id='tok-id0-6'>.</span>
+                                    </div>
+                                </div>
+                                <div class="spacer"></div>
+                                <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    Collapse instructions.
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer"></div>
             <div class="row">
                 <div class="col-md-12" id="htmlcontainer1">
                     <div class="card">
-                        <div class="card-header">${DOCID1}</div>
-                        <div class="card-body text" id="${DOCID1}">
-                            ${HTMLTEXT1}
+                        <div class="card-header">${DOCID}</div>
+                        <div class="card-body text" id="${DOCID}">
+                            ${HTMLTEXT}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="spacer"></div>
-            <div class="row">
-                <div class="col-md-12" id="htmlcontainer2">
-                    <div class="card">
-                        <div class="card-header">${DOCID2}</div>
-                        <div class="card-body text" id="${DOCID2}">
-                            ${HTMLTEXT2}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="spacer"></div>
-            <div class="row">
-                <div class="col-md-12" id="htmlcontainer3">
-                    <div class="card">
-                        <div class="card-header">${DOCID3}</div>
-                        <div class="card-body text" id="${DOCID3}">
-                            ${HTMLTEXT3}
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <div class="spacer"></div>
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
-                        <input type="text" name="finalsubmission" style="display:none;" />
-                        <button type="button" id="submit" class="btn btn-primary pointer">Submit</button>
+                        <input type="text" id="finalsubmission" name="finalsubmission" style="display:some;" />
+                        <button type="button" id="submitButton" class="btn btn-primary pointer">Submit</button>
                     </div>
                 </div>
             </div>
 
         </div>
-        <div class="col-md-4">
+        <div class="col-md-2">
             <!--<div class="form-group">-->
-                <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
+            <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
             <!--</div>-->
 
         </div>
@@ -112,9 +182,6 @@
                 <div class="row">
                     <div class="col-md-4">
                         <button type="button" id="${LABEL3}" class="btn pointer btn-light labelbutton ${LABEL3}" field="${LABEL3}" value="${LABEL3}" >${LABEL3}</button>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" id="${LABEL4}" class="btn pointer btn-light labelbutton ${LABEL4}" field="${LABEL4}" value="${LABEL4}">${LABEL4}</button>
                     </div>
 
                 </div>
