@@ -14,8 +14,8 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
 
 
-<!--<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate-local.js"></script>-->
-<script src="src/main/resources/static/js/annotate-local.js" type="text/javascript"></script>
+<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate-local.js"></script>
+<!--<script src="src/main/resources/static/js/annotate-local.js" type="text/javascript"></script>-->
 <script type="text/javascript">
     $(document).ready(function() {
         $("#submitButton").click(function () {
@@ -59,7 +59,7 @@
                         <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
                             <div class="card-body">
 
-                                <p>Please read these instructions carefully, and complete the test at the bottom.</p>
+                                <p>Please read these instructions carefully, and <b>complete the test at the bottom.</b></p>
 
                                 <h4>The Task</h4>
                                 <p>The goal of this task is to have non-speakers of
@@ -74,7 +74,7 @@
                                 Some tips:
                                 <ul>
                                     <li>Do not tag titles (president, secretary, Mr.), or pronouns (he, her, them) as person.</li>
-                                    <li>Do tag last names when they appear alone</li>
+                                    <li>Do tag last names when they appear alone (e.g. Hussein)</li>
                                     <li><b>Important: only tag something if you are sure that it is a name.</b> If you are not sure, leave it untagged.</li>
                                 </ul>
 
@@ -100,6 +100,7 @@
 
                                 <ul>
                                     <li>Look for words that look unusual in context</li>
+                                    <li>A common pattern is "LOC/ORG president PER", as in "German president Johannes Rau"</li>
                                     <li>Read the text out loud, and listen for words that sound familiar</li>
                                     <li>Look for repeated patterns in the document</li>
                                     <li>Feel free to Google words that may be names</li>

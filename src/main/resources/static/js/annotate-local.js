@@ -271,15 +271,10 @@ $(document).ready(function() {
             return sum + " " + $(value).text();
         }, "");
 
-        console.log(name);
-        console.log(alltext);
-
         var newspans = []
         alltext.replace(new RegExp(name, "g"), function(match, offset, string){
             var count = (alltext.slice(0,offset).match(/ /g) || []).length;
-            console.log(match + ", " + offset + ", " + count);
             var newspanlabel = newclass + "-" + count + "-" + (count + end - start);
-            console.log(newspanlabel);
             newspans.push(newspanlabel);
             return -1;
         });
