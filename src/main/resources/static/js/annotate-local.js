@@ -409,8 +409,10 @@ $(document).ready(function() {
         });
 
         stoks[0] = "<p id='p0'>" + stoks[0];
-        $.each(sentends, function(i,d){
-            stoks[d] =  "</p><p id='p" + d + "'>" + stoks[d];
+        $.each(sentends, function(i,d) {
+            if (d > 0 && d < stoks.length) {
+                stoks[d] = "</p><p id='p" + d + "'>" + stoks[d];
+            }
         });
 
         return stoks.join("") + "</p>";
