@@ -25,7 +25,6 @@ function getsentends(htmlstring){
         return p.id.slice(1);
     });
 
-    console.log(ret);
     return ret;
 }
 
@@ -251,6 +250,9 @@ $(document).ready(function() {
             return;
         }
 
+        var start = getnum(starttokid);
+        var end = getnum(endtokid);
+
         // here, instead of going to the server, we just update the javascript immediately.
         var cardtext = $("#" + sentid);
         var toks = cardtext.find("[id^='tok']");
@@ -258,7 +260,7 @@ $(document).ready(function() {
         var sentends = getsentends(cardtext);
 
         // get all the spans here.
-        var wordtoks = toks.slice(getnum(starttokid), getnum(endtokid));
+        var wordtoks = toks.slice(start, end);
 
         var name = wordtoks.toArray().reduce(function(sum, value){
             return sum + " " + $(value).text();
@@ -269,48 +271,61 @@ $(document).ready(function() {
             return sum + " " + $(value).text();
         }, "");
 
+        console.log(name);
+        console.log(alltext);
 
+        var newspans = []
+        alltext.replace(new RegExp(name, "g"), function(match, offset, string){
+            var count = (alltext.slice(0,offset).match(/ /g) || []).length;
+            console.log(match + ", " + offset + ", " + count);
+            var newspanlabel = newclass + "-" + count + "-" + (count + end - start);
+            console.log(newspanlabel);
+            newspans.push(newspanlabel);
+            return -1;
+        });
 
+        for(var k = 0; k < newspans.length; k++){
 
-        // perhaps we have plenty of newspanlabel, but for now just one.
-        var newspanlabel = newclass + "-" + getnum(starttokid) + "-" + getnum(endtokid);
-        var removed = false;
-        var overlap = false;
-        var removethese = [];
-        $.each(spanslabels, function(i, old){
-            // can we add this???
-            if(checkoverlap(newspanlabel, old)){
-                overlap = true;
-                var ssa = newspanlabel.split("-");
-                var ssb = old.split("-");
-                var a = parseInt(ssa[1]);
-                var b = parseInt(ssa[2]);
-                var c = parseInt(ssb[1]);
-                var d = parseInt(ssb[2]);
+            var newspanlabel = newspans[k];
 
-                if(a == c && b >= d){
-                    // remove old from the list
-                    removed = true;
-                    removethese.push(i);
-                }else if(a <= c && b == d){
-                    // remove old from the list
-                    removed = true;
-                    removethese.push(i);
+            var removed = false;
+            var overlap = false;
+            var removethese = [];
+            $.each(spanslabels, function(i, old){
+                // can we add this???
+                if(checkoverlap(newspanlabel, old)){
+                    overlap = true;
+                    var ssa = newspanlabel.split("-");
+                    var ssb = old.split("-");
+                    var a = parseInt(ssa[1]);
+                    var b = parseInt(ssa[2]);
+                    var c = parseInt(ssb[1]);
+                    var d = parseInt(ssb[2]);
+
+                    if(a == c && b >= d){
+                        // remove old from the list
+                        removed = true;
+                        removethese.push(i);
+                    }else if(a <= c && b == d){
+                        // remove old from the list
+                        removed = true;
+                        removethese.push(i);
+                    }
                 }
+            });
+
+
+            // remove elements that have been identified.
+            // d is the index of the element in spanslabels.
+            $.each(removethese, function(i,d){
+                spanslabels.splice(d, 1);
+            });
+
+            // add if: no overlap
+            // or if: overlap && removed.
+            if(!overlap || (overlap && removed)) {
+                spanslabels.push(newspanlabel);
             }
-        });
-
-
-        // remove elements that have been identified.
-        // d is the index of the element in spanslabels.
-        $.each(removethese, function(i,d){
-            spanslabels.splice(d, 1);
-        });
-
-        // add if: no overlap
-        // or if: overlap && removed.
-        if(!overlap || (overlap && removed)) {
-            spanslabels.push(newspanlabel);
         }
 
         var newhtml = producetext(toks, spanslabels, sentends);
