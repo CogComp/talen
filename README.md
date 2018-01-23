@@ -2,7 +2,7 @@
 
 ![Screenshot of web interface](/src/main/resources/static/img/screenshot.png?raw=true "Screenshot")
 
-A tool for annotating word sequences. 
+A tool for annotating word sequences. (This is out of date)
 
 ## Configuration
 
