@@ -1,0 +1,7 @@
+name	Uyghur
+path	/shared/corpora/ner/human/ug/conll-anno-uly/
+type	conll
+dictionary	/shared/experiments/mayhew2/lexicons/uig-eng.masterlex.txt.uly.gz
+suffixes	ning
+labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
+indexDir	/shared/experiments/mayhew2/indices/uyghurindex
