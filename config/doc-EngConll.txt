@@ -1,5 +1,5 @@
 name	EnglishConll
-path	data/train-supershort/
+path	data/eng-conll/
 type	conll
 # dictionary
 suffixes	ing

@@ -1,3 +1,4 @@
+.ORG{ background-color: lightblue; }
 .LOC{ background-color: greenyellow; }
 .PER{ background-color: yellow; }
-.ORG{ background-color: lightblue; }
+.MISC{ background-color: coral; }

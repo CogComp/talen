@@ -11,9 +11,9 @@
 <body>
 
 <div class="navbar-nav" th:fragment="logoutlinks">
-    <span class="navbar-text" th:text="${'Hi there ' + #httpServletRequest.remoteUser + '!'}">Hi there</span>
+    <span th:unless="${#httpServletRequest.remoteUser == null}" class="navbar-text" th:text="${'Hi there ' + #httpServletRequest.remoteUser + '!'}">Hi there</span>
     <span th:unless="${session.dataname} == null" class="navbar-text ml-3">Editing: <span th:text="${session.dataname}"></span></span>
-    <form th:action="@{/logout}" id="logoutform" method="post">
+    <form th:unless="${#httpServletRequest.remoteUser == null}" th:action="@{/logout}" id="logoutform" method="post">
         <a class="navbar-text ml-3" href="#" onclick="document.getElementById('logoutform').submit()">Logout</a>
     </form>
 </div>
