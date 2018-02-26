@@ -5,6 +5,11 @@
 
 $(document).ready(function() {
     console.log("loading stuff...");
+
+    if(typeof baseurl === 'undefined'){
+        baseurl = "";
+    }
+
     console.log("baseurl: " + baseurl);
     console.log("controller: " + controller);
 
@@ -21,12 +26,17 @@ $(document).ready(function() {
         $(".highlighted").removeClass("highlighted");
         $(".highlightstart").removeClass("highlightstart");
         $(".highlightend").removeClass("highlightend");
+        $(".highlightsingle").removeClass("highlightsingle");
+
         if(range.start == -1 && range.end == -1) {
             // do nothing.
+        }else if(range.start == range.end){
+            $("#tok-" + range.start).addClass("highlightsingle");
+
         }else{
             for(var i = range.start; i <= range.end; i++){
                 if(i == range.start){
-                    $("#tok-" + i).addClass("highlightstart");    
+                    $("#tok-" + i).addClass("highlightstart");
                 }
                 else if(i == range.end){
                     $("#tok-" + i).addClass("highlightend");

@@ -3,6 +3,7 @@ package io.github.mayhewsw;
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
+import edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import static io.github.mayhewsw.DocumentController.getdocsuggestions;
 /**
  * Created by stephen on 8/31/17.
  */
+@SuppressWarnings("ALL")
 public class HtmlGenerator {
 
 
@@ -41,6 +43,15 @@ public class HtmlGenerator {
         IntPair sentspan = span;
 
         View ner = ta.getView(ViewNames.NER_CONLL);
+
+        View nersugg = null;
+        if(ta.hasView("NER_SUGGESTION")) {
+            nersugg = ta.getView("NER_SUGGESTION");
+        }else{
+            // create a dummy view!
+            nersugg = new SpanLabelView("NER_SUGGESTION", ta);
+            ta.addView("NER_SUGGESTION", nersugg);
+        }
 
         // take just the
         String[] text;
@@ -70,12 +81,15 @@ public class HtmlGenerator {
         }
 
         List<Constituent> sentner;
+        List<Constituent> sentnersugg;
         int startoffset;
         if(sentspan.getFirst() == -1){
             sentner = ner.getConstituents();
+            sentnersugg = nersugg.getConstituents();
             startoffset = 0;
         }else {
             sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            sentnersugg = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
             startoffset = sentspan.getFirst();
         }
 
@@ -87,6 +101,16 @@ public class HtmlGenerator {
             // important to also include 'cons' class, as it is a keyword in the html
             text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
             text[end - 1] += "</span>";
+        }
+
+        for (Constituent c : sentnersugg) {
+
+            int start = c.getStartSpan() - startoffset;
+            int end = c.getEndSpan() - startoffset;
+
+            // important to also include 'cons' class, as it is a keyword in the html
+            text[start] = String.format("<strong>%s", text[start]);
+            text[end - 1] += "</strong>";
         }
 
         // Then add sentences.

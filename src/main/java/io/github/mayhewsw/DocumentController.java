@@ -5,6 +5,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
@@ -276,7 +277,6 @@ public class DocumentController {
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
-
         String dictpath = prop.getProperty("dictionary");
         Dictionary dict;
         if(dictpath != null){
@@ -347,7 +347,7 @@ public class DocumentController {
         sd = new SessionData(hs);
 
         // not sure there is any point to this??
-        updateallpatterns(sd);
+        //updateallpatterns(sd);
         buildmemoryindex(sd);
 
         return "redirect:/document/annotation/";
@@ -355,7 +355,7 @@ public class DocumentController {
 
     @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
-    public HashMap<String, Double> save(@RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs) throws IOException, ParseException {
+    public HashMap<String, Double> save(@RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs) throws Exception {
 
         SessionData sd = new SessionData(hs);
 
@@ -386,6 +386,9 @@ public class DocumentController {
             }else if(foldertype.equals(FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
+
+            String config = sd.prop.getProperty("nerconfig");
+            //Sandbox.TrainAndAnnotate(config, outpath, tas);
 
         }
 
@@ -547,6 +550,8 @@ public class DocumentController {
             annotatedfiles.addAll(Arrays.asList(f.list()));
         }
 
+        System.out.println(annotatedfiles);
+
         TreeMap<String, TextAnnotation> newtas = filterTA(query, sd);
 
         model.addAttribute("tamap", newtas);
@@ -707,7 +712,6 @@ public class DocumentController {
         }
 
         model.addAttribute("labels", labels);
-
 
         HashMap<String, Integer> freqs = new HashMap<>();
         for(String word : ta.getTokens()){

@@ -58,6 +58,10 @@
     color: lightgray;
 }
 
+.clickable-row {
+    cursor: pointer;
+}
+
 #legendcontainer {
     padding: 7px;
 }
