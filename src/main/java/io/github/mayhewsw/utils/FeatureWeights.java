@@ -3,7 +3,6 @@ package io.github.mayhewsw.utils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.lbjava.learn.Lexicon;
 import edu.illinois.cs.cogcomp.lbjava.learn.SparseNetworkLearner;
-import io.github.mayhewsw.classifier.lbjava.CandClassifier;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
