@@ -244,12 +244,6 @@ public class SentenceController {
         }
         hs.setAttribute("contexts", contexts);
 
-        HashMap<String, Bootstrap3> bs3map = new HashMap<>();
-        for(String label : labels) {
-            bs3map.put(label, new Bootstrap3(cache));
-        }
-        hs.setAttribute("bs3map", bs3map);
-
         return "redirect:/sentence/sents";
     }
 
@@ -548,22 +542,19 @@ public class SentenceController {
         // get suggestions for each label.
 
         for(String label : sd.labels) {
-            Bootstrap3 bs3 = sd.bs3map.get(label);
-            // get the groups by labels.
-
             Set<String> labelnames = sd.groups.keySet().stream().filter(x -> sd.groups.get(x).maxType().equals(label)).collect(Collectors.toSet());
 
-            LinkedHashMap<String, Double> sortedcontexts = bs3.getcontexts(labelnames);
+            //LinkedHashMap<String, Double> sortedcontexts = bs3.getcontexts(labelnames);
 
             // now I have contexts associated with each label.
-            Iterator<String> iter = sortedcontexts.keySet().iterator();
+            //Iterator<String> iter = sortedcontexts.keySet().iterator();
 
-            Set<String> labelset = sd.contexts.get(label);
-            labelset.clear();
+            //Set<String> labelset = sd.contexts.get(label);
+            //labelset.clear();
 
-            while(iter.hasNext() && labelset.size() < 10){
-                labelset.add(iter.next());
-            }
+            //while(iter.hasNext() && labelset.size() < 10){
+            //    labelset.add(iter.next());
+            //}
         }
 
 //        LinkedHashMap<String, Double> sortednames = sd.bs3.getnames(sd.groups.keySet(), sd.contexts);

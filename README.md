@@ -27,11 +27,12 @@ It is allowable to have extra parameters in the config file. Use the pound sign 
 
 Requires Java 8 and Maven. Run:
 
-    $ ./run.sh
+    $ ./scripts/run.sh
 
-This will start the server on port 8080. Point a browser to [localhost:8080](http://localhost:8080).
+This will start the server on port 8009. Point a browser to [localhost:8080](http://localhost:8009). The port number is specified in [`application.properties`](./src/main/resources/application.properties).
 
-It will ask you to specify a username, which is then tied to your activities in that session. All annotations
+This reads from [`config/users.txt`](config/users.txt), which has a username and password pair on each line. You will
+log in using one of those pairs, and then that username is tied to your activities in that session. All annotations
 that you do will be written to a path called `<orig>-annotation-<username>`, where `<orig>` is the original path
 specified in the config file, and `<username>` is what you chose as username.
 

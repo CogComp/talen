@@ -17,7 +17,6 @@ import java.util.*;
  */
 public class SessionData {
 
-    HashMap<String, Bootstrap3> bs3map;
     Dictionary dict;
     String username;
     Boolean showdefs;
@@ -67,8 +66,6 @@ public class SessionData {
         //annosents = (HashMap<String, HashSet<String>>) hs.getAttribute("annosents");
 
         groups = (HashMap<String, Group>) hs.getAttribute("groups");
-
-        bs3map = (HashMap<String, Bootstrap3>) hs.getAttribute("bs3map");
 
     }
 
