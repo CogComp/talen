@@ -121,7 +121,8 @@ public class SentenceController {
         model.addAttribute("labels", hs.getAttribute("labels"));
         model.addAttribute("grouptype", "(unknown)");
 
-        return "sentence/group-anno";
+        //return "sentence/group-anno";
+        return "sentence/annotation";
     }
 
 
@@ -244,7 +245,7 @@ public class SentenceController {
         }
         hs.setAttribute("contexts", contexts);
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 
     @RequestMapping("/")
@@ -497,7 +498,7 @@ public class SentenceController {
 
         save(grouparray, hs, model);
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 
 
@@ -583,7 +584,7 @@ public class SentenceController {
         }
     }
 
-    @RequestMapping(value = "/sents", method = RequestMethod.GET)
+    @RequestMapping(value = "/annotation", method = RequestMethod.GET)
     public String annotation(@RequestParam(value = "groupid", required = false) String groupid, Model model, HttpSession hs) throws IOException {
         SessionData sd = new SessionData(hs);
 
@@ -603,6 +604,9 @@ public class SentenceController {
             model.addAttribute("groupid", groupid);
             model.addAttribute("grouptype", sentids.maxType());
             model.addAttribute("html", html);
+            model.addAttribute("labels", hs.getAttribute("labels"));
+
+            return "sentence/annotation";
 
         } else {
 
@@ -686,7 +690,8 @@ public class SentenceController {
 
         model.addAttribute("labels", hs.getAttribute("labels"));
 
-        return "sentence/group-anno";
+        //return "sentence/group-anno";
+        return "sentence/getstarted";
     }
 
 
@@ -696,7 +701,7 @@ public class SentenceController {
 
         sd.groups.remove(term);
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 
     @RequestMapping(value = "/removetoken", method = RequestMethod.POST)
@@ -821,6 +826,6 @@ public class SentenceController {
             save(grouparray, hs, model);
         }
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 }

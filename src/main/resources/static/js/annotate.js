@@ -14,10 +14,10 @@ $(document).ready(function() {
     console.log("controller: " + controller);
 
     var highlighting = false;
-    var range = {start:-1, end:-1}
+    var range = {start:-1, end:-1, id:""};
 
     function resetrange(){
-        range = {start:-1, end:-1};
+        range = {start:-1, end:-1, id:""};
         highlightrange();
     }
 
@@ -28,20 +28,28 @@ $(document).ready(function() {
         $(".highlightend").removeClass("highlightend");
         $(".highlightsingle").removeClass("highlightsingle");
 
+        // NOTE: jquery does not allow colons or periods in id strings. Because of
+        // this, we use document.getElementById(..).
+
+        // NOTE: for highlighting to work correctly, the token id pattern needs to
+        // match the pattern found in HtmlGenerator.java
+
         if(range.start == -1 && range.end == -1) {
             // do nothing.
         }else if(range.start == range.end){
-            $("#tok-" + range.start).addClass("highlightsingle");
+            var startel = document.getElementById("tok-" + range.id + "-" + range.start);
+            $(startel).addClass("highlightsingle");
 
         }else{
             for(var i = range.start; i <= range.end; i++){
+                var el = document.getElementById("tok-" + range.id + "-" + i);
                 if(i == range.start){
-                    $("#tok-" + i).addClass("highlightstart");
+                    $(el).addClass("highlightstart");
                 }
                 else if(i == range.end){
-                    $("#tok-" + i).addClass("highlightend");
+                    $(el).addClass("highlightend");
                 }else{
-                    $("#tok-" + i).addClass("highlighted");
+                    $(el).addClass("highlighted");
                 }
             }
         }
@@ -49,7 +57,11 @@ $(document).ready(function() {
 
     /** This returns true if the range has been changed. **/
     function updaterange(id){
-        var intid = parseInt(id.split("-")[1]);
+        var docid = id.split("-")[1];
+        var intid = parseInt(id.split("-")[2]);
+
+        range.id = docid;
+
         var ret = false;
         if(range.start == -1 && range.end == -1){
             range.start = intid;
@@ -66,6 +78,8 @@ $(document).ready(function() {
             range.end = intid;
             ret = true;
         }
+
+        console.log(range);
 
         highlightrange();
 
@@ -92,6 +106,7 @@ $(document).ready(function() {
         $("[id^=tok]").popover({
             placement: "bottom",
             content: function () {
+                console.log();
                 var html = $("#buttons").html();
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
@@ -101,8 +116,8 @@ $(document).ready(function() {
                 return "Labeled: " + t.className + ", id: " + t.id;
             },
             html: true,
-            trigger: "focus",
-            container: $(".text")
+            trigger: "focus"
+            //container: $("[id^=0071.txt:10]") //'$("#0071.txt:10")
         });
 
         //$("[id^=tok]").off("mouseup");
@@ -197,7 +212,8 @@ $(document).ready(function() {
 
         console.log($(this).parents());
 
-        var sentid = $(this).parents(".card-body")[0].id;
+        //var sentid = $(this).parents(".card-body")[0].id;
+        var sentid = range.id;
 
 
         console.log(sentid);
@@ -267,12 +283,9 @@ $(document).ready(function() {
                 sentid: sentid,
                 sentids: getsentids(),
                 id: sentid,
-                blahblah: "blahblahbalh",
                 propagate: srch == srchanno }
         }).done(function (msg) {
-            console.log(msg);
             refreshsents();
-            //resetrange();
         });
     };
 

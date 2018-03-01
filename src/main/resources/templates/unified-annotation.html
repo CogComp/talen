@@ -18,19 +18,22 @@
                     <a id="dictbutton" class="btn btn-outline-dark" href="#" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
 
                     <div class="spacer"></div>
-
-                    <button th:each="label : ${labels}"
-                            th:id="'addlabel-' + ${label}"
-                            th:class="${label} + ' btn'"
-                            th:classappend="${grouptype} == ${label} ? bestlabel : ignorelabel"
-                            th:text="${label}"></button>
+                    <div th:if="${grouptype} != null">
+                        <span th:each="label : ${labels}">
+                            <button th:id="'addlabel-' + ${label}"
+                                    th:class="${label} + ' btn btn-sm'"
+                                    th:classappend="${grouptype} == ${label} ? bestlabel : ignorelabel"
+                                    th:text="${label}"></button>
+                        </span>
+                    </div>
 
                     <div class="spacer"></div>
 
+                    <div th:if="${previd != null || nextid != null}" class="btn-group" role="group" aria-label="Next and previous">
 
-                    <div class="btn-group" role="group" aria-label="Next and previous">
-                        <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
-                        <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
+
+                        <a th:if="${previd} != null" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
+                        <a th:if="${nextid} != null" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
                     </div>
 
 
@@ -42,14 +45,6 @@
 
             </div>
         </div>
-
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-
-            var controller = "document";
-
-            /*]]>*/
-        </script>
 
         <script src="#" th:src="@{/js/annotate.js}"></script>
 

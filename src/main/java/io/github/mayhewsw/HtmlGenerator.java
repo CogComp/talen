@@ -73,9 +73,9 @@ public class HtmlGenerator {
             } else {
                 // FIXME: this will only work for single word queries.
                 if (query.length() > 0 && text[t].startsWith(query)) {
-                    text[t] = "<span class='token pointer emph' id='tok-" + t + "'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer emph' id='tok-"  + id + "-" + t + "'>" + text[t] + "</span>";
                 } else {
-                    text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer' id='tok-"  + id + "-" + t + "'>" + text[t] + "</span>";
                 }
             }
         }
@@ -181,7 +181,7 @@ public class HtmlGenerator {
             }
 
             if(sd.showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
+                text[t] = "<span class='token pointer def' id='tok-"+ t + "'>" + def + "</span>";
             }else{
                 text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
             }

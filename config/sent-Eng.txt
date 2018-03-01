@@ -1,5 +1,5 @@
 name	EnglishConll
-folderpath	/home/mayhew/data/conll-cis419/Data/Real-World/CoNLL/train/
+folderpath	/home/mayhew/data/conll-cis419/Data/Real-World/CoNLL/train-conll/
 indexpath	/tmp/conll_indexsent
 type	conll
 # dictionary

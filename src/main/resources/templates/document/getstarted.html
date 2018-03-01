@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="document/doc-base">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{document/doc-base}">
 <head>
     <title>Documents</title>
 </head>
@@ -9,41 +9,41 @@
 
 
 <div layout:fragment="content">
-<div class="container">
-    <script>
-        $(document).ready(function($) {
-            $(".clickable-row").click(function() {
-                window.location = $(this).data("href");
+    <div class="container">
+        <script>
+            $(document).ready(function($) {
+                $(".clickable-row").click(function() {
+                    window.location = $(this).data("href");
+                });
             });
-        });
-    </script>
+        </script>
 
 
-    <h3>Let's get started</h3>
+        <h3>Let's get started</h3>
 
-    Green rows are documents you have seen and saved.
+        Green rows are documents you have seen and saved.
 
-    <!--<a class="btn btn-primary" href="/annotation?taid=0&amp;cid=0" >Let's go!</a>-->
+        <!--<a class="btn btn-primary" href="/annotation?taid=0&amp;cid=0" >Let's go!</a>-->
 
 
-    <table class="table table-hover">
-        <thead class="thead-dark">
-        <tr>
-            <th>ID</th>
-            <th>Num Labels</th>
-            <th>Text annotation</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="key : ${tamap.keySet()}" class="clickable-row" th:classappend="${annotatedfiles.contains(key)} ? table-success : none" th:data-href="@{/document/annotation(taid=${key})}">
-            <td th:text="${key}"></td>
-            <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
-            <td th:text="${tamap.get(key).getText().split(' ')[0]}"></td>
-        </tr>
-        </tbody>
-    </table>
+        <table class="table table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Num Labels</th>
+                <th>Text annotation</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="key : ${tamap.keySet()}" class="clickable-row" th:classappend="${annotatedfiles.contains(key)} ? table-success : none" th:data-href="@{/document/annotation(taid=${key})}">
+                <td th:text="${key}"></td>
+                <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
+                <td th:text="${tamap.get(key).getText().split(' ')[0]}"></td>
+            </tr>
+            </tbody>
+        </table>
 
-</div>
+    </div>
 </div>
 </body>
 

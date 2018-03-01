@@ -118,10 +118,10 @@ public class TextFileIndexer {
                 Constituent origsent = origsentences.get(i);
 
                 //StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
-                System.out.println(sent.getTokenizedSurfaceForm());
 
                 Document d = new Document();
                 TextField tf = new TextField("body", sent.getTokenizedSurfaceForm(), Field.Store.YES);
+                //TextField tf = new TextField("body", sr, Field.Store.YES);
                 d.add(tf);
                 d.add(new StringField("filename", SentenceController.getSentId(sent), Field.Store.YES));
 
@@ -161,16 +161,16 @@ public class TextFileIndexer {
                 QueryParser parser = new QueryParser("body", analyzer);
                 parser.setAllowLeadingWildcard(true);
 
-                Query q = parser.parse("*" + s + "*");
+                //Query q = parser.parse("*" + s + "*");
 
-                //Query q = new PrefixQuery(new Term("body", s));
+                Query q = new PrefixQuery(new Term("body", s));
 
                 System.out.println(q);
                 TopScoreDocCollector collector = TopScoreDocCollector.create(40);
                 searcher.search(q, collector);
                 ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-                System.out.println("There are total of: " + searcher.count(q) + " hits.");
+                //System.out.println("There are total of: " + searcher.count(q) + " hits.");
 
                 // 4. display results
                 System.out.println("Found " + hits.length + " hits.");
