@@ -59,3 +59,25 @@ There are 3 important data structures throughout the code: the SentenceCache, th
 
 ### SentenceCache
 
+## Mechanical Turk
+Although the main function of this software is a server based system, there is also a lightweight version that runs
+entirely in Javascript, for the express purpose of creating Mechanical Turk jobs.
+
+The important files are [mturkTemplate.html](src/main/resources/templates/mturk/mturkTemplate.html) and [annotate-local.js](src/main/resources/static/js/annotate-local.js). The
+latter is a version of [annotate.js](src/main/resources/static/js/annotate.js), but the code to handle adding and
+removing spans is included in the Javascript instead of sent to a Java controller. This is less powerful (because we have
+NLP libraries written in Java, not Javascript), but can be run with no server.
+
+See a demo here: [mayhewsw.github.io/ner-annotation/](mayhewsw.github.io/ner-annotation/)
+
+All the scripts needed to create this file are included in this repository. It was created as follows:
+
+```bash
+$ python scripts/preparedata.py preparedata data/txt tmp.csv
+$ python scripts/preparedata.py testfile tmp.csv docs/index.html
+```
+
+[mturkTemplate.html](src/main/resources/templates/mturk/mturkTemplate.html) has a lot of extra stuff (instructions, annotator test, etc) which
+can all be removed if desired. I found it was useful for mturk tasks. When you create the mturk task, there will be a 
+submit button, and the answer will be put into the `#finalsubmission` field. The output string is a Javascript list of token spans along with 
+label. 
