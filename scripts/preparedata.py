@@ -16,7 +16,7 @@ def testfile(infile, outfile):
 
     print("Reading just the header and first row of", infile)
     with open(infile) as csvfile:
-        reader = csv.reader(csvfile)
+        reader = csv.reader(csvfile, dialect="excel")
 
         header = next(reader)
         row1 = next(reader)
@@ -65,8 +65,7 @@ def preparedata(folder, outname):
             i = 0
             for line in lines:
                 line = line.strip()
-                line = line.replace(",", "COMMA")
-                line = line.replace("\"", "QUOT")
+                line = line.replace("\"", "\"\"")
 
                 htmlformat = "<span class='token pointer' id='{0}'>{1}</span>"
 
@@ -77,7 +76,7 @@ def preparedata(folder, outname):
                     i += 1
                 HTMLTEXT += "</p>"
 
-            outwrite.append(HTMLTEXT)
+            outwrite.append("\"" + HTMLTEXT + "\"")
             outwrite.extend(LABELS)
             outwrite.append(LANGUAGE)
             out.write(",".join(outwrite) + "\n")

@@ -124,7 +124,7 @@ $(document).ready(function() {
             },
             title: function () {;
                 var t = $(this)[0];
-                return "Labeled: " + t.className + ", id: " + t.id;
+                return "Labeled: " + t.className;
             },
             html: true,
             trigger: "focus"
