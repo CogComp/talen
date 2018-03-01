@@ -30,9 +30,9 @@ def testfile(infile, outfile):
     print("Writing to", outfile)
     with open(outfile, "w") as out:
         out.write("<!DOCTYPE html><html>")
-        out.write("<head><script src=\"src/main/resources/static/js/annotate-local.js\" type=\"text/javascript\"></script></head>\n")
         out.write("<body>\n")
         out.write(template)
+        out.write("<script src=\"../src/main/resources/static/js/annotate-local.js\" type=\"text/javascript\"></script>\n")
         out.write("</body></html>")
 
 

@@ -101,7 +101,8 @@ $(document).ready(function() {
 
         if(!e.target.id.startsWith("tok") && !hasclass) {
             console.log("extraneous click");
-            $("[id^=tok]").popover("hide");
+            $('.popover').popover('hide');
+
             resetrange();
         }
     });
