@@ -68,7 +68,7 @@ latter is a version of [annotate.js](src/main/resources/static/js/annotate.js), 
 removing spans is included in the Javascript instead of sent to a Java controller. This is less powerful (because we have
 NLP libraries written in Java, not Javascript), but can be run with no server.
 
-See a demo here: [mayhewsw.github.io/ner-annotation/](mayhewsw.github.io/ner-annotation/)
+See a demo here: [mayhewsw.github.io/ner-annotation/](http://mayhewsw.github.io/ner-annotation/)
 
 All the scripts needed to create this file are included in this repository. It was created as follows:
 
