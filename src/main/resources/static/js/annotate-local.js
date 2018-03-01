@@ -51,17 +51,17 @@ $(document).ready(function() {
             // do nothing.
         }else{
             for(var i = range.start; i <= range.end; i++){
-
+                var el = document.getElementById("tok-" + range.id + "-" + i);
                 if (i== range.start && i == range.end){
-                    $("#tok-" + range.id + "-" + i).addClass("highlightsingle");
+                    $(el).addClass("highlightsingle");
                 }
                 else if(i == range.start){
-                    $("#tok-" + range.id + "-" + i).addClass("highlightstart");
+                    $(el).addClass("highlightstart");
                 }
                 else if(i == range.end){
-                    $("#tok-" + range.id + "-" + i).addClass("highlightend");
+                    $(el).addClass("highlightend");
                 }else{
-                    $("#tok-" + range.id + "-" + i).addClass("highlighted");
+                    $(el).addClass("highlighted");
                 }
             }
         }
@@ -127,8 +127,7 @@ $(document).ready(function() {
                 return "Labeled: " + t.className + ", id: " + t.id;
             },
             html: true,
-            trigger: "focus",
-            container: 'body'
+            trigger: "focus"
         });
 
         //$("[id^=tok]").off("mouseup");
@@ -194,9 +193,6 @@ $(document).ready(function() {
 
         console.log(event);
 
-        console.log($(this).parents());
-
-        //var sentid = $(this).parents(".card-body")[0].id;
         var sentid = range.id;
 
         console.log(range.id);
@@ -254,10 +250,12 @@ $(document).ready(function() {
         var end = getnum(endtokid);
 
         // here, instead of going to the server, we just update the javascript immediately.
-        var cardtext = $("#" + sentid);
+        var cardtext = $(document.getElementById(sentid));
         var toks = cardtext.find("[id^='tok']");
         var spanslabels = getspanslabels(cardtext);
         var sentends = getsentends(cardtext);
+
+        console.log(sentends);
 
         // get all the spans here.
         var wordtoks = toks.slice(start, end);
