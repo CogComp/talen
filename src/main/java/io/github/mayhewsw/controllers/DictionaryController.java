@@ -1,7 +1,10 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.controllers;
 
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
+import io.github.mayhewsw.Dictionary;
+import io.github.mayhewsw.SessionData;
+import io.github.mayhewsw.utils.HtmlGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -33,7 +36,7 @@ public class DictionaryController {
     public String getdict(@RequestParam(value="word") String word, HttpSession hs, Model model) {
 
         // pass a dict list to this?
-        Dictionary dict = (Dictionary) hs.getAttribute("dict");
+        io.github.mayhewsw.Dictionary dict = (Dictionary) hs.getAttribute("dict");
 
         List<String> defs = dict.get(word);
 

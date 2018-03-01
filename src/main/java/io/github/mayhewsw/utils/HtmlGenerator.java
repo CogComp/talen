@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.utils;
 
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
@@ -6,13 +6,16 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import io.github.mayhewsw.Dictionary;
+import io.github.mayhewsw.SessionData;
+import io.github.mayhewsw.Suggestion;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.github.mayhewsw.DocumentController.getdocsuggestions;
+import static io.github.mayhewsw.controllers.DocumentController.getdocsuggestions;
 
 /**
  * Created by stephen on 8/31/17.

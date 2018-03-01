@@ -1,15 +1,16 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.controllers;
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
-import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import io.github.mayhewsw.*;
+import io.github.mayhewsw.utils.HtmlGenerator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -102,7 +103,7 @@ public class DocumentController {
         model.addAttribute("user", new User());
 
         if(hs.getAttribute("dict") == null) {
-            hs.setAttribute("dict", new Dictionary());
+            hs.setAttribute("dict", new io.github.mayhewsw.Dictionary());
         }
         return "document/home";
     }
@@ -278,17 +279,17 @@ public class DocumentController {
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
         String dictpath = prop.getProperty("dictionary");
-        Dictionary dict;
+        io.github.mayhewsw.Dictionary dict;
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
-            dict = new Dictionary(dataname, dictpath);
+            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath);
             hs.setAttribute("dict", dict);
 
             // TODO: also load the user dictionary.
 
         }else{
             logger.info("No dictionary specified.");
-            dict = new Dictionary();
+            dict = new io.github.mayhewsw.Dictionary();
         }
 
         // check to see if there are dictionary created by the user, in file dict-dataname-username.txt.
@@ -647,7 +648,7 @@ public class DocumentController {
         SessionData sd = new SessionData(hs);
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        Dictionary dict = sd.dict;
+        io.github.mayhewsw.Dictionary dict = sd.dict;
 
         Boolean showdefs = sd.showdefs;
 
@@ -852,7 +853,7 @@ public class DocumentController {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        Dictionary dict = sd.dict;
+        io.github.mayhewsw.Dictionary dict = sd.dict;
 
         Boolean showdefs = sd.showdefs;
 
@@ -898,7 +899,7 @@ public class DocumentController {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        Dictionary dict = sd.dict;
+        io.github.mayhewsw.Dictionary dict = sd.dict;
         TextAnnotation ta = tas.get(idstring);
 
         Boolean showdefs = sd.showdefs;

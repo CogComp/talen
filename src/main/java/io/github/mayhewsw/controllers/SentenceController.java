@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.controllers;
 
 
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
@@ -10,6 +10,9 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 //import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
+import io.github.mayhewsw.*;
+import io.github.mayhewsw.Dictionary;
+import io.github.mayhewsw.utils.HtmlGenerator;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +24,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.swing.text.html.HTML;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -152,14 +154,14 @@ public class SentenceController {
 
         // load the dictionary, graceful fail if not there.
         String dictpath = prop.getProperty("dictionary");
-        Dictionary dict;
+        io.github.mayhewsw.Dictionary dict;
         if (dictpath != null) {
             logger.info("Loading dictionary: " + dictpath);
-            dict = new Dictionary(dataname, dictpath);
+            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath);
             hs.setAttribute("dict", dict);
         } else {
             logger.info("No dictionary specified.");
-            dict = new Dictionary();
+            dict = new io.github.mayhewsw.Dictionary();
         }
 
         // this ensures that the suffixes item is never null.
