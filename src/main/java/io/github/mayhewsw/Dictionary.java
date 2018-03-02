@@ -97,7 +97,7 @@ public class Dictionary extends HashMap<String, List<String>> {
     public Dictionary(){}
 
     public Dictionary(String dictname, String dictpath) {
-        // TODO: also read the user generated pairs.
+
 
         this.newpairs = new ArrayList<>();
 
@@ -107,12 +107,24 @@ public class Dictionary extends HashMap<String, List<String>> {
         ArrayList<String> dictlines = null;
 
         try {
-            dictlines = LineIO.readGZip(dictpath);
+            dictlines = LineIO.read(dictpath);
         } catch (IOException e) {
             // an empty dictionary is a graceful failure.
             logger.info("Dictionary file not found: "+dictpath+". Dictionary is empty.");
             return;
         }
+
+        // Also read the user generated pairs.
+        ArrayList<String> userlines = new ArrayList<>();
+        try {
+            userlines = LineIO.read(dictpath + ".user");
+        } catch (IOException e) {
+            // an empty dictionary is a graceful failure.
+            logger.info("User dictionary file not found: " + dictpath + ".user. User dictionary is empty.");
+        }
+
+        dictlines.addAll(userlines);
+
 
         // I want a dictionary that maps from foreign->english.
 
@@ -122,7 +134,7 @@ public class Dictionary extends HashMap<String, List<String>> {
         for(String line : dictlines){
             String[] sline = line.split("\t");
             String f = sline[0];
-            String e = sline[5];
+            String e = sline[1];
 
             Pair<String, String> ef = new Pair<>(e,f);
             Pair<String, String> eflower = new Pair<>(e.toLowerCase(),f.toLowerCase());
@@ -179,7 +191,8 @@ public class Dictionary extends HashMap<String, List<String>> {
 
 
     public static void main(String[] args) throws IOException {
-        Dictionary d = new Dictionary("whatevs", "/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
+        //Dictionary d = new Dictionary("whatevs", "/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
+        Dictionary d = new Dictionary("whatevs", "/home/mayhew/IdeaProjects/ner-annotation/bendict.txt");
     }
 
 

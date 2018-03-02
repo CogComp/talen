@@ -1,5 +1,5 @@
 name	EnglishConll
-path	data/eng-conll/
+folderpath	data/eng-conll/
 type	conll
 # dictionary
 suffixes	ing

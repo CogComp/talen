@@ -122,7 +122,7 @@ public class DocumentController {
     public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username) throws Exception {
 
         Properties props = datasets.get(dataname);
-        String folderurl = props.getProperty("path");
+        String folderurl = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
 
 
@@ -265,7 +265,7 @@ public class DocumentController {
         String username = sd.username;
 
         Properties prop = datasets.get(dataname);
-        String folderpath = prop.getProperty("path");
+        String folderpath = prop.getProperty("folderpath");
 
         String labelsproperty = prop.getProperty("labels");
         labels = new ArrayList<>();
@@ -283,29 +283,11 @@ public class DocumentController {
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
             dict = new io.github.mayhewsw.Dictionary(dataname, dictpath);
-            hs.setAttribute("dict", dict);
-
-            // TODO: also load the user dictionary.
-
         }else{
             logger.info("No dictionary specified.");
             dict = new io.github.mayhewsw.Dictionary();
         }
-
-        // check to see if there are dictionary created by the user, in file dict-dataname-username.txt.
-        String folderparent = (new File(folderpath)).getParent();
-        File dictfile = new File(folderparent, "dict-" + dataname + "-" + username + ".txt");
-        if(dictfile.exists()){
-            // open and read
-            for(String dictline : LineIO.read(dictfile.getAbsolutePath())){
-                String[] kv = dictline.split("\t");
-                if(kv.length == 2) {
-                    dict.add(kv[0], kv[1]);
-                }
-            }
-        }else{
-            logger.error("COULD NOT FIND DICT FILE: " + dictfile.getAbsolutePath());
-        }
+        hs.setAttribute("dict", dict);
 
 
         // this ensures that the suffixes item is never null.
@@ -320,6 +302,7 @@ public class DocumentController {
         }
 
         // check to see if there are suffixes created by the user, in file suffixes-username.txt.
+        String folderparent = (new File(folderpath)).getParent();
         File suffixfile = new File(folderparent, "suffixes-" + username + ".txt");
         if(suffixfile.exists()){
             // open and read
@@ -365,7 +348,7 @@ public class DocumentController {
         String folder = sd.dataname;
 
         Properties props = datasets.get(folder);
-        String folderpath = props.getProperty("path");
+        String folderpath = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
 
         assert(sentids.length == 1);
@@ -539,7 +522,7 @@ public class DocumentController {
         // Load all annotated files so far.
         String dataname = sd.dataname;
         Properties props = datasets.get(dataname);
-        String folderpath = props.getProperty("path");
+        String folderpath = props.getProperty("folderpath");
         String username = sd.username;
 
         String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
@@ -631,7 +614,7 @@ public class DocumentController {
         Map.Entry<String, TextAnnotation> entry = sd.tas.firstEntry();
         TextAnnotation ta = entry.getValue();
 
-        String html = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
 
         model.addAttribute("html", html);
 
@@ -664,7 +647,7 @@ public class DocumentController {
             // Load all annotated files so far.
             String dataname = sd.dataname;
             Properties props = datasets.get(dataname);
-            String folderpath = props.getProperty("path");
+            String folderpath = props.getProperty("folderpath");
             String username = sd.username;
 
             String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
@@ -697,7 +680,7 @@ public class DocumentController {
         logger.info("Constituents: " + ner.getConstituents());
 
         // set up the html string.
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
         model.addAttribute("html", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -775,7 +758,7 @@ public class DocumentController {
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+            String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
             return;
         }
 
@@ -888,7 +871,7 @@ public class DocumentController {
         // TODO: remove this because it is slow!!!
         //updateallpatterns(sd);
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
         return out;
     }
 
@@ -911,24 +894,24 @@ public class DocumentController {
             ner.removeConstituent(c);
         }
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
         return out;
     }
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value="taid") String taid, HttpSession hs) {
+    public String toggledefs(@RequestParam(value="idlist[]") String[] idlist, HttpSession hs) {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(taid);
+        TextAnnotation ta = tas.get(idlist[0]);
 
         Boolean showdefs = sd.showdefs;
         showdefs = !showdefs;
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
     }
 
     @RequestMapping(value="/addsuffix", method= RequestMethod.GET)
@@ -937,7 +920,7 @@ public class DocumentController {
 
         SessionData sd = new SessionData(hs);
         Properties prop = datasets.get(sd.dataname);
-        String folderpath = prop.getProperty("path");
+        String folderpath = prop.getProperty("folderpath");
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
         TextAnnotation ta = tas.get(taid);
@@ -968,7 +951,7 @@ public class DocumentController {
 
         }
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
     }
 
 
@@ -1000,7 +983,7 @@ public class DocumentController {
         String ret = "";
         for(String sentid : sentids){
             TextAnnotation ta = sd.tas.get(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
             ret += html + "\n";
         }
 

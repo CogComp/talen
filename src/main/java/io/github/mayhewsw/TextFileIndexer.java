@@ -113,7 +113,6 @@ public class TextFileIndexer {
             }
 
 
-
             for(int i = 0; i < sentences.size(); i++){
                 Constituent sent = sentences.get(i);
                 Constituent origsent = origsentences.get(i);
@@ -219,9 +218,9 @@ public class TextFileIndexer {
         //String origfiledir = dir + "conll-set0";
         //String indexdir = dir + "conll-set0-indexsent";
 
-        String filedir = "/home/mayhew/data/conll-cis419/Data/Real-World/CoNLL/train-conll/";
+        String filedir = "/shared/corpora/ner/lorelei/bn/Train-anno-urom";
         String origfiledir = filedir;
-        String indexdir = "/tmp/conll_indexsent";
+        String indexdir = "/tmp/bengali-index";
 
         //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
         //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";

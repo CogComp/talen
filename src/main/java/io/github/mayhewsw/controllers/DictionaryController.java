@@ -1,10 +1,12 @@
 package io.github.mayhewsw.controllers;
 
+import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.SessionData;
 import io.github.mayhewsw.utils.HtmlGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -27,7 +29,31 @@ public class DictionaryController {
     private static Logger logger = LoggerFactory.getLogger(DictionaryController.class);
 
     @RequestMapping(value="", method=RequestMethod.GET)
-    public String showdict() {
+    public String showdict(Model model, HttpSession hs) {
+        SessionData sd = new SessionData(hs);
+        // this is called if we go to /dict
+
+        if(sd.dict == null){
+            Dictionary dict = new Dictionary();
+            hs.setAttribute("dict", dict);
+            sd.dict = dict;
+        }
+
+        List<Pair<String, String>> entries = new ArrayList<>();
+        int i = 0;
+        for (String key : sd.dict.keySet()) {
+            String valstring = StringUtils.join(sd.dict.get(key), ", ");
+            Pair<String, String> p = new Pair<>(key, valstring);
+            entries.add(p);
+            i++;
+
+            // hard break at i == 1000
+            if (i > 1000) {
+                break;
+            }
+        }
+        model.addAttribute("entries", entries);
+
         return "dict";
     }
 
@@ -51,33 +77,19 @@ public class DictionaryController {
 
     @RequestMapping(value="add", method=RequestMethod.GET)
     @ResponseBody
-    public String adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="taid") String taid, HttpSession hs, Model model) {
+    public String adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="taid") String taid, HttpSession hs, Model model) throws IOException {
 
         SessionData sd = new SessionData(hs);
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
         TextAnnotation ta = tas.get(taid);
 
-        String folderpath = sd.prop.getProperty("path");
-
-        // write it out to file. Don't care if the file is clobbered...
-        String folderparent = (new File(folderpath)).getParent();
-        File dictfile = new File(folderparent, "dict-" + sd.dataname + "-" + sd.username + ".txt");
-
-        if(val.length() > 0) {
-            try {
-                if (dictfile.exists()) {
-                    LineIO.append(dictfile.getAbsolutePath(), Collections.singletonList(key + "\t" + val));
-                } else {
-                    LineIO.write(dictfile.getAbsolutePath(), Collections.singletonList(key + "\t" + val));
-                }
-            } catch (IOException e) {
-                logger.error("Could not save dict file: " + dictfile.getAbsolutePath());
-            }
+        if(key.length() > 0 && val.length() > 0) {
             sd.dict.add(key, val);
+            sd.dict.save();
         }
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
     }
 
 

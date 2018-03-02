@@ -49,7 +49,8 @@ public class SentenceCache extends HashMap<String, Constituent> {
         this.alltexts = new HashMap<>();
         this.sentid2text = new HashMap<>();
         this.sentid2origtext = new HashMap<>();
-        
+
+
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
         searcher = new IndexSearcher(reader);
     }

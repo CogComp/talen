@@ -1,12 +1,12 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{base}">
 <head>
-    <title>Dictionary</title>
-    <div th:include="base :: head"></div>
-
+    <title>Unified Annotation</title>
 </head>
 <body>
-<div th:include="base :: nav"></div>
+
+
+<div layout:fragment="content">
 <div class="container">
 
     <div th:if="${session.dict.isEmpty()}">
@@ -29,62 +29,68 @@
 
             <div class="col-md-2"></div>
             <div class="col-md-6">
-                <h4 style="margin-bottom: 20px"><span th:text="${'Dictionary: ' + session.dict.getName()}"></span><small th:text="${' Num entries: ' + session.dict.keySet().size()}"></small> </h4>
 
-            </div>
-            <div class="col-md-4">
-            <a href="/dict/unload">Load another...</a>
-            </div>
-        </div>
-        <div class="row">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="nav-item"><a href="#lookup" class="nav-link active" aria-controls="lookup" role="tab" data-toggle="tab">Lookup</a></li>
+                    <li class="nav-item" role="presentation"><a href="#browse" class="nav-link" aria-controls="browse" role="tab" data-toggle="tab">Browse</a></li>
+                </ul>
 
-            <div class="col-md-2"></div>
-            <div class="col-md-6">
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <!-- This set of sentences is all unannotated -->
+                    <div role="tabpanel" class="tab-pane active" id="lookup">
+                        <div class="spacer"></div>
+
+                        <h4 style="margin-bottom: 20px"><span th:text="${'Dictionary: ' + session.dict.getName()}"></span><small th:text="${' Num entries: ' + session.dict.keySet().size()}"></small> </h4>
 
 
-                <div class="form-horizontal">
-                    <div class="form-group">
-                        <label for="searchfield" class="col-sm-2 control-label">Word:</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control input-lg enter" id="searchfield"></input>
+                        <div class="input-group mb-3">
+                            <input type="text" placeholder="Enter word" class="form-control input-lg enter" id="searchfield"></input>
+                            <div class="input-group-append">
+                                <button id="searchbutton" class="btn btn-outline-secondary">Look up</button>
+                            </div>
+                        </div>
+
+
+
+                        <div class="panel panel-default" id="defpanel">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Definition</h3>
+                            </div>
+                            <div class="panel-body" id="def">
+
+                            </div>
                         </div>
                     </div>
+                    <div role="tabpanel" class="tab-pane" id="browse">
+                        <div class="spacer"></div>
 
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <button id="searchbutton" class="btn btn-default">Look up</button>
-                        </div>
+                        <table class="table table-hover">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th>Key</th>
+                                <th>Definition</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="key : ${entries}">
+                                <td th:text="${key.getFirst()}"></td>
+                                <td th:text="${key.getSecond()}"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+
                     </div>
                 </div>
 
-
             </div>
 
         </div>
-
-        <div class="row" style="margin-top: 20px">
-
-            <div class="col-md-2"></div>
-            <div class="col-md-6">
-
-                <div class="panel panel-default" id="defpanel">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Definition</h3>
-                    </div>
-                    <div class="panel-body" id="def">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
 
 
 
 </div>
-</body>
+
 
 <script th:inline="javascript">
     /*<![CDATA[*/

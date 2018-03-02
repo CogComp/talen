@@ -1,3 +1,3 @@
 name	Tamil
-path	/shared/corpora/ner/lorelei/ta/Train-anno-urom
+folderpath	/shared/corpora/ner/lorelei/ta/Train-anno-urom
 labels	LOC:greenyellow PER:yellow ORG:lightblue

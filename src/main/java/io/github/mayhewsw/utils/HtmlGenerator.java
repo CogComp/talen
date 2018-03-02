@@ -24,9 +24,9 @@ import static io.github.mayhewsw.controllers.DocumentController.getdocsuggestion
 public class HtmlGenerator {
 
 
-    public static String getHTMLfromTA(TextAnnotation ta, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
-    }
+//    public static String getHTMLfromTA(TextAnnotation ta, boolean showdefs) {
+//        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
+//    }
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs);
@@ -71,14 +71,16 @@ public class HtmlGenerator {
                 def = dict.get(text[t]).get(0);
             }
 
+            String tokid = String.format("tok-%s-%s", id, t);
+
             if (showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
+                text[t] = "<span class='token pointer def' id='"+tokid+"'>" + def + "</span>";
             } else {
                 // FIXME: this will only work for single word queries.
                 if (query.length() > 0 && text[t].startsWith(query)) {
-                    text[t] = "<span class='token pointer emph' id='tok-"  + id + "-" + t + "'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer emph' id='"+tokid+"'>" + text[t] + "</span>";
                 } else {
-                    text[t] = "<span class='token pointer' id='tok-"  + id + "-" + t + "'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer' id='"+tokid+"'>" + text[t] + "</span>";
                 }
             }
         }

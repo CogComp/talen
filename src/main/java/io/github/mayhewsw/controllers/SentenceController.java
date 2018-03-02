@@ -16,6 +16,7 @@ import io.github.mayhewsw.utils.HtmlGenerator;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.index.IndexNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -140,7 +141,7 @@ public class SentenceController {
 
 
     @RequestMapping(value = "/loaddata", method = RequestMethod.GET)
-    public String loaddata(@RequestParam(value = "dataname") String dataname, HttpSession hs) throws Exception {
+    public String loaddata(@RequestParam(value = "dataname") String dataname, Model model, HttpSession hs) throws Exception {
 
         Properties prop = datasets.get(dataname);
         // this refers to a folder containing a large number of unannotated conll files.
@@ -149,6 +150,24 @@ public class SentenceController {
         // this refers to the index made by lucene (probably of the folder)
         String indexpath = prop.getProperty("indexpath");
         hs.setAttribute("indexpath", indexpath);
+
+        String errormsg = null;
+
+        if(indexpath == null){
+            errormsg = "The config value for indexpath is null. To fix this, run TextFileIndexer.java, and " +
+                    "include the path of the indexpath in the config file for " + dataname;
+        }else if(!(new File(indexpath)).exists()){
+            errormsg = "The config value for indexpath does not exist. Maybe you need to regenerate the index? Use TextFileIndexer.java. Indexpath:" +
+                    indexpath + ", dataname: " + dataname;
+        }
+
+        if(errormsg != null){
+            model.addAttribute("datasets", datasets.keySet());
+            model.addAttribute("user", new User());
+            model.addAttribute("errormsg", errormsg);
+            return "sentence/home";
+        }
+
 
         SentenceCache cache = new SentenceCache(folderpath, indexpath);
 
@@ -801,7 +820,7 @@ public class SentenceController {
 
     @RequestMapping(value = "/toggledefs", method = RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value = "sentids[]") String[] sentids, @RequestParam(value = "query") String query, Model model, HttpSession hs) throws FileNotFoundException {
+    public String toggledefs(@RequestParam(value = "idlist[]") String[] idlist, Model model, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
 
         Boolean showdefs = sd.showdefs;
@@ -809,7 +828,8 @@ public class SentenceController {
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        String html = this.gethtml(sentids, query, model, hs);
+        String query = "";
+        String html = this.gethtml(idlist, query, model, hs);
         return html;
     }
 

@@ -95,11 +95,6 @@ $(document).ready(function() {
         });
 
 
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
-
-
         // just clean everything out first...
 
 
@@ -113,7 +108,7 @@ $(document).ready(function() {
             },
             title: function () {
                 var t = $(this)[0];
-                return "Labeled: " + t.className + ", id: " + t.id;
+                return "Labeled: " + t.className;
             },
             html: true,
             trigger: "focus"
@@ -157,6 +152,15 @@ $(document).ready(function() {
 
             highlighting = false;
 
+            // put focus on the dictionary entry element.
+            document.getElementById("definput").focus();
+            $(".enter").keydown(function (event) {
+                var keypressed = event.keyCode || event.which;
+                if (keypressed == 13) {
+                    submitdict();
+                }
+            });
+
         });
 
         $("[id^=tok]").mousedown(function(event){
@@ -181,6 +185,7 @@ $(document).ready(function() {
 
             removelabel(span);
         });
+
     }
 
     loadtok();
@@ -189,7 +194,7 @@ $(document).ready(function() {
         $.ajax({
             method: "GET",
             url: baseurl + "/" + controller + "/toggledefs",
-            data: {sentids: getsentids(), query: getParameterByName("query")}
+            data: {idlist: getsentids()}
         }).done(function (msg) {
             console.log("successful toggle");
             $("#htmlcontainer").html(msg);
@@ -228,6 +233,36 @@ $(document).ready(function() {
 
         addlabel(sentid, startid, endid, buttonvalue);
     });
+
+    $("body").on("click", '#submitdict', submitdict);
+
+    function submitdict(){
+        // TODO: allow only single word entries at this point.
+        if (range.start != range.end){
+            return;
+        }
+
+        var docid = range.id;
+        var tokid = "tok-" + docid + "-" + range.start ;
+
+        var el = document.getElementById(tokid)
+        var key = $(el).text()
+        var val = $("#definput").val();
+
+        $("[id^=tok]").popover("hide");
+
+        console.log("you want to submit: " + key + ", " + val);
+        $.ajax({
+            method: "GET",
+            url: "/dict/add",
+            data: {key:key, val:val, taid: getParameterByName("taid")}
+        }).done(function (msg) {
+            console.log("successful addition");
+            $("#htmlcontainer").html(msg);
+            loadtok();
+        });
+    };
+
 
 
     function getParameterByName(name) {
