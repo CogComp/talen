@@ -34,8 +34,8 @@
 
                                 <div class="d-flex">
 
-                                    <a th:href="'/sentence/annotation?groupid=' + ${groupid}" class="mr-1"><h5 th:text="'Group: ' + ${groupid} + ' (' + ${unannogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h5></a>
-                                    <span class="mr-auto" th:text="'Num unlabeled:' + ${unlabeledamount.get(groupid)}"></span>
+                                    <a th:href="'/sentence/annotation?groupid=' + ${groupid}" class="mr-1"><span th:text="${groupid}" class="list-group-item-heading"></span></a>
+                                    <span class="mr-auto" th:text="'(' + ${unlabeledamount.get(groupid)} + '/' + ${unannogroups.get(groupid).size()} + ' unlabeled)'"></span>
 
                                     <a th:each="label : ${labels}"
                                        th:href="@{/sentence/addtextsave(text=${groupid},label=${label},groupid=${groupid})}"
@@ -69,7 +69,7 @@
                     <div class="col-md-9">
                         <div class="list-group">
                             <a th:each="groupid : ${annogroups.keySet()}" th:href="'/sentence/annotation?groupid=' + ${groupid}" class="list-group-item">
-                                <h5 th:text="'Group: ' + ${groupid} + ', Label: ' + ${session.groups.get(groupid).maxType()} + ' (' + ${annogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h5>
+                                <h6 th:text="${groupid} + ', Label: ' + ${session.groups.get(groupid).maxType()} + ' (' + ${annogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h6>
                                 <!--<p th:text="${annogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
 
                             </a>

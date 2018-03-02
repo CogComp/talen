@@ -776,7 +776,7 @@ public class SentenceController {
         for(String sentid : sentids){
             Constituent sent = sd.cache.getSentence(sentid);
             String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs);
-            ret += html + "\n";
+            ret += html + "\n<br />";
         }
 
         return ret;

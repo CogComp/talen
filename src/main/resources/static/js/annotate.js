@@ -255,7 +255,7 @@ $(document).ready(function() {
         $.ajax({
             method: "GET",
             url: "/dict/add",
-            data: {key:key, val:val, taid: getParameterByName("taid")}
+            data: {key:key, val:val, idlist: getsentids()}
         }).done(function (msg) {
             console.log("successful addition");
             $("#htmlcontainer").html(msg);

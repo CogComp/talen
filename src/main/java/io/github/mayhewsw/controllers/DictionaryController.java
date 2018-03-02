@@ -77,12 +77,12 @@ public class DictionaryController {
 
     @RequestMapping(value="add", method=RequestMethod.GET)
     @ResponseBody
-    public String adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="taid") String taid, HttpSession hs, Model model) throws IOException {
+    public String adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="idlist[]") String[] idlist, HttpSession hs, Model model) throws IOException {
 
         SessionData sd = new SessionData(hs);
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(taid);
+        TextAnnotation ta = tas.get(idlist[0]);
 
         if(key.length() > 0 && val.length() > 0) {
             sd.dict.add(key, val);
