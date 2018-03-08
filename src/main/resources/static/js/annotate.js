@@ -19,7 +19,39 @@ $(document).ready(function() {
     function resetrange(){
         range = {start:-1, end:-1, id:""};
         highlightrange();
+
     }
+
+    // This retrieves the text within a range. If the range
+    // is empty, then it returns the empty string.
+    function gettextinrange(usetext){
+        usetext = usetext || false;
+        if(range.start != -1 && range.end != -1) {
+            var txt = ""
+            for (var i = range.start; i <= range.end; i++) {
+
+                var el = document.getElementById("tok-" + range.id + "-" + i);
+                if(usetext){
+                    txt += $(el).text() + " ";
+                }else{
+                    txt += $(el).attr("orig") + " ";
+                }
+
+            }
+            return txt.trim();
+        }else{
+            return "";
+        }
+    }
+
+    // This returns a list of all words in the document.
+    function getalltext() {
+        var allwords = $.map($("[id^=tok]"), function (n, i) {
+            return $(n).attr("orig");
+        });
+        return allwords;
+    }
+
 
     function highlightrange(){
 
@@ -79,8 +111,6 @@ $(document).ready(function() {
             ret = true;
         }
 
-        console.log(range);
-
         highlightrange();
 
         return ret;
@@ -101,21 +131,19 @@ $(document).ready(function() {
         $("[id^=tok]").popover({
             placement: "bottom",
             content: function () {
-                console.log();
                 var html = $("#buttons").html();
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
             },
             title: function () {
-                var t = $(this)[0];
-                return "Labeled: " + t.className;
+                var text = gettextinrange(true);
+                var link = "<a href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>"
+                return text + " (" + link + " )";
             },
             html: true,
             trigger: "focus"
-            //container: $("[id^=0071.txt:10]") //'$("#0071.txt:10")
         });
 
-        //$("[id^=tok]").off("mouseup");
 
         $("[id^=tok]").mouseover(function(event){
 
@@ -136,11 +164,15 @@ $(document).ready(function() {
             }
         });
 
+        // this solves the problem where the window scrolls to
+        // the top whenever definput has focus.
+        var cursorFocus = function(elem) {
+            var x = window.scrollX, y = window.scrollY;
+            elem.focus();
+            window.scrollTo(x, y);
+        }
+
         $("[id^=tok]").mouseup(function(event){
-
-//                    $(this).removeClass("highlighted");
-
-            console.log(event.which);
 
             // only toggle on the left click.
             if(event.which == 1) {
@@ -148,12 +180,10 @@ $(document).ready(function() {
                 $(this).popover("toggle");
             }
 
-            console.log("mouseup");
-
             highlighting = false;
 
             // put focus on the dictionary entry element.
-            document.getElementById("definput").focus();
+            cursorFocus(document.getElementById("definput"));
             $(".enter").keydown(function (event) {
                 var keypressed = event.keyCode || event.which;
                 if (keypressed == 13) {
@@ -161,10 +191,20 @@ $(document).ready(function() {
                 }
             });
 
+
+
+
+            $.ajax({
+                method: "POST",
+                url: "/stats/getstats",
+                data: {text: gettextinrange(), alltext: getalltext()}
+            }).done(function (msg) {
+                $("#infobox").html(msg);
+            });
+
         });
 
         $("[id^=tok]").mousedown(function(event){
-            console.log($(this));
             highlighting = true;
             resetrange();
             updaterange(this.id);
@@ -181,7 +221,6 @@ $(document).ready(function() {
         $("[id^=tok]").contextmenu(function(event){
             event.preventDefault();
             var span = event.currentTarget;
-            console.log("Right clicked on " + span.id);
 
             removelabel(span);
         });

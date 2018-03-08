@@ -34,9 +34,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.xml.soap.Text;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This contains the main logic of the whole thing.
@@ -130,7 +132,7 @@ public class DocumentController {
 
         // This will be ordered by it's keys.
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
-
+        TextStatisticsController.resetstats();
         if(foldertype.equals(FOLDERTA)) {
             String[] files = f.list();
             int limit = Math.min(files.length, 500);
@@ -145,6 +147,7 @@ public class DocumentController {
                 TextAnnotation ta = cnl.next();
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
+                TextStatisticsController.updateCounts(ta.getTokenizedText());
             }
         }
 
@@ -288,6 +291,8 @@ public class DocumentController {
             dict = new io.github.mayhewsw.Dictionary();
         }
         hs.setAttribute("dict", dict);
+
+
 
 
         // this ensures that the suffixes item is never null.
@@ -540,6 +545,10 @@ public class DocumentController {
 
         model.addAttribute("tamap", newtas);
         model.addAttribute("annotatedfiles", annotatedfiles);
+
+
+
+
         return "document/getstarted";
 
     }
@@ -661,6 +670,26 @@ public class DocumentController {
 
             model.addAttribute("tamap", sd.tas);
             model.addAttribute("annotatedfiles", annotatedfiles);
+            List<String> stats = new ArrayList<>();
+            stats.add("Numdocs: " + sd.tas.size());
+            stats.add("Num annotated: " + annotatedfiles.size());
+
+            HashSet<String> surfaces = new HashSet<>();
+            int totalsurfaces = 0;
+            int totaltokens = 0;
+            for(TextAnnotation ta : sd.tas.values()){
+                totaltokens += ta.getTokens().length;
+                List<String> ret = ta.getView(ViewNames.NER_CONLL).getConstituents().stream().map(c -> c.getTokenizedSurfaceForm()).collect(Collectors.toList());
+                totalsurfaces += ret.size();
+                surfaces.addAll(ret);
+            }
+            stats.add("Total tokens: "+ totaltokens);
+            stats.add("Total entity surfaces: "+ totalsurfaces);
+            stats.add("Unique entity surfaces: "+ surfaces.size());
+
+
+            model.addAttribute("stats", stats);
+
             return "document/getstarted";
         }
 

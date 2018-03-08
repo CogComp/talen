@@ -21,10 +21,29 @@
 
         <h3>Let's get started</h3>
 
-        Green rows are documents you have seen and saved.
+        <div class="card-deck">
 
-        <!--<a class="btn btn-primary" href="/annotation?taid=0&amp;cid=0" >Let's go!</a>-->
+            <div class="card">
+                <div class="card-header">
+                    Info
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Green rows are documents you have seen and saved. Click on a row to see that document.</p>
 
+                </div>
+            </div>
+
+            <div th:if="${stats != null}" class="card">
+                <div class="card-header">
+                    Corpus Statistics
+                </div>
+                <ul class="list-group list-group-flush">
+                    <small><li th:each="line : ${stats}" th:text="${line}" class="list-group-item"></li></small>
+                </ul>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
 
         <table class="table table-hover">
             <thead class="thead-dark">
