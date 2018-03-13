@@ -285,14 +285,12 @@ public class DocumentController {
         io.github.mayhewsw.Dictionary dict;
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
-            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath);
+            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath, sd.username);
         }else{
             logger.info("No dictionary specified.");
             dict = new io.github.mayhewsw.Dictionary();
         }
         hs.setAttribute("dict", dict);
-
-
 
 
         // this ensures that the suffixes item is never null.

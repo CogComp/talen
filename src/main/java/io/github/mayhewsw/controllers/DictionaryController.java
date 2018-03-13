@@ -86,7 +86,7 @@ public class DictionaryController {
 
         if(key.length() > 0 && val.length() > 0) {
             sd.dict.add(key, val);
-            sd.dict.save();
+            sd.dict.save(sd.username);
         }
 
         return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);

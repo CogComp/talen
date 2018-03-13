@@ -1,2 +1,4 @@
 user	user
 stephen	stephen
+deutsch	deutsch
+sheffield	sheffield

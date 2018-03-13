@@ -171,12 +171,14 @@ public class SentenceController {
 
         SentenceCache cache = new SentenceCache(folderpath, indexpath);
 
+        SessionData sd = new SessionData(hs);
+
         // load the dictionary, graceful fail if not there.
         String dictpath = prop.getProperty("dictionary");
         io.github.mayhewsw.Dictionary dict;
         if (dictpath != null) {
             logger.info("Loading dictionary: " + dictpath);
-            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath);
+            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath, sd.username);
             hs.setAttribute("dict", dict);
         } else {
             logger.info("No dictionary specified.");
@@ -195,7 +197,7 @@ public class SentenceController {
         }
         hs.setAttribute("suffixes", suffixes);
 
-        SessionData sd = new SessionData(hs);
+        sd = new SessionData(hs);
 
         // now check the annotation folder to see what this user has already annotated.
         // if there is anything, load it here.

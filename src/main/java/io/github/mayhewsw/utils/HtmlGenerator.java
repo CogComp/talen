@@ -9,7 +9,10 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.SessionData;
 import io.github.mayhewsw.Suggestion;
+
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,6 +60,7 @@ public class HtmlGenerator {
         }
 
         // take just the
+
         String[] text;
         if(sentspan.getFirst() == -1){
             text = ta.getTokens().clone();
@@ -73,14 +77,15 @@ public class HtmlGenerator {
 
             String tokid = String.format("tok-%s-%s", id, t);
 
+
             if (showdefs && def != null) {
-                text[t] = "<span class='token pointer def' orig='"+text[t]+"' id='"+tokid+"'>" + def + "</span>";
+                text[t] = "<span class='token pointer def' orig=\""+text[t]+"\" id='"+tokid+"'>" + def + "</span>";
             } else {
                 // FIXME: this will only work for single word queries.
                 if (query.length() > 0 && text[t].startsWith(query)) {
-                    text[t] = "<span class='token pointer emph' orig='"+text[t]+"' id='"+tokid+"'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer emph' orig=\""+text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
                 } else {
-                    text[t] = "<span class='token pointer' orig='"+text[t]+"' id='"+tokid+"'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer' orig=\""+text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
                 }
             }
         }

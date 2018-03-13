@@ -96,19 +96,28 @@ public class Dictionary extends HashMap<String, List<String>> {
     /**
      * This saves the user-generated pairs to file.
      */
-    public void save() throws IOException {
+    public void save(String username) throws IOException {
         if(this.dictpath != null) {
             List<String> outlines = newpairs.stream().map(p -> p.getFirst() + "\t" + p.getSecond()).collect(toList());
-            LineIO.write(this.dictpath + ".user", outlines);
+            LineIO.write(this.dictpath + "." + username, outlines);
+        }else{
+            logger.error("dictpath is null! nothing is being saved!");
         }
     }
 
     /**
      * Just load an empty dictionary.
      */
-    public Dictionary(){}
+    public Dictionary(){
+        this.newpairs = new ArrayList<>();
 
-    public Dictionary(String dictname, String dictpath) {
+        this.dictpath = "/tmp/dictionary.txt";
+        logger.info("Empty dictionary has been created. Path is: " + this.dictpath);
+        logger.warn("It is highly recommended to include the dictionary path in your config file.");
+
+    }
+
+    public Dictionary(String dictname, String dictpath, String username) {
 
 
         this.newpairs = new ArrayList<>();
@@ -173,10 +182,10 @@ public class Dictionary extends HashMap<String, List<String>> {
         // Also read the user generated pairs.
         ArrayList<String> userlines = new ArrayList<>();
         try {
-            userlines = LineIO.read(dictpath + ".user");
+            userlines = LineIO.read(dictpath + "." + username);
         } catch (IOException e) {
             // an empty dictionary is a graceful failure.
-            logger.info("User dictionary file not found: " + dictpath + ".user. User dictionary is empty.");
+            logger.info("User dictionary file not found: " + dictpath + "." + username +". User dictionary is empty.");
         }
         for(String line : userlines) {
             String[] sline = line.split("\t");
@@ -193,7 +202,7 @@ public class Dictionary extends HashMap<String, List<String>> {
 
     public static void main(String[] args) throws IOException {
         //Dictionary d = new Dictionary("whatevs", "/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
-        Dictionary d = new Dictionary("whatevs", "/home/mayhew/IdeaProjects/ner-annotation/bendict.txt");
+        Dictionary d = new Dictionary("whatevs", "/home/mayhew/IdeaProjects/ner-annotation/bendict.txt", "testuser");
     }
 
 

@@ -191,9 +191,6 @@ $(document).ready(function() {
                 }
             });
 
-
-
-
             $.ajax({
                 method: "POST",
                 url: "/stats/getstats",
@@ -245,6 +242,16 @@ $(document).ready(function() {
     $("#loadtokbutton").click(function(){
         loadtok();
     });
+
+    // when the doc loads, get the top stats.
+    $.ajax({
+        method: "POST",
+        url: "/stats/gettopstats",
+        data: {alltext: getalltext()}
+    }).done(function (msg) {
+        $("#infobox").html(msg);
+    });
+
 
     // this runs when you click on a single button.
     $("body").on("click", '.popover button', function(event){
@@ -420,4 +427,6 @@ $(document).ready(function() {
 
     };
     $( "#savebutton" ).click(save);
+    $( ".saveclass" ).click(save);
+
 });
