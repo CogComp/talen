@@ -37,6 +37,8 @@ import javax.servlet.http.HttpSession;
 import javax.xml.soap.Text;
 import java.io.*;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -323,6 +325,12 @@ public class DocumentController {
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
+        String logpath = ".";
+        String logfile= String.format("%s/%s-%s.log", logpath, dataname,username);
+        hs.setAttribute("logfile", logfile);
+
+        logger.info("Writing to logfile: " + logfile);
+
         hs.setAttribute("ramdirectory", new RAMDirectory());
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
@@ -339,6 +347,22 @@ public class DocumentController {
 
         return "redirect:/document/annotation/";
     }
+
+    public static void logwrite(String msg, HttpSession hs){
+        SessionData sd = new SessionData(hs);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String time = dateFormat.format(date);
+
+        msg = time + "\t" + msg;
+        try {
+            LineIO.append(sd.logfile, msg);
+        } catch (IOException e) {
+            logger.error("Cannot log to: " + sd.logfile);
+            e.printStackTrace();
+        }
+    }
+
 
     @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
@@ -484,6 +508,7 @@ public class DocumentController {
         logger.info("Setting name to: " + user.getName());
         // Just make sure everything is clear first... just in case.
         logger.info("Logging in!");
+        logwrite("Logging in!", hs);
         hs.removeAttribute("username");
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
@@ -695,16 +720,14 @@ public class DocumentController {
             return "redirect:document/annotation";
         }
 
+        logwrite(String.format("Viewing page with taid: %s", taid), hs);
+
         TextAnnotation ta = tas.get(taid);
 
         model.addAttribute("ta", ta);
 
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
-        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
-        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
-        logger.info("Num Constituents: " + ner.getConstituents().size());
-        logger.info("Constituents: " + ner.getConstituents());
 
         // set up the html string.
         String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
@@ -841,6 +864,7 @@ public class DocumentController {
             } else{
                 Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
                 ner.addConstituent(newc);
+                logwrite(String.format("%s span (%s-%s) to label: %s", idstring, span.getFirst(),span.getSecond(), label), hs);
             }
         }
 
@@ -857,6 +881,7 @@ public class DocumentController {
     public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="sentid") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
+        logwrite(String.format("%s tokenid (%s) remove label", idstring, tokid), hs);
 
         int tokint= Integer.parseInt(tokid);
         Pair<Integer, Integer> tokspan = new Pair<>(tokint, tokint+1);

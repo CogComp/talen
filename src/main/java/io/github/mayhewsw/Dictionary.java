@@ -85,7 +85,8 @@ public class Dictionary extends HashMap<String, List<String>> {
         if(!this.containsKey(key)){
             this.put(key, new ArrayList<>());
         }
-        this.get(key).add(def);
+        // always add to the front of the list.
+        this.get(key).add(0, def);
 
         if(isnew) {
             this.newpairs.add(new Pair<>(key, def));

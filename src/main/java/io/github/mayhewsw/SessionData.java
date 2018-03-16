@@ -36,6 +36,7 @@ public class SessionData {
     public String indexpath;
 
     public HashMap<String, Group> groups;
+    public String logfile;
 
     public SessionData(HttpSession hs){
 
@@ -65,6 +66,8 @@ public class SessionData {
         //annosents = (HashMap<String, HashSet<String>>) hs.getAttribute("annosents");
 
         groups = (HashMap<String, Group>) hs.getAttribute("groups");
+
+        logfile = (String) hs.getAttribute("logfile");
 
     }
 

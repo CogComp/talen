@@ -1,5 +1,0 @@
-name	Bengali
-folderpath	/shared/corpora/ner/lorelei/bn/Train-anno-urom
-labels	LOC:greenyellow PER:yellow ORG:lightblue
-nerconfig	/home/mayhew/IdeaProjects/cogcomp-nlp/ner/config/tacl/bn.config
-dictionary	bendict.txt

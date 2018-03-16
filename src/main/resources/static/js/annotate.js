@@ -19,7 +19,6 @@ $(document).ready(function() {
     function resetrange(){
         range = {start:-1, end:-1, id:""};
         highlightrange();
-
     }
 
     // This retrieves the text within a range. If the range
@@ -161,6 +160,7 @@ $(document).ready(function() {
                 console.log("extraneous click");
                 $("[id^=tok]").popover("hide");
                 resetrange();
+                showtopstats();
             }
         });
 
@@ -178,26 +178,28 @@ $(document).ready(function() {
             if(event.which == 1) {
                 $("[id^=tok]").not($(this)).popover('hide');
                 $(this).popover("toggle");
+
+
+                highlighting = false;
+
+                // put focus on the dictionary entry element.
+                cursorFocus(document.getElementById("definput"));
+                $(".enter").keydown(function (event) {
+                    var keypressed = event.keyCode || event.which;
+                    if (keypressed == 13) {
+                        submitdict();
+                    }
+                });
+
+                $.ajax({
+                    method: "POST",
+                    url: "/stats/getstats",
+                    data: {text: gettextinrange(), alltext: getalltext()}
+                }).done(function (msg) {
+                    $("#infobox").html(msg);
+                });
             }
 
-            highlighting = false;
-
-            // put focus on the dictionary entry element.
-            cursorFocus(document.getElementById("definput"));
-            $(".enter").keydown(function (event) {
-                var keypressed = event.keyCode || event.which;
-                if (keypressed == 13) {
-                    submitdict();
-                }
-            });
-
-            $.ajax({
-                method: "POST",
-                url: "/stats/getstats",
-                data: {text: gettextinrange(), alltext: getalltext()}
-            }).done(function (msg) {
-                $("#infobox").html(msg);
-            });
 
         });
 
@@ -244,13 +246,17 @@ $(document).ready(function() {
     });
 
     // when the doc loads, get the top stats.
-    $.ajax({
-        method: "POST",
-        url: "/stats/gettopstats",
-        data: {alltext: getalltext()}
-    }).done(function (msg) {
-        $("#infobox").html(msg);
-    });
+    function showtopstats() {
+        $.ajax({
+            method: "POST",
+            url: "/stats/gettopstats",
+            data: {alltext: getalltext()}
+        }).done(function (msg) {
+            $("#infobox").html(msg);
+        });
+    }
+
+    showtopstats();
 
 
     // this runs when you click on a single button.
@@ -276,6 +282,7 @@ $(document).ready(function() {
 
         $("[id^=tok]").popover("hide");
         resetrange();
+        showtopstats();
 
         addlabel(sentid, startid, endid, buttonvalue);
     });
@@ -292,7 +299,7 @@ $(document).ready(function() {
         var tokid = "tok-" + docid + "-" + range.start ;
 
         var el = document.getElementById(tokid)
-        var key = $(el).text()
+        var key = $(el).attr("orig");
         var val = $("#definput").val();
 
         $("[id^=tok]").popover("hide");
