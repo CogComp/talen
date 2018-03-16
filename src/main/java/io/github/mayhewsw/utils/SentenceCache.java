@@ -5,7 +5,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import io.github.mayhewsw.SentenceController;
+import io.github.mayhewsw.controllers.SentenceController;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -49,7 +49,8 @@ public class SentenceCache extends HashMap<String, Constituent> {
         this.alltexts = new HashMap<>();
         this.sentid2text = new HashMap<>();
         this.sentid2origtext = new HashMap<>();
-        
+
+
         IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get(indexdir)));
         searcher = new IndexSearcher(reader);
     }

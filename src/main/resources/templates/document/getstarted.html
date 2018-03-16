@@ -1,34 +1,71 @@
 <!DOCTYPE HTML>
-<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="document/doc-base">
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{document/doc-base}">
 <head>
-    <title>YOUR TITLE HERE</title>
+    <title>Documents</title>
 </head>
 <body>
 
+
+
+
 <div layout:fragment="content">
-<div class="container">
-    <h3>Let's get started</h3>
+    <div class="container">
+        <script>
+            $(document).ready(function($) {
+                $(".clickable-row").click(function() {
+                    window.location = $(this).data("href");
+                });
+            });
+        </script>
 
-    Green rows are documents you have seen and saved.
 
-    <!--<a class="btn btn-primary" href="/annotation?taid=0&amp;cid=0" >Let's go!</a>-->
+        <h3>Let's get started</h3>
 
-    <table class="table">
-        <tr>
-            <th>ID</th>
-            <th>Num Labels</th>
-            <th>Text annotation</th>
-        </tr>
-        <tr th:each="key : ${tamap.keySet()}" class="" th:classappend="${annotatedfiles.contains(key)} ? success : none">
-            <td th:text="${key}"></td>
-            <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
-            <td><a href="#" th:href="@{/document/annotation(taid=${key})}" th:text="${tamap.get(key).getText().substring(0,2)}"></a></td>
-        </tr>
-    </table>
+        <div class="card-deck">
 
-</div>
+            <div class="card">
+                <div class="card-header">
+                    Info
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Green rows are documents you have seen and saved. Click on a row to see that document.</p>
+
+                </div>
+            </div>
+
+            <div th:if="${stats != null}" class="card">
+                <div class="card-header">
+                    Corpus Statistics
+                </div>
+                <ul class="list-group list-group-flush">
+                    <small><li th:each="line : ${stats}" th:text="${line}" class="list-group-item"></li></small>
+                </ul>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <table class="table table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Num Labels</th>
+                <th>Text annotation</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="key : ${tamap.keySet()}" class="clickable-row" th:classappend="${annotatedfiles.contains(key)} ? table-success : none" th:data-href="@{/document/annotation(taid=${key})}">
+                <td th:text="${key}"></td>
+                <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
+                <td th:text="${tamap.get(key).getText().split(' ')[0]}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
 </div>
 </body>
 
 
 </html>
+

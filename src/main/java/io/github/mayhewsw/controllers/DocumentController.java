@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.controllers;
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
@@ -9,6 +9,8 @@ import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import io.github.mayhewsw.*;
+import io.github.mayhewsw.utils.HtmlGenerator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -32,9 +34,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.xml.soap.Text;
 import java.io.*;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This contains the main logic of the whole thing.
@@ -73,6 +79,8 @@ public class DocumentController {
 
             System.out.println(f);
             Properties prop = new Properties();
+            // there's probably a better way to set defaults...
+            prop.setProperty("type", FOLDERCONLL);
 
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
@@ -99,7 +107,7 @@ public class DocumentController {
         model.addAttribute("user", new User());
 
         if(hs.getAttribute("dict") == null) {
-            hs.setAttribute("dict", new Dictionary());
+            hs.setAttribute("dict", new io.github.mayhewsw.Dictionary());
         }
         return "document/home";
     }
@@ -118,14 +126,15 @@ public class DocumentController {
     public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username) throws Exception {
 
         Properties props = datasets.get(dataname);
-        String folderurl = props.getProperty("path");
+        String folderurl = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
+
 
         File f = new File(folderurl);
 
         // This will be ordered by it's keys.
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
-
+        TextStatisticsController.resetstats();
         if(foldertype.equals(FOLDERTA)) {
             String[] files = f.list();
             int limit = Math.min(files.length, 500);
@@ -140,6 +149,7 @@ public class DocumentController {
                 TextAnnotation ta = cnl.next();
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
+                TextStatisticsController.updateCounts(ta.getTokenizedText());
             }
         }
 
@@ -260,7 +270,7 @@ public class DocumentController {
         String username = sd.username;
 
         Properties prop = datasets.get(dataname);
-        String folderpath = prop.getProperty("path");
+        String folderpath = prop.getProperty("folderpath");
 
         String labelsproperty = prop.getProperty("labels");
         labels = new ArrayList<>();
@@ -273,35 +283,16 @@ public class DocumentController {
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
-
         String dictpath = prop.getProperty("dictionary");
-        Dictionary dict;
+        io.github.mayhewsw.Dictionary dict;
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
-            dict = new Dictionary(dataname, dictpath);
-            hs.setAttribute("dict", dict);
-
-            // TODO: also load the user dictionary.
-
+            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath, sd.username);
         }else{
             logger.info("No dictionary specified.");
-            dict = new Dictionary();
+            dict = new io.github.mayhewsw.Dictionary();
         }
-
-        // check to see if there are dictionary created by the user, in file dict-dataname-username.txt.
-        String folderparent = (new File(folderpath)).getParent();
-        File dictfile = new File(folderparent, "dict-" + dataname + "-" + username + ".txt");
-        if(dictfile.exists()){
-            // open and read
-            for(String dictline : LineIO.read(dictfile.getAbsolutePath())){
-                String[] kv = dictline.split("\t");
-                if(kv.length == 2) {
-                    dict.add(kv[0], kv[1]);
-                }
-            }
-        }else{
-            logger.error("COULD NOT FIND DICT FILE: " + dictfile.getAbsolutePath());
-        }
+        hs.setAttribute("dict", dict);
 
 
         // this ensures that the suffixes item is never null.
@@ -316,6 +307,7 @@ public class DocumentController {
         }
 
         // check to see if there are suffixes created by the user, in file suffixes-username.txt.
+        String folderparent = (new File(folderpath)).getParent();
         File suffixfile = new File(folderparent, "suffixes-" + username + ".txt");
         if(suffixfile.exists()){
             // open and read
@@ -333,6 +325,12 @@ public class DocumentController {
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
 
+        String logpath = ".";
+        String logfile= String.format("%s/%s-%s.log", logpath, dataname,username);
+        hs.setAttribute("logfile", logfile);
+
+        logger.info("Writing to logfile: " + logfile);
+
         hs.setAttribute("ramdirectory", new RAMDirectory());
         hs.setAttribute("tas", tas);
         hs.setAttribute("dataname", dataname);
@@ -344,15 +342,31 @@ public class DocumentController {
         sd = new SessionData(hs);
 
         // not sure there is any point to this??
-        updateallpatterns(sd);
+        //updateallpatterns(sd);
         buildmemoryindex(sd);
 
         return "redirect:/document/annotation/";
     }
 
+    public static void logwrite(String msg, HttpSession hs){
+        SessionData sd = new SessionData(hs);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String time = dateFormat.format(date);
+
+        msg = time + "\t" + msg;
+        try {
+            LineIO.append(sd.logfile, msg);
+        } catch (IOException e) {
+            logger.error("Cannot log to: " + sd.logfile);
+            e.printStackTrace();
+        }
+    }
+
+
     @RequestMapping(value = "/save", method=RequestMethod.POST)
     @ResponseBody
-    public HashMap<String, Double> save(@RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs) throws IOException, ParseException {
+    public HashMap<String, Double> save(@RequestParam(value="sentids[]", required=true) String[] sentids, HttpSession hs) throws Exception {
 
         SessionData sd = new SessionData(hs);
 
@@ -361,7 +375,7 @@ public class DocumentController {
         String folder = sd.dataname;
 
         Properties props = datasets.get(folder);
-        String folderpath = props.getProperty("path");
+        String folderpath = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
 
         assert(sentids.length == 1);
@@ -383,6 +397,9 @@ public class DocumentController {
             }else if(foldertype.equals(FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
+
+            String config = sd.prop.getProperty("nerconfig");
+            //Sandbox.TrainAndAnnotate(config, outpath, tas);
 
         }
 
@@ -441,7 +458,7 @@ public class DocumentController {
                         // therefore: don't look at this document.
                         if(c.getTokenizedSurfaceForm().equals(text)){
                             add = false;
-                             break;
+                            break;
                         }
                     }
 
@@ -491,6 +508,7 @@ public class DocumentController {
         logger.info("Setting name to: " + user.getName());
         // Just make sure everything is clear first... just in case.
         logger.info("Logging in!");
+        logwrite("Logging in!", hs);
         hs.removeAttribute("username");
         hs.removeAttribute("dataname");
         hs.removeAttribute("tas");
@@ -532,7 +550,7 @@ public class DocumentController {
         // Load all annotated files so far.
         String dataname = sd.dataname;
         Properties props = datasets.get(dataname);
-        String folderpath = props.getProperty("path");
+        String folderpath = props.getProperty("folderpath");
         String username = sd.username;
 
         String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
@@ -544,10 +562,16 @@ public class DocumentController {
             annotatedfiles.addAll(Arrays.asList(f.list()));
         }
 
+        System.out.println(annotatedfiles);
+
         TreeMap<String, TextAnnotation> newtas = filterTA(query, sd);
 
         model.addAttribute("tamap", newtas);
         model.addAttribute("annotatedfiles", annotatedfiles);
+
+
+
+
         return "document/getstarted";
 
     }
@@ -622,7 +646,7 @@ public class DocumentController {
         Map.Entry<String, TextAnnotation> entry = sd.tas.firstEntry();
         TextAnnotation ta = entry.getValue();
 
-        String html = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
 
         model.addAttribute("html", html);
 
@@ -639,7 +663,7 @@ public class DocumentController {
         SessionData sd = new SessionData(hs);
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        Dictionary dict = sd.dict;
+        io.github.mayhewsw.Dictionary dict = sd.dict;
 
         Boolean showdefs = sd.showdefs;
 
@@ -655,7 +679,7 @@ public class DocumentController {
             // Load all annotated files so far.
             String dataname = sd.dataname;
             Properties props = datasets.get(dataname);
-            String folderpath = props.getProperty("path");
+            String folderpath = props.getProperty("folderpath");
             String username = sd.username;
 
             String outfolder = folderpath.replaceAll("/$","") + "-annotation-" + username + "/";
@@ -669,12 +693,34 @@ public class DocumentController {
 
             model.addAttribute("tamap", sd.tas);
             model.addAttribute("annotatedfiles", annotatedfiles);
+            List<String> stats = new ArrayList<>();
+            stats.add("Numdocs: " + sd.tas.size());
+            stats.add("Num annotated: " + annotatedfiles.size());
+
+            HashSet<String> surfaces = new HashSet<>();
+            int totalsurfaces = 0;
+            int totaltokens = 0;
+            for(TextAnnotation ta : sd.tas.values()){
+                totaltokens += ta.getTokens().length;
+                List<String> ret = ta.getView(ViewNames.NER_CONLL).getConstituents().stream().map(c -> c.getTokenizedSurfaceForm()).collect(Collectors.toList());
+                totalsurfaces += ret.size();
+                surfaces.addAll(ret);
+            }
+            stats.add("Total tokens: "+ totaltokens);
+            stats.add("Total entity surfaces: "+ totalsurfaces);
+            stats.add("Unique entity surfaces: "+ surfaces.size());
+
+
+            model.addAttribute("stats", stats);
+
             return "document/getstarted";
         }
 
         if(!tas.containsKey(taid)){
-            return "redirect:/unified-annotation";
+            return "redirect:document/annotation";
         }
+
+        logwrite(String.format("Viewing page with taid: %s", taid), hs);
 
         TextAnnotation ta = tas.get(taid);
 
@@ -682,13 +728,9 @@ public class DocumentController {
 
         View ner = ta.getView(ViewNames.NER_CONLL);
         View sents = ta.getView(ViewNames.SENTENCE);
-        logger.info(String.format("Viewing TextAnnotation (id=%s)", taid));
-        logger.info("Text (trunc): " + ta.getTokenizedText().substring(0, Math.min(20, ta.getTokenizedText().length())));
-        logger.info("Num Constituents: " + ner.getConstituents().size());
-        logger.info("Constituents: " + ner.getConstituents());
 
         // set up the html string.
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
         model.addAttribute("html", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -704,7 +746,6 @@ public class DocumentController {
         }
 
         model.addAttribute("labels", labels);
-
 
         HashMap<String, Integer> freqs = new HashMap<>();
         for(String word : ta.getTokens()){
@@ -735,7 +776,7 @@ public class DocumentController {
             model.addAttribute("engtext", file);
         }
 
-        return "unified-annotation";
+        return "document/annotation";
     }
 
     /**
@@ -767,7 +808,7 @@ public class DocumentController {
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+            String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
             return;
         }
 
@@ -823,6 +864,7 @@ public class DocumentController {
             } else{
                 Constituent newc = new Constituent(label, ViewNames.NER_CONLL, ta, span.getFirst(), span.getSecond());
                 ner.addConstituent(newc);
+                logwrite(String.format("%s span (%s-%s) to label: %s", idstring, span.getFirst(),span.getSecond(), label), hs);
             }
         }
 
@@ -836,16 +878,17 @@ public class DocumentController {
     @RequestMapping(value="/removetoken", method=RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="id") String idstring, HttpSession hs, Model model) throws Exception {
+    public String removetoken(@RequestParam(value="tokid") String tokid,  @RequestParam(value="sentid") String idstring, HttpSession hs, Model model) throws Exception {
 
         logger.info(String.format("TextAnnotation with id %s: remove token (id:%s).", idstring, tokid));
+        logwrite(String.format("%s tokenid (%s) remove label", idstring, tokid), hs);
 
         int tokint= Integer.parseInt(tokid);
         Pair<Integer, Integer> tokspan = new Pair<>(tokint, tokint+1);
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        Dictionary dict = sd.dict;
+        io.github.mayhewsw.Dictionary dict = sd.dict;
 
         Boolean showdefs = sd.showdefs;
 
@@ -880,7 +923,7 @@ public class DocumentController {
         // TODO: remove this because it is slow!!!
         //updateallpatterns(sd);
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
         return out;
     }
 
@@ -891,7 +934,7 @@ public class DocumentController {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        Dictionary dict = sd.dict;
+        io.github.mayhewsw.Dictionary dict = sd.dict;
         TextAnnotation ta = tas.get(idstring);
 
         Boolean showdefs = sd.showdefs;
@@ -903,24 +946,24 @@ public class DocumentController {
             ner.removeConstituent(c);
         }
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
         return out;
     }
 
     @RequestMapping(value="/toggledefs", method= RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value="taid") String taid, HttpSession hs) {
+    public String toggledefs(@RequestParam(value="idlist[]") String[] idlist, HttpSession hs) {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(taid);
+        TextAnnotation ta = tas.get(idlist[0]);
 
         Boolean showdefs = sd.showdefs;
         showdefs = !showdefs;
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
     }
 
     @RequestMapping(value="/addsuffix", method= RequestMethod.GET)
@@ -929,7 +972,7 @@ public class DocumentController {
 
         SessionData sd = new SessionData(hs);
         Properties prop = datasets.get(sd.dataname);
-        String folderpath = prop.getProperty("path");
+        String folderpath = prop.getProperty("folderpath");
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
         TextAnnotation ta = tas.get(taid);
@@ -960,7 +1003,7 @@ public class DocumentController {
 
         }
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
     }
 
 
@@ -976,7 +1019,7 @@ public class DocumentController {
 
         List<Suggestion> contextsuggestions = new ArrayList<>();
         if(sd.patterns != null) {
-             contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
+            contextsuggestions = FeatureExtractor.findfeatfires(ta, sd.patterns);
             suggestions.addAll(contextsuggestions);
         }
 
@@ -992,7 +1035,7 @@ public class DocumentController {
         String ret = "";
         for(String sentid : sentids){
             TextAnnotation ta = sd.tas.get(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(ta, sd.showdefs);
+            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
             ret += html + "\n";
         }
 

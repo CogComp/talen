@@ -14,22 +14,7 @@ public class Application extends WebMvcConfigurerAdapter {
     public static void main(String[] args) {
 
         SpringApplication app = new SpringApplication(Application.class);
-        // ... customize app settings here
-
         app.run(args);
-
-        //SpringApplication.run(Application.class, args);
     }
-
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-//        registry.addInterceptor(new SessionInterceptor());
-//    }
-
-
-//    @Bean
-//    public HttpSessionListener httpSessionListener(){
-//        return new SessionListener();
-//    }
 
 }

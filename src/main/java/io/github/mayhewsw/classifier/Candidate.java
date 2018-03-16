@@ -1,7 +1,5 @@
 package io.github.mayhewsw.classifier;
 
-import io.github.mayhewsw.BootstrapTest;
-import org.apache.catalina.startup.Bootstrap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.math3.util.IterationEvent;
 
@@ -11,7 +9,7 @@ import java.util.*;
  * Created by mayhew2 on 6/15/17.
  */
 public class Candidate {
-
+    public static final String punctuation = "!@#$%^&*()_-+=~`:;<>,./?|\\\"\'‹‹››،[]{}";
     public boolean isgood;
     public ArrayList<String> tokens;
     public HashMap<String, Double> contexts;
@@ -38,7 +36,7 @@ public class Candidate {
 
     public boolean haspunc(){
         for(String t : tokens){
-            if(BootstrapTest.punctuation.contains(t)){
+            if(punctuation.contains(t)){
                 return true;
             }
         }

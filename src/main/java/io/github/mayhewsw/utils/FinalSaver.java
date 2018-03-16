@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader.conllline;
-import static io.github.mayhewsw.SentenceController.getSentId;
+import static io.github.mayhewsw.controllers.SentenceController.getSentId;
 
 /**
  * This class is necessary because of the fact that most data we work with is non-Latin script, and we

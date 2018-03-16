@@ -17,27 +17,26 @@ import java.util.*;
  */
 public class SessionData {
 
-    HashMap<String, Bootstrap3> bs3map;
-    Dictionary dict;
-    String username;
-    Boolean showdefs;
-    TreeMap<String, TextAnnotation> tas;
-    String dataname;
-    HashMap<Pair<String, String>, Double> patterns;
-    RAMDirectory ramDirectory;
+    public Dictionary dict;
+    public String username;
+    public Boolean showdefs;
+    public TreeMap<String, TextAnnotation> tas;
+    public String dataname;
+    public HashMap<Pair<String, String>, Double> patterns;
+    public RAMDirectory ramDirectory;
 
-    ArrayList<String> suffixes;
-    Properties prop;
+    public ArrayList<String> suffixes;
+    public Properties prop;
 
-    SentenceCache cache;
+    public SentenceCache cache;
     //HashMap<String, Group> annosents;
 
-    HashMap<String, Set<String>> contexts;
-    List<String> labels;
-//    String folderpath;
-    String indexpath;
+    public HashMap<String, Set<String>> contexts;
+    public List<String> labels;
+    public String indexpath;
 
-    HashMap<String, Group> groups;
+    public HashMap<String, Group> groups;
+    public String logfile;
 
     public SessionData(HttpSession hs){
 
@@ -68,7 +67,7 @@ public class SessionData {
 
         groups = (HashMap<String, Group>) hs.getAttribute("groups");
 
-        bs3map = (HashMap<String, Bootstrap3>) hs.getAttribute("bs3map");
+        logfile = (String) hs.getAttribute("logfile");
 
     }
 

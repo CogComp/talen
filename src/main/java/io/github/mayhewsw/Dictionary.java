@@ -67,37 +67,59 @@ public class Dictionary extends HashMap<String, List<String>> {
     }
 
     /**
-     * Add a definition to this dictionary.
+     * Syntactic sugar. Just calls add(key, def, isnew) with isnew set to true
      * @param key
      * @param def
      */
     public void add(String key, String def){
+        add(key, def, true);
+    }
+
+    /**
+     * Add a definition to this dictionary.
+     * @param key
+     * @param def
+     * @param isnew defines whether or not it should be added to the user dictionary list
+     */
+    public void add(String key, String def, boolean isnew){
         if(!this.containsKey(key)){
             this.put(key, new ArrayList<>());
         }
-        this.get(key).add(def);
+        // always add to the front of the list.
+        this.get(key).add(0, def);
 
-        this.newpairs.add(new Pair<>(key, def));
+        if(isnew) {
+            this.newpairs.add(new Pair<>(key, def));
+        }
 
     }
 
     /**
      * This saves the user-generated pairs to file.
      */
-    public void save() throws IOException {
+    public void save(String username) throws IOException {
         if(this.dictpath != null) {
             List<String> outlines = newpairs.stream().map(p -> p.getFirst() + "\t" + p.getSecond()).collect(toList());
-            LineIO.write(this.dictpath + ".user", outlines);
+            LineIO.write(this.dictpath + "." + username, outlines);
+        }else{
+            logger.error("dictpath is null! nothing is being saved!");
         }
     }
 
     /**
      * Just load an empty dictionary.
      */
-    public Dictionary(){}
+    public Dictionary(){
+        this.newpairs = new ArrayList<>();
 
-    public Dictionary(String dictname, String dictpath) {
-        // TODO: also read the user generated pairs.
+        this.dictpath = "/tmp/dictionary.txt";
+        logger.info("Empty dictionary has been created. Path is: " + this.dictpath);
+        logger.warn("It is highly recommended to include the dictionary path in your config file.");
+
+    }
+
+    public Dictionary(String dictname, String dictpath, String username) {
+
 
         this.newpairs = new ArrayList<>();
 
@@ -107,7 +129,7 @@ public class Dictionary extends HashMap<String, List<String>> {
         ArrayList<String> dictlines = null;
 
         try {
-            dictlines = LineIO.readGZip(dictpath);
+            dictlines = LineIO.read(dictpath);
         } catch (IOException e) {
             // an empty dictionary is a graceful failure.
             logger.info("Dictionary file not found: "+dictpath+". Dictionary is empty.");
@@ -116,13 +138,14 @@ public class Dictionary extends HashMap<String, List<String>> {
 
         // I want a dictionary that maps from foreign->english.
 
+        // This keeps track of pair counts, so we can sort according to popularity.
         HashMap<Pair<String, String>, Integer> pairs = new HashMap<>();
 
         logger.info("Loading dictionary...");
         for(String line : dictlines){
             String[] sline = line.split("\t");
             String f = sline[0];
-            String e = sline[5];
+            String e = sline[1];
 
             Pair<String, String> ef = new Pair<>(e,f);
             Pair<String, String> eflower = new Pair<>(e.toLowerCase(),f.toLowerCase());
@@ -137,22 +160,7 @@ public class Dictionary extends HashMap<String, List<String>> {
             }
 
             // actually add to dictionary.
-            if(!this.containsKey(f)){
-                this.put(f, new ArrayList<>());
-            }
-            // don't include duplicates.
-            if(!this.get(f).contains(e)) {
-                this.get(f).add(e);
-            }
-
-            // and the lowercase version. this is tedious.
-            if(!this.containsKey(f.toLowerCase())){
-                this.put(f.toLowerCase(), new ArrayList<>());
-            }
-            // don't include duplicates
-            if(!this.get(f.toLowerCase()).contains(e.toLowerCase())) {
-                this.get(f.toLowerCase()).add(e.toLowerCase());
-            }
+            this.add(f, e, false);
 
         }
 
@@ -160,8 +168,7 @@ public class Dictionary extends HashMap<String, List<String>> {
         for(String k : this.keySet()){
             // scores gathers
 
-            Comparator<Pair<String, Integer>> comparator =
-                    (p1, p2) -> p1.getSecond().compareTo(p2.getSecond());
+            Comparator<Pair<String, Integer>> comparator = Comparator.comparing(Pair::getSecond);
 
             List<String> sortedpairs = this.get(k).stream()
                     .map(w -> new Pair<>(w, k))
@@ -171,15 +178,32 @@ public class Dictionary extends HashMap<String, List<String>> {
                     .collect(toList());
 
             this.put(k, sortedpairs);
-
         }
+
+        // Also read the user generated pairs.
+        ArrayList<String> userlines = new ArrayList<>();
+        try {
+            userlines = LineIO.read(dictpath + "." + username);
+        } catch (IOException e) {
+            // an empty dictionary is a graceful failure.
+            logger.info("User dictionary file not found: " + dictpath + "." + username +". User dictionary is empty.");
+        }
+        for(String line : userlines) {
+            String[] sline = line.split("\t");
+            String f = sline[0];
+            String e = sline[1];
+
+            this.add(f, e, true);
+        }
+
 
         logger.info("Done loading dictionary.");
     }
 
 
     public static void main(String[] args) throws IOException {
-        Dictionary d = new Dictionary("whatevs", "/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
+        //Dictionary d = new Dictionary("whatevs", "/shared/experiments/mayhew2/lexicons/spa-eng.masterlex.txt.gz");
+        Dictionary d = new Dictionary("whatevs", "/home/mayhew/IdeaProjects/ner-annotation/bendict.txt", "testuser");
     }
 
 

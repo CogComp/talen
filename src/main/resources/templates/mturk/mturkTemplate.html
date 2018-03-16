@@ -1,0 +1,234 @@
+<!-- HIT template: Writing-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
+<meta content="width=device-width,initial-scale=1" name="viewport" />
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous" />
+<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />-->
+
+<script src="https://use.fontawesome.com/abbf5a27e7.js"></script>
+
+<link rel="stylesheet" href="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/css/style.css" />
+
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+
+<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate-local.js"></script>
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#submitButton").click(function () {
+
+            var ret = {};
+
+            var html0 = $("#id0");
+            var spanslabels0 = getspanslabels(html0);
+            console.log(spanslabels0);
+            ret["id0"] = spanslabels0;
+
+            var html1 = $(document.getElementById("${DOCID}"));
+            var spanslabels1 = getspanslabels(html1);
+            console.log(spanslabels1);
+            ret["${DOCID}"] = spanslabels1;
+
+            $("#finalsubmission").val(JSON.stringify(ret));
+        });
+
+        $("#testButton").click(function () {
+            var html0 = $("#id0");
+            var spanslabels0 = getspanslabels(html0);
+
+            $("#id0card").removeClass("border-danger");
+            $("#testButton").removeClass("btn-primary btn-danger btn-success");
+
+            if(spanslabels0.length == 1 && spanslabels0[0] == "PER-4-6"){
+                console.log("GOOD!")
+                $("#id0card").addClass("border-success");
+                $("#testButton").addClass("btn-success").text("Correct!");
+                $(document.getElementById("${DOCID}")).show();
+            }else{
+                console.log("FAILED THE TEST!");
+                $("#id0card").addClass("border-danger");
+                $("#testButton").addClass("btn-danger").text("Wrong! Try again");
+            }
+        });
+
+    });
+</script>
+
+<style>
+    .${LABEL1}{ background-color: greenyellow; }
+    .${LABEL2}{ background-color: yellow; }
+    .${LABEL3}{ background-color: lightblue; }
+</style>
+
+<section class="container" id="Writing">
+
+    <div class="row">
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-md-12" id="instructions">
+                    <div class="card border-dark mb-3">
+                        <div class="card-header">
+                            <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Instructions! (click to expand/collapse)
+                            </a>
+                        </div>
+                        <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
+                            <div class="card-body">
+
+                                <p>Please read these instructions carefully, and <b>complete the test at the bottom.</b></p>
+
+                                <!--<p>This task is only for non-speakers of ${LANGUAGE}. If you speak ${LANGUAGE}, please do not accept this HIT.-->
+                                    <!--Non-speakers: don't worry if you can't understand the text. We have written it in Latin script so you-->
+                                    <!--can read it. </p>-->
+
+
+                                <!--<h4>The Task</h4>-->
+                                <!--<p>The goal of this task is to have non-speakers of-->
+                                    <!--<a href="https://en.wikipedia.org/wiki/${LANGUAGE}_language" target="_blank">${LANGUAGE}</a> find names in-->
+                                    <!--text, and annotate them as one of:</p>-->
+                                <!--<ul>-->
+                                    <!--<li><span class="cons ${LABEL1}">Location</span>, examples: Jerusalem, Atlantic Ocean, Pakistan, Europe, Kansas</li>-->
+                                    <!--<li><span class="cons ${LABEL2}">Person</span>, examples: Donald Rumsfeld, Saddam Hussein, George Bush</li>-->
+                                    <!--<li><span class="cons ${LABEL3}">Organization</span>, examples: United Nations, UNESCO, BBC, ABC News</li>-->
+                                <!--</ul>-->
+
+                                <!--Some tips:-->
+                                <!--<ul>-->
+                                    <!--<li>Do not include titles in person tags (titles such as president, secretary, Mr.)</li>-->
+                                    <!--<li>*Do* tag last names even when they appear alone (e.g. Hussein)</li>-->
+                                    <!--<li><b>Important: only tag something if you are sure that it is a name.</b> If you are not sure, leave it untagged.</li>-->
+                                <!--</ul>-->
+
+                                <!--<p>Example (includes Pakistan president Pervez Musharraf):</p>-->
+
+                                <!--<div class="card">-->
+                                    <!--<div class="card-body">-->
+                                        <!--<span class="card-text">-->
+                                            <!--<span class="cons LOC">paakistaanera</span> presiddentta <span class="cons PER">paarabhheja mushaararapha</span> maatra egaara dinera...-->
+                                        <!--</span>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                                <!--<div class="spacer"></div>-->
+
+                                <!--<h4>Strategies</h4>-->
+
+                                <!--<p>Annotating a language you do not speak or understand can be difficult. Some strategies to help:</p>-->
+
+                                <!--<ul>-->
+                                    <!--<li>Read the text out loud, and listen for words that sound familiar</li>-->
+                                    <!--<li>These documents are from 2000-2004 (as suggested in the title). Use this to guess at names.</li>-->
+                                    <!--<li>Guess at what other names might be present (e.g. if Kofi Annan, then look for UN)</li>-->
+                                    <!--<li>Look for words that look unusual in context</li>-->
+                                    <!--<li>A common pattern is "LOC/ORG president PER", as in "German president Johannes Rau"</li>-->
+                                    <!--<li>Look for repeated patterns in the document</li>-->
+                                    <!--<li>Feel free to use Google any way you like.</li>-->
+                                    <!--<li>There is a learning curve. Once you get the hang of the task, the next few documents will be easier!</li>-->
+                                <!--</ul>-->
+
+                                <!--<p>Some documents may have no names, but please look very carefully for at least 1 minute. <b>We will-->
+                                    <!--automatically reject empty documents that took less than 1 minute to annotate</b>. We will also give-->
+                                    <!--a bonus for high accuracy annotations.</p>-->
+
+                                <h4>The Tool</h4>
+                                How to annotate:
+                                <ul>
+                                    <li>Click on a token to open a selection popover</li>
+                                    <li>Select the appropriate tag from the popover</li>
+                                    <li>Click anywhere to make the popover go away</li>
+                                    <li>Click and drag to select a span</li>
+                                    <li>Right click to remove a label (one token at a time)</li>
+                                </ul>
+
+                                <h4>Test</h4>
+                                <p>Annotate this sentence correctly based on the instructions above.</p>
+                                <div class="card w-50" id="id0card">
+                                    <div class="card-body text" id="id0">
+                                        <p id="p0">
+                                            <span class='token pointer' id='tok-id0-0'>My</span><span class='token pointer' id='tok-id0-1'>name</span><span class='token pointer' id='tok-id0-2'>is</span><span class='token pointer' id='tok-id0-3'>Mr.</span><span class='token pointer' id='tok-id0-4'>John</span><span class='token pointer' id='tok-id0-5'>Smith</span><span class='token pointer' id='tok-id0-6'>.</span>
+                                        </p>
+                                    </div>
+                                    <button type="button" id="testButton" class="btn btn-primary pointer">Test</button>
+                                </div>
+
+
+                                <div class="spacer"></div>
+
+                                <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    Collapse instructions.
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="col-md-12" id="htmlcontainer1">
+                    <div class="card">
+                        <div class="card-header">${DOCID} - complete the test to show</div>
+                        <div class="card-body text" style="display:none;" id="${DOCID}">
+                            ${HTMLTEXT}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="text" id="finalsubmission" name="finalsubmission" style="display:none;" />
+                        <!--<button type="button" id="submitButton" class="btn btn-primary pointer">Submit</button>-->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-2">
+            <!--<div class="form-group">-->
+            <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
+            <!--</div>-->
+
+        </div>
+    </div>
+
+    <template id="buttons">
+        <div class="container-fluid">
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL1}" class="btn pointer btn-light labelbutton ${LABEL1}" field="${LABEL1}" value="${LABEL1}">${LABEL1}</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL2}" class="btn pointer btn-light labelbutton ${LABEL2}" field="${LABEL2}" value="${LABEL2}">${LABEL2}</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="${LABEL3}" class="btn pointer btn-light labelbutton ${LABEL3}" field="${LABEL3}" value="${LABEL3}" >${LABEL3}</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</section>
+
+
+
+

@@ -58,6 +58,10 @@
     color: lightgray;
 }
 
+.clickable-row {
+    cursor: pointer;
+}
+
 #legendcontainer {
     padding: 7px;
 }
@@ -111,6 +115,10 @@ body {
     font-weight: bold;
 }
 
+.highlightsingle {
+    border: lightgray solid 1px;
+    border-radius: 3px;
+}
 
 .highlightstart {
     border-right: none;

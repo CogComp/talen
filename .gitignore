@@ -11,6 +11,9 @@ log-spring.out
 
 # automatically generated annotation folders
 *-annotation-*
+*-sentanno-*
+
+*DS_Store
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
@@ -22,3 +25,7 @@ log-spring.out
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+data/train*
+wishlist.txt
+*lbjava*
