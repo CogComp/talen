@@ -393,7 +393,7 @@ public class Bootstrap3 {
         Iterator<Map.Entry<String, Double>> iter = sorted.entrySet().iterator();
 
         String ctx = iter.next().getKey();
-        while(contexts.contains(ctx) || ctx.split("@")[1].length() < 5 || notcontexts.contains(ctx)){
+        while(contexts.contains(ctx) || ctx.split("@")[1].length() < 3 || notcontexts.contains(ctx)){
             ctx = iter.next().getKey();
         }
         logger.debug("Going to add: " + ctx);
@@ -403,16 +403,18 @@ public class Bootstrap3 {
 
     public static void main(String[] args) throws IOException {
 
-        String filedir = "data/train-short/";
-        String indexdir = "data/train-short-indexsent4/";
+        String d = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/il6/";
+        String filedir = d + "conll-set0/";
+        String indexdir = d + "conll-set0-indexsent/";
 
         SentenceCache sc = new SentenceCache(filedir,indexdir);
 
         Bootstrap3 bt = new Bootstrap3(sc);
 
         HashSet<String> names = new HashSet<>();
-        names.add("Pete Sampras");
-        names.add("Ronald Reagan");
+        names.add("Muktaar Kadir");
+        names.add("Galaasaa Dilboo");
+        names.add("Dawud Ibsaa");
 
         HashSet<String> contexts = new HashSet<>();
 
