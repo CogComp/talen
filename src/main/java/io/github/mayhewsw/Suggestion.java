@@ -10,9 +10,9 @@ import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
  */
 public class Suggestion {
 
-    String label;
-    String reason;
-    IntPair span;
+    public String label;
+    public String reason;
+    public IntPair span;
 
     public Suggestion(IntPair span, String label, String reason){
         this.span = span;

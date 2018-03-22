@@ -1,0 +1,116 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{sentence/sent-base}">
+<head>
+    <title>Documents</title>
+</head>
+<body>
+
+
+
+
+<div layout:fragment="content">
+    <div class="container">
+
+        <h3>Let's get started</h3>
+
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="nav-item"><a href="#unanno" class="nav-link active" aria-controls="unanno" role="tab" data-toggle="tab">Unannotated</a></li>
+            <li class="nav-item" role="presentation"><a href="#anno" class="nav-link" aria-controls="anno" role="tab" data-toggle="tab">Annotated</a></li>
+            <!--<li class="nav-item" role="presentation"><a href="#suggestions" class="nav-link" aria-controls="suggestions" role="tab" data-toggle="tab">Suggestions</a></li>-->
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <!-- This set of sentences is all unannotated -->
+            <div role="tabpanel" class="tab-pane active" id="unanno">
+
+                <div class="spacer"></div>
+
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="list-group">
+                            <div th:each="groupid : ${unannogroups.keySet()}" class="list-group-item flex-column">
+
+                                <div class="d-flex">
+
+                                    <a th:href="'/sentence/annotation?groupid=' + ${groupid}" class="mr-1"><span th:text="${groupid}" class="list-group-item-heading"></span></a>
+                                    <span class="mr-auto" th:text="'(' + ${unlabeledamount.get(groupid)} + '/' + ${unannogroups.get(groupid).size()} + ' unlabeled)'"></span>
+
+                                    <a th:each="label : ${labels}"
+                                       th:href="@{/sentence/addtextsave(text=${groupid},label=${label},groupid=${groupid})}"
+                                       th:class="${label} + ' btn btn-outline-secondary btn-sm ml-1'"
+                                       th:classappend="${session.groups.get(groupid).maxType()} == ${label} ? bestlabel : ignorelabel"
+                                       th:text="${label}"></a>
+                                    <a th:href="@{/sentence/removeterm(term=${groupid})}" class="btn btn-outline-secondary btn-sm ml-1" th:text="Remove"></a>
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="spacer"></div>
+                        <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
+                        <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
+                        <p th:text="'Num anno sents: ' + ${numannosents}"></p>
+                        <p th:text="'Num sents in groups: ' + ${numsentsingroups}"></p>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- This set of sentences is all annotated -->
+            <div role="tabpanel" class="tab-pane" id="anno">
+
+                <div class="spacer"></div>
+
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="list-group">
+                            <a th:each="groupid : ${annogroups.keySet()}" th:href="'/sentence/annotation?groupid=' + ${groupid}" class="list-group-item">
+                                <h6 th:text="${groupid} + ', Label: ' + ${session.groups.get(groupid).maxType()} + ' (' + ${annogroups.get(groupid).size()} + ' sentences)'" class="list-group-item-heading"></h6>
+                                <!--<p th:text="${annogroups.get(groupid).get(0)}" class="list-group-item-text"></p>-->
+
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="button" class="btn btn-default">Write out to file</button>
+                        <div class="spacer"></div>
+                        <p th:text="${labeledtokens} + '/' + ${totaltokens}"></p>
+                        <p th:text="'Percentage: ' + 100*${labeledtokens}/${totaltokens}"></p>
+                        <p th:text="'Num anno sents: ' + ${numannosents}"></p>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- This set of sentences is all unannotated -->
+            <!--<div role="tabpanel" class="tab-pane active" id="suggestions">-->
+
+                <!--<div class="spacer"></div>-->
+                <!--<div class="row">-->
+                    <!--<div class="col-md-9">-->
+                        <!--<div class="list-group">-->
+                            <!--<div th:each="label : ${contexts.keySet()}" class="list-group-item">-->
+
+                                <!--<h4 th:text="${label}"></h4>-->
+                                <!--<ul>-->
+                                    <!--<li th:each="ctx : ${contexts.get(label)}" th:text="${ctx}"></li>-->
+                                <!--</ul>-->
+
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        </div>
+
+    </div>
+</div>
+</body>
+
+
+</html>
+

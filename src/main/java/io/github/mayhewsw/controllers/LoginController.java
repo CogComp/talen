@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

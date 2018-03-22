@@ -14,12 +14,43 @@ $(document).ready(function() {
     console.log("controller: " + controller);
 
     var highlighting = false;
-    var range = {start:-1, end:-1}
+    var range = {start:-1, end:-1, id:""};
 
     function resetrange(){
-        range = {start:-1, end:-1};
+        range = {start:-1, end:-1, id:""};
         highlightrange();
     }
+
+    // This retrieves the text within a range. If the range
+    // is empty, then it returns the empty string.
+    function gettextinrange(usetext){
+        usetext = usetext || false;
+        if(range.start != -1 && range.end != -1) {
+            var txt = ""
+            for (var i = range.start; i <= range.end; i++) {
+
+                var el = document.getElementById("tok-" + range.id + "-" + i);
+                if(usetext){
+                    txt += $(el).text() + " ";
+                }else{
+                    txt += $(el).attr("orig") + " ";
+                }
+
+            }
+            return txt.trim();
+        }else{
+            return "";
+        }
+    }
+
+    // This returns a list of all words in the document.
+    function getalltext() {
+        var allwords = $.map($("[id^=tok]"), function (n, i) {
+            return $(n).attr("orig");
+        });
+        return allwords;
+    }
+
 
     function highlightrange(){
 
@@ -28,20 +59,28 @@ $(document).ready(function() {
         $(".highlightend").removeClass("highlightend");
         $(".highlightsingle").removeClass("highlightsingle");
 
+        // NOTE: jquery does not allow colons or periods in id strings. Because of
+        // this, we use document.getElementById(..).
+
+        // NOTE: for highlighting to work correctly, the token id pattern needs to
+        // match the pattern found in HtmlGenerator.java
+
         if(range.start == -1 && range.end == -1) {
             // do nothing.
         }else if(range.start == range.end){
-            $("#tok-" + range.start).addClass("highlightsingle");
+            var startel = document.getElementById("tok-" + range.id + "-" + range.start);
+            $(startel).addClass("highlightsingle");
 
         }else{
             for(var i = range.start; i <= range.end; i++){
+                var el = document.getElementById("tok-" + range.id + "-" + i);
                 if(i == range.start){
-                    $("#tok-" + i).addClass("highlightstart");
+                    $(el).addClass("highlightstart");
                 }
                 else if(i == range.end){
-                    $("#tok-" + i).addClass("highlightend");
+                    $(el).addClass("highlightend");
                 }else{
-                    $("#tok-" + i).addClass("highlighted");
+                    $(el).addClass("highlighted");
                 }
             }
         }
@@ -49,7 +88,11 @@ $(document).ready(function() {
 
     /** This returns true if the range has been changed. **/
     function updaterange(id){
-        var intid = parseInt(id.split("-")[1]);
+        var docid = id.split("-")[1];
+        var intid = parseInt(id.split("-")[2]);
+
+        range.id = docid;
+
         var ret = false;
         if(range.start == -1 && range.end == -1){
             range.start = intid;
@@ -81,11 +124,6 @@ $(document).ready(function() {
         });
 
 
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
-        })
-
-
         // just clean everything out first...
 
 
@@ -97,15 +135,14 @@ $(document).ready(function() {
                 return out;
             },
             title: function () {
-                var t = $(this)[0];
-                return "Labeled: " + t.className + ", id: " + t.id;
+                var text = gettextinrange(true);
+                var link = "<a href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>"
+                return text + " (" + link + " )";
             },
             html: true,
-            trigger: "focus",
-            container: $(".text")
+            trigger: "focus"
         });
 
-        //$("[id^=tok]").off("mouseup");
 
         $("[id^=tok]").mouseover(function(event){
 
@@ -123,29 +160,50 @@ $(document).ready(function() {
                 console.log("extraneous click");
                 $("[id^=tok]").popover("hide");
                 resetrange();
+                showtopstats();
             }
         });
 
+        // this solves the problem where the window scrolls to
+        // the top whenever definput has focus.
+        var cursorFocus = function(elem) {
+            var x = window.scrollX, y = window.scrollY;
+            elem.focus();
+            window.scrollTo(x, y);
+        }
+
         $("[id^=tok]").mouseup(function(event){
-
-//                    $(this).removeClass("highlighted");
-
-            console.log(event.which);
 
             // only toggle on the left click.
             if(event.which == 1) {
                 $("[id^=tok]").not($(this)).popover('hide');
                 $(this).popover("toggle");
+
+
+                highlighting = false;
+
+                // put focus on the dictionary entry element.
+                cursorFocus(document.getElementById("definput"));
+                $(".enter").keydown(function (event) {
+                    var keypressed = event.keyCode || event.which;
+                    if (keypressed == 13) {
+                        submitdict();
+                    }
+                });
+
+                $.ajax({
+                    method: "POST",
+                    url: "/stats/getstats",
+                    data: {text: gettextinrange(), alltext: getalltext()}
+                }).done(function (msg) {
+                    $("#infobox").html(msg);
+                });
             }
 
-            console.log("mouseup");
-
-            highlighting = false;
 
         });
 
         $("[id^=tok]").mousedown(function(event){
-            console.log($(this));
             highlighting = true;
             resetrange();
             updaterange(this.id);
@@ -162,10 +220,10 @@ $(document).ready(function() {
         $("[id^=tok]").contextmenu(function(event){
             event.preventDefault();
             var span = event.currentTarget;
-            console.log("Right clicked on " + span.id);
 
             removelabel(span);
         });
+
     }
 
     loadtok();
@@ -174,7 +232,7 @@ $(document).ready(function() {
         $.ajax({
             method: "GET",
             url: baseurl + "/" + controller + "/toggledefs",
-            data: {sentids: getsentids(), query: getParameterByName("query")}
+            data: {idlist: getsentids()}
         }).done(function (msg) {
             console.log("successful toggle");
             $("#htmlcontainer").html(msg);
@@ -187,6 +245,20 @@ $(document).ready(function() {
         loadtok();
     });
 
+    // when the doc loads, get the top stats.
+    function showtopstats() {
+        $.ajax({
+            method: "POST",
+            url: "/stats/gettopstats",
+            data: {alltext: getalltext()}
+        }).done(function (msg) {
+            $("#infobox").html(msg);
+        });
+    }
+
+    showtopstats();
+
+
     // this runs when you click on a single button.
     $("body").on("click", '.popover button', function(event){
         var buttonvalue = $(this)[0].value;
@@ -197,7 +269,8 @@ $(document).ready(function() {
 
         console.log($(this).parents());
 
-        var sentid = $(this).parents(".card-body")[0].id;
+        //var sentid = $(this).parents(".card-body")[0].id;
+        var sentid = range.id;
 
 
         console.log(sentid);
@@ -209,9 +282,40 @@ $(document).ready(function() {
 
         $("[id^=tok]").popover("hide");
         resetrange();
+        showtopstats();
 
         addlabel(sentid, startid, endid, buttonvalue);
     });
+
+    $("body").on("click", '#submitdict', submitdict);
+
+    function submitdict(){
+        // TODO: allow only single word entries at this point.
+        if (range.start != range.end){
+            return;
+        }
+
+        var docid = range.id;
+        var tokid = "tok-" + docid + "-" + range.start ;
+
+        var el = document.getElementById(tokid)
+        var key = $(el).attr("orig");
+        var val = $("#definput").val();
+
+        $("[id^=tok]").popover("hide");
+
+        console.log("you want to submit: " + key + ", " + val);
+        $.ajax({
+            method: "GET",
+            url: "/dict/add",
+            data: {key:key, val:val, idlist: getsentids()}
+        }).done(function (msg) {
+            console.log("successful addition");
+            $("#htmlcontainer").html(msg);
+            loadtok();
+        });
+    };
+
 
 
     function getParameterByName(name) {
@@ -267,12 +371,9 @@ $(document).ready(function() {
                 sentid: sentid,
                 sentids: getsentids(),
                 id: sentid,
-                blahblah: "blahblahbalh",
                 propagate: srch == srchanno }
         }).done(function (msg) {
-            console.log(msg);
             refreshsents();
-            //resetrange();
         });
     };
 
@@ -333,4 +434,6 @@ $(document).ready(function() {
 
     };
     $( "#savebutton" ).click(save);
+    $( ".saveclass" ).click(save);
+
 });

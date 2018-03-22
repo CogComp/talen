@@ -1,0 +1,237 @@
+<!DOCTYPE html><html><body>
+<!-- HIT template: Writing-v3.0 --><!-- The following snippet enables the 'responsive' behavior on smaller screens -->
+<meta content="width=device-width,initial-scale=1" name="viewport" />
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous" />
+<!--<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />-->
+
+<script src="https://use.fontawesome.com/abbf5a27e7.js"></script>
+
+<link rel="stylesheet" href="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/css/style.css" />
+
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+
+<script src="https://cdn.rawgit.com/mayhewsw/ner-annotation/master/src/main/resources/static/js/annotate-local.js"></script>
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#submitButton").click(function () {
+
+            var ret = {};
+
+            var html0 = $("#id0");
+            var spanslabels0 = getspanslabels(html0);
+            console.log(spanslabels0);
+            ret["id0"] = spanslabels0;
+
+            var html1 = $(document.getElementById("1_txt"));
+            var spanslabels1 = getspanslabels(html1);
+            console.log(spanslabels1);
+            ret["1_txt"] = spanslabels1;
+
+            $("#finalsubmission").val(JSON.stringify(ret));
+        });
+
+        $("#testButton").click(function () {
+            var html0 = $("#id0");
+            var spanslabels0 = getspanslabels(html0);
+
+            $("#id0card").removeClass("border-danger");
+            $("#testButton").removeClass("btn-primary btn-danger btn-success");
+
+            if(spanslabels0.length == 1 && spanslabels0[0] == "PER-4-6"){
+                console.log("GOOD!")
+                $("#id0card").addClass("border-success");
+                $("#testButton").addClass("btn-success").text("Correct!");
+                $(document.getElementById("1_txt")).show();
+            }else{
+                console.log("FAILED THE TEST!");
+                $("#id0card").addClass("border-danger");
+                $("#testButton").addClass("btn-danger").text("Wrong! Try again");
+            }
+        });
+
+    });
+</script>
+
+<style>
+    .LOC{ background-color: greenyellow; }
+    .PER{ background-color: yellow; }
+    .ORG{ background-color: lightblue; }
+</style>
+
+<section class="container" id="Writing">
+
+    <div class="row">
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-md-12" id="instructions">
+                    <div class="card border-dark mb-3">
+                        <div class="card-header">
+                            <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                Instructions! (click to expand/collapse)
+                            </a>
+                        </div>
+                        <div id="collapseOne" class="collapse show" role="tabpanel" aria-labelledby="headingOne" data-parent="#accordion">
+                            <div class="card-body">
+
+                                <p>Please read these instructions carefully, and <b>complete the test at the bottom.</b></p>
+
+                                <!--<p>This task is only for non-speakers of English. If you speak English, please do not accept this HIT.-->
+                                    <!--Non-speakers: don't worry if you can't understand the text. We have written it in Latin script so you-->
+                                    <!--can read it. </p>-->
+
+
+                                <!--<h4>The Task</h4>-->
+                                <!--<p>The goal of this task is to have non-speakers of-->
+                                    <!--<a href="https://en.wikipedia.org/wiki/English_language" target="_blank">English</a> find names in-->
+                                    <!--text, and annotate them as one of:</p>-->
+                                <!--<ul>-->
+                                    <!--<li><span class="cons LOC">Location</span>, examples: Jerusalem, Atlantic Ocean, Pakistan, Europe, Kansas</li>-->
+                                    <!--<li><span class="cons PER">Person</span>, examples: Donald Rumsfeld, Saddam Hussein, George Bush</li>-->
+                                    <!--<li><span class="cons ORG">Organization</span>, examples: United Nations, UNESCO, BBC, ABC News</li>-->
+                                <!--</ul>-->
+
+                                <!--Some tips:-->
+                                <!--<ul>-->
+                                    <!--<li>Do not include titles in person tags (titles such as president, secretary, Mr.)</li>-->
+                                    <!--<li>*Do* tag last names even when they appear alone (e.g. Hussein)</li>-->
+                                    <!--<li><b>Important: only tag something if you are sure that it is a name.</b> If you are not sure, leave it untagged.</li>-->
+                                <!--</ul>-->
+
+                                <!--<p>Example (includes Pakistan president Pervez Musharraf):</p>-->
+
+                                <!--<div class="card">-->
+                                    <!--<div class="card-body">-->
+                                        <!--<span class="card-text">-->
+                                            <!--<span class="cons LOC">paakistaanera</span> presiddentta <span class="cons PER">paarabhheja mushaararapha</span> maatra egaara dinera...-->
+                                        <!--</span>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                                <!--<div class="spacer"></div>-->
+
+                                <!--<h4>Strategies</h4>-->
+
+                                <!--<p>Annotating a language you do not speak or understand can be difficult. Some strategies to help:</p>-->
+
+                                <!--<ul>-->
+                                    <!--<li>Read the text out loud, and listen for words that sound familiar</li>-->
+                                    <!--<li>These documents are from 2000-2004 (as suggested in the title). Use this to guess at names.</li>-->
+                                    <!--<li>Guess at what other names might be present (e.g. if Kofi Annan, then look for UN)</li>-->
+                                    <!--<li>Look for words that look unusual in context</li>-->
+                                    <!--<li>A common pattern is "LOC/ORG president PER", as in "German president Johannes Rau"</li>-->
+                                    <!--<li>Look for repeated patterns in the document</li>-->
+                                    <!--<li>Feel free to use Google any way you like.</li>-->
+                                    <!--<li>There is a learning curve. Once you get the hang of the task, the next few documents will be easier!</li>-->
+                                <!--</ul>-->
+
+                                <!--<p>Some documents may have no names, but please look very carefully for at least 1 minute. <b>We will-->
+                                    <!--automatically reject empty documents that took less than 1 minute to annotate</b>. We will also give-->
+                                    <!--a bonus for high accuracy annotations.</p>-->
+
+                                <h4>The Tool</h4>
+                                How to annotate:
+                                <ul>
+                                    <li>Click on a token to open a selection popover</li>
+                                    <li>Select the appropriate tag from the popover</li>
+                                    <li>Click anywhere to make the popover go away</li>
+                                    <li>Click and drag to select a span</li>
+                                    <li>Right click to remove a label (one token at a time)</li>
+                                </ul>
+
+                                <h4>Test</h4>
+                                <p>Annotate this sentence correctly based on the instructions above.</p>
+                                <div class="card w-50" id="id0card">
+                                    <div class="card-body text" id="id0">
+                                        <p id="p0">
+                                            <span class='token pointer' id='tok-id0-0'>My</span><span class='token pointer' id='tok-id0-1'>name</span><span class='token pointer' id='tok-id0-2'>is</span><span class='token pointer' id='tok-id0-3'>Mr.</span><span class='token pointer' id='tok-id0-4'>John</span><span class='token pointer' id='tok-id0-5'>Smith</span><span class='token pointer' id='tok-id0-6'>.</span>
+                                        </p>
+                                    </div>
+                                    <button type="button" id="testButton" class="btn btn-primary pointer">Test</button>
+                                </div>
+
+
+                                <div class="spacer"></div>
+
+                                <a data-toggle="collapse" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    Collapse instructions.
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="col-md-12" id="htmlcontainer1">
+                    <div class="card">
+                        <div class="card-header">1_txt - complete the test to show</div>
+                        <div class="card-body text" style="display:none;" id="1_txt">
+                            <p id=p0><span class='token pointer' id='tok-1_txt-0'>US</span><span class='token pointer' id='tok-1_txt-1'>President</span><span class='token pointer' id='tok-1_txt-2'>Donald</span><span class='token pointer' id='tok-1_txt-3'>Trump</span><span class='token pointer' id='tok-1_txt-4'>is</span><span class='token pointer' id='tok-1_txt-5'>seeking</span><span class='token pointer' id='tok-1_txt-6'>to</span><span class='token pointer' id='tok-1_txt-7'>boost</span><span class='token pointer' id='tok-1_txt-8'>defence</span><span class='token pointer' id='tok-1_txt-9'>spending</span><span class='token pointer' id='tok-1_txt-10'>by</span><span class='token pointer' id='tok-1_txt-11'>10%</span><span class='token pointer' id='tok-1_txt-12'>in</span><span class='token pointer' id='tok-1_txt-13'>his</span><span class='token pointer' id='tok-1_txt-14'>proposed</span><span class='token pointer' id='tok-1_txt-15'>budget</span><span class='token pointer' id='tok-1_txt-16'>plan</span><span class='token pointer' id='tok-1_txt-17'>for</span><span class='token pointer' id='tok-1_txt-18'>2018</span><span class='token pointer' id='tok-1_txt-19'>.</span></p><p id=p20><span class='token pointer' id='tok-1_txt-20'>The</span><span class='token pointer' id='tok-1_txt-21'>blueprint</span><span class='token pointer' id='tok-1_txt-22'>will</span><span class='token pointer' id='tok-1_txt-23'>increase</span><span class='token pointer' id='tok-1_txt-24'>defence</span><span class='token pointer' id='tok-1_txt-25'>spending</span><span class='token pointer' id='tok-1_txt-26'>by</span><span class='token pointer' id='tok-1_txt-27'>$54bn</span><span class='token pointer' id='tok-1_txt-28'>(</span><span class='token pointer' id='tok-1_txt-29'>£43bn</span><span class='token pointer' id='tok-1_txt-30'>)</span><span class='token pointer' id='tok-1_txt-31'>but</span><span class='token pointer' id='tok-1_txt-32'>seeks</span><span class='token pointer' id='tok-1_txt-33'>to</span><span class='token pointer' id='tok-1_txt-34'>recoup</span><span class='token pointer' id='tok-1_txt-35'>that</span><span class='token pointer' id='tok-1_txt-36'>sum</span><span class='token pointer' id='tok-1_txt-37'>through</span><span class='token pointer' id='tok-1_txt-38'>deep</span><span class='token pointer' id='tok-1_txt-39'>cuts</span><span class='token pointer' id='tok-1_txt-40'>elsewhere</span><span class='token pointer' id='tok-1_txt-41'>,</span><span class='token pointer' id='tok-1_txt-42'>including</span><span class='token pointer' id='tok-1_txt-43'>to</span><span class='token pointer' id='tok-1_txt-44'>foreign</span><span class='token pointer' id='tok-1_txt-45'>aid</span><span class='token pointer' id='tok-1_txt-46'>.</span></p><p id=p47><span class='token pointer' id='tok-1_txt-47'>Mr</span><span class='token pointer' id='tok-1_txt-48'>Trump's</span><span class='token pointer' id='tok-1_txt-49'>plan</span><span class='token pointer' id='tok-1_txt-50'>leaves</span><span class='token pointer' id='tok-1_txt-51'>large</span><span class='token pointer' id='tok-1_txt-52'>welfare</span><span class='token pointer' id='tok-1_txt-53'>programmes</span><span class='token pointer' id='tok-1_txt-54'>untouched</span><span class='token pointer' id='tok-1_txt-55'>,</span><span class='token pointer' id='tok-1_txt-56'>despite</span><span class='token pointer' id='tok-1_txt-57'>Republican</span><span class='token pointer' id='tok-1_txt-58'>calls</span><span class='token pointer' id='tok-1_txt-59'>for</span><span class='token pointer' id='tok-1_txt-60'>reform</span><span class='token pointer' id='tok-1_txt-61'>.</span></p><p id=p62><span class='token pointer' id='tok-1_txt-62'>The</span><span class='token pointer' id='tok-1_txt-63'>president</span><span class='token pointer' id='tok-1_txt-64'>has</span><span class='token pointer' id='tok-1_txt-65'>consulted</span><span class='token pointer' id='tok-1_txt-66'>government</span><span class='token pointer' id='tok-1_txt-67'>agencies</span><span class='token pointer' id='tok-1_txt-68'>about</span><span class='token pointer' id='tok-1_txt-69'>his</span><span class='token pointer' id='tok-1_txt-70'>plans</span><span class='token pointer' id='tok-1_txt-71'>and</span><span class='token pointer' id='tok-1_txt-72'>will</span><span class='token pointer' id='tok-1_txt-73'>present</span><span class='token pointer' id='tok-1_txt-74'>his</span><span class='token pointer' id='tok-1_txt-75'>budget</span><span class='token pointer' id='tok-1_txt-76'>to</span><span class='token pointer' id='tok-1_txt-77'>Congress</span><span class='token pointer' id='tok-1_txt-78'>in</span><span class='token pointer' id='tok-1_txt-79'>May</span><span class='token pointer' id='tok-1_txt-80'>.</span></p><p id=p81><span class='token pointer' id='tok-1_txt-81'>Between</span><span class='token pointer' id='tok-1_txt-82'>now</span><span class='token pointer' id='tok-1_txt-83'>and</span><span class='token pointer' id='tok-1_txt-84'>then</span><span class='token pointer' id='tok-1_txt-85'>,</span><span class='token pointer' id='tok-1_txt-86'>he</span><span class='token pointer' id='tok-1_txt-87'>needs</span><span class='token pointer' id='tok-1_txt-88'>to</span><span class='token pointer' id='tok-1_txt-89'>identify</span><span class='token pointer' id='tok-1_txt-90'>where</span><span class='token pointer' id='tok-1_txt-91'>the</span><span class='token pointer' id='tok-1_txt-92'>agencies</span><span class='token pointer' id='tok-1_txt-93'>can</span><span class='token pointer' id='tok-1_txt-94'>make</span><span class='token pointer' id='tok-1_txt-95'>savings</span><span class='token pointer' id='tok-1_txt-96'>and</span><span class='token pointer' id='tok-1_txt-97'>work</span><span class='token pointer' id='tok-1_txt-98'>out</span><span class='token pointer' id='tok-1_txt-99'>what</span><span class='token pointer' id='tok-1_txt-100'>he</span><span class='token pointer' id='tok-1_txt-101'>does</span><span class='token pointer' id='tok-1_txt-102'>with</span><span class='token pointer' id='tok-1_txt-103'>tax</span><span class='token pointer' id='tok-1_txt-104'>reform</span><span class='token pointer' id='tok-1_txt-105'>.</span></p><p id=p106><span class='token pointer' id='tok-1_txt-106'>Republican</span><span class='token pointer' id='tok-1_txt-107'>John</span><span class='token pointer' id='tok-1_txt-108'>McCain</span><span class='token pointer' id='tok-1_txt-109'>said</span><span class='token pointer' id='tok-1_txt-110'>the</span><span class='token pointer' id='tok-1_txt-111'>$603bn</span><span class='token pointer' id='tok-1_txt-112'>defence</span><span class='token pointer' id='tok-1_txt-113'>budget</span><span class='token pointer' id='tok-1_txt-114'>-</span><span class='token pointer' id='tok-1_txt-115'>which</span><span class='token pointer' id='tok-1_txt-116'>White</span><span class='token pointer' id='tok-1_txt-117'>House</span><span class='token pointer' id='tok-1_txt-118'>officials</span><span class='token pointer' id='tok-1_txt-119'>outlined</span><span class='token pointer' id='tok-1_txt-120'>-</span><span class='token pointer' id='tok-1_txt-121'>would</span><span class='token pointer' id='tok-1_txt-122'>be</span><span class='token pointer' id='tok-1_txt-123'>insufficient</span><span class='token pointer' id='tok-1_txt-124'>.</span></p><p id=p125><span class='token pointer' id='tok-1_txt-125'>Speaking</span><span class='token pointer' id='tok-1_txt-126'>at</span><span class='token pointer' id='tok-1_txt-127'>the</span><span class='token pointer' id='tok-1_txt-128'>White</span><span class='token pointer' id='tok-1_txt-129'>House</span><span class='token pointer' id='tok-1_txt-130'>during</span><span class='token pointer' id='tok-1_txt-131'>a</span><span class='token pointer' id='tok-1_txt-132'>meeting</span><span class='token pointer' id='tok-1_txt-133'>with</span><span class='token pointer' id='tok-1_txt-134'>state</span><span class='token pointer' id='tok-1_txt-135'>governors</span><span class='token pointer' id='tok-1_txt-136'>on</span><span class='token pointer' id='tok-1_txt-137'>Monday</span><span class='token pointer' id='tok-1_txt-138'>morning</span><span class='token pointer' id='tok-1_txt-139'>,</span><span class='token pointer' id='tok-1_txt-140'>Mr</span><span class='token pointer' id='tok-1_txt-141'>Trump</span><span class='token pointer' id='tok-1_txt-142'>said</span><span class='token pointer' id='tok-1_txt-143'>:</span><span class='token pointer' id='tok-1_txt-144'>"</span><span class='token pointer' id='tok-1_txt-145'>We're</span><span class='token pointer' id='tok-1_txt-146'>going</span><span class='token pointer' id='tok-1_txt-147'>to</span><span class='token pointer' id='tok-1_txt-148'>do</span><span class='token pointer' id='tok-1_txt-149'>more</span><span class='token pointer' id='tok-1_txt-150'>with</span><span class='token pointer' id='tok-1_txt-151'>less</span><span class='token pointer' id='tok-1_txt-152'>and</span><span class='token pointer' id='tok-1_txt-153'>make</span><span class='token pointer' id='tok-1_txt-154'>the</span><span class='token pointer' id='tok-1_txt-155'>government</span><span class='token pointer' id='tok-1_txt-156'>lean</span><span class='token pointer' id='tok-1_txt-157'>and</span><span class='token pointer' id='tok-1_txt-158'>accountable</span><span class='token pointer' id='tok-1_txt-159'>.</span><span class='token pointer' id='tok-1_txt-160'>"</span></p><p id=p161><span class='token pointer' id='tok-1_txt-161'>The</span><span class='token pointer' id='tok-1_txt-162'>president</span><span class='token pointer' id='tok-1_txt-163'>,</span><span class='token pointer' id='tok-1_txt-164'>who</span><span class='token pointer' id='tok-1_txt-165'>vowed</span><span class='token pointer' id='tok-1_txt-166'>to</span><span class='token pointer' id='tok-1_txt-167'>increase</span><span class='token pointer' id='tok-1_txt-168'>military</span><span class='token pointer' id='tok-1_txt-169'>spending</span><span class='token pointer' id='tok-1_txt-170'>and</span><span class='token pointer' id='tok-1_txt-171'>preserve</span><span class='token pointer' id='tok-1_txt-172'>welfare</span><span class='token pointer' id='tok-1_txt-173'>programmes</span><span class='token pointer' id='tok-1_txt-174'>during</span><span class='token pointer' id='tok-1_txt-175'>his</span><span class='token pointer' id='tok-1_txt-176'>campaign</span><span class='token pointer' id='tok-1_txt-177'>,</span><span class='token pointer' id='tok-1_txt-178'>said</span><span class='token pointer' id='tok-1_txt-179'>the</span><span class='token pointer' id='tok-1_txt-180'>budget</span><span class='token pointer' id='tok-1_txt-181'>will</span><span class='token pointer' id='tok-1_txt-182'>focus</span><span class='token pointer' id='tok-1_txt-183'>on</span><span class='token pointer' id='tok-1_txt-184'>"</span><span class='token pointer' id='tok-1_txt-185'>military</span><span class='token pointer' id='tok-1_txt-186'>,</span><span class='token pointer' id='tok-1_txt-187'>safety</span><span class='token pointer' id='tok-1_txt-188'>,</span><span class='token pointer' id='tok-1_txt-189'>economic</span><span class='token pointer' id='tok-1_txt-190'>development</span><span class='token pointer' id='tok-1_txt-191'>"</span><span class='token pointer' id='tok-1_txt-192'>.</span></p><p id=p193><span class='token pointer' id='tok-1_txt-193'>"</span><span class='token pointer' id='tok-1_txt-194'>It</span><span class='token pointer' id='tok-1_txt-195'>will</span><span class='token pointer' id='tok-1_txt-196'>include</span><span class='token pointer' id='tok-1_txt-197'>an</span><span class='token pointer' id='tok-1_txt-198'>historic</span><span class='token pointer' id='tok-1_txt-199'>increase</span><span class='token pointer' id='tok-1_txt-200'>in</span><span class='token pointer' id='tok-1_txt-201'>defence</span><span class='token pointer' id='tok-1_txt-202'>spending</span><span class='token pointer' id='tok-1_txt-203'>to</span><span class='token pointer' id='tok-1_txt-204'>rebuild</span><span class='token pointer' id='tok-1_txt-205'>the</span><span class='token pointer' id='tok-1_txt-206'>depleted</span><span class='token pointer' id='tok-1_txt-207'>military</span><span class='token pointer' id='tok-1_txt-208'>of</span><span class='token pointer' id='tok-1_txt-209'>the</span><span class='token pointer' id='tok-1_txt-210'>United</span><span class='token pointer' id='tok-1_txt-211'>States</span><span class='token pointer' id='tok-1_txt-212'>of</span><span class='token pointer' id='tok-1_txt-213'>America</span><span class='token pointer' id='tok-1_txt-214'>at</span><span class='token pointer' id='tok-1_txt-215'>a</span><span class='token pointer' id='tok-1_txt-216'>time</span><span class='token pointer' id='tok-1_txt-217'>we</span><span class='token pointer' id='tok-1_txt-218'>most</span><span class='token pointer' id='tok-1_txt-219'>need</span><span class='token pointer' id='tok-1_txt-220'>it</span><span class='token pointer' id='tok-1_txt-221'>,</span><span class='token pointer' id='tok-1_txt-222'>"</span><span class='token pointer' id='tok-1_txt-223'>he</span><span class='token pointer' id='tok-1_txt-224'>said</span><span class='token pointer' id='tok-1_txt-225'>.</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spacer"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <input type="text" id="finalsubmission" name="finalsubmission" style="display:none;" />
+                        <!--<button type="button" id="submitButton" class="btn btn-primary pointer">Submit</button>-->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-2">
+            <!--<div class="form-group">-->
+            <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
+            <!--</div>-->
+
+        </div>
+    </div>
+
+    <template id="buttons">
+        <div class="container-fluid">
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="LOC" class="btn pointer btn-light labelbutton LOC" field="LOC" value="LOC">LOC</button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" id="PER" class="btn pointer btn-light labelbutton PER" field="PER" value="PER">PER</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="ORG" class="btn pointer btn-light labelbutton ORG" field="ORG" value="ORG" >ORG</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-4">
+                        <button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</section>
+
+
+
+
+<script src="../src/main/resources/static/js/annotate-local.js" type="text/javascript"></script>
+</body></html>

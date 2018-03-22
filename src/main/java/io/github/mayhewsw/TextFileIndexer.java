@@ -5,6 +5,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import io.github.mayhewsw.controllers.SentenceController;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -73,6 +74,13 @@ public class TextFileIndexer {
     }
 
 
+    /**
+     * This reads documents one at a time, and builds an index of sentences.
+     * @param conlldir
+     * @param origfiledir
+     * @param indexDir
+     * @throws IOException
+     */
     public static void buildsentenceindex(String conlldir, String origfiledir, String indexDir) throws IOException {
         // we write to this open file object.
 
@@ -85,7 +93,7 @@ public class TextFileIndexer {
         TextAnnotation ta;
         File file = new File(conlldir);
 
-        int k =0;
+        //int k =0;
 
         for(File fname : file.listFiles()){
             CoNLLNerReader cnr = new CoNLLNerReader(fname.getAbsolutePath());
@@ -104,14 +112,16 @@ public class TextFileIndexer {
                 continue;
             }
 
+
             for(int i = 0; i < sentences.size(); i++){
                 Constituent sent = sentences.get(i);
                 Constituent origsent = origsentences.get(i);
 
-                StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
+                //StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
 
                 Document d = new Document();
                 TextField tf = new TextField("body", sent.getTokenizedSurfaceForm(), Field.Store.YES);
+                //TextField tf = new TextField("body", sr, Field.Store.YES);
                 d.add(tf);
                 d.add(new StringField("filename", SentenceController.getSentId(sent), Field.Store.YES));
 
@@ -151,16 +161,16 @@ public class TextFileIndexer {
                 QueryParser parser = new QueryParser("body", analyzer);
                 parser.setAllowLeadingWildcard(true);
 
-                Query q = parser.parse("*" + s + "*");
+                //Query q = parser.parse("*" + s + "*");
 
-                //Query q = new PrefixQuery(new Term("body", s));
+                Query q = new PrefixQuery(new Term("body", s));
 
                 System.out.println(q);
                 TopScoreDocCollector collector = TopScoreDocCollector.create(40);
                 searcher.search(q, collector);
                 ScoreDoc[] hits = collector.topDocs().scoreDocs;
 
-                System.out.println("There are total of: " + searcher.count(q) + " hits.");
+                //System.out.println("There are total of: " + searcher.count(q) + " hits.");
 
                 // 4. display results
                 System.out.println("Found " + hits.length + " hits.");
@@ -202,12 +212,15 @@ public class TextFileIndexer {
 
         // IL6
         //String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E29_LORELEI_IL6_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
-        String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E27_LORELEI_IL5_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
+        //String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E27_LORELEI_IL5_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
 
-        String filedir = dir + "conll-set0-rom";
-        String origfiledir = dir + "conll-set0";
-        String indexdir = dir + "conll-set0-indexsent";
+        //String filedir = dir + "conll-set0-rom";
+        //String origfiledir = dir + "conll-set0";
+        //String indexdir = dir + "conll-set0-indexsent";
 
+        String filedir = "/shared/corpora/ner/lorelei/bn/Train-anno-urom";
+        String origfiledir = filedir;
+        String indexdir = "/tmp/bengali-index";
 
         //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
         //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";

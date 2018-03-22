@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.utils;
 
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
@@ -6,13 +6,19 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import io.github.mayhewsw.Dictionary;
+import io.github.mayhewsw.SessionData;
+import io.github.mayhewsw.Suggestion;
+
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.github.mayhewsw.DocumentController.getdocsuggestions;
+import static io.github.mayhewsw.controllers.DocumentController.getdocsuggestions;
 
 /**
  * Created by stephen on 8/31/17.
@@ -21,9 +27,9 @@ import static io.github.mayhewsw.DocumentController.getdocsuggestions;
 public class HtmlGenerator {
 
 
-    public static String getHTMLfromTA(TextAnnotation ta, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
-    }
+//    public static String getHTMLfromTA(TextAnnotation ta, boolean showdefs) {
+//        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
+//    }
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs);
@@ -54,6 +60,7 @@ public class HtmlGenerator {
         }
 
         // take just the
+
         String[] text;
         if(sentspan.getFirst() == -1){
             text = ta.getTokens().clone();
@@ -68,14 +75,17 @@ public class HtmlGenerator {
                 def = dict.get(text[t]).get(0);
             }
 
+            String tokid = String.format("tok-%s-%s", id, t);
+
+
             if (showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
+                text[t] = "<span class='token pointer def' orig=\""+text[t]+"\" id='"+tokid+"'>" + def + "</span>";
             } else {
                 // FIXME: this will only work for single word queries.
                 if (query.length() > 0 && text[t].startsWith(query)) {
-                    text[t] = "<span class='token pointer emph' id='tok-" + t + "'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer emph' orig=\""+text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
                 } else {
-                    text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer' orig=\""+text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
                 }
             }
         }
@@ -181,7 +191,7 @@ public class HtmlGenerator {
             }
 
             if(sd.showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-" + t + "'>" + def + "</span>";
+                text[t] = "<span class='token pointer def' id='tok-"+ t + "'>" + def + "</span>";
             }else{
                 text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
             }

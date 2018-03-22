@@ -13,26 +13,35 @@
                 <div th:utext="${html}" id="htmlcontainer"></div>
             </div>
             <div class="col-md-4">
-                <div class="form-group">
+                <div class="form-group position-fixed">
                     <a id="savebutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
-                    <a id="dictbutton" class="btn btn-outline-dark" href="#" th:classappend="${session.dict.isEmpty()} ? disabled : mothing" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
+                    <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="${session.dict.isEmpty()} ? disabled : nothing" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
+
+                    <a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="|${session.dict.isEmpty() ? 'disabled' : ''} ${session.showdefs != null && session.showdefs ? 'active' : ''}|" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
 
                     <div class="spacer"></div>
-
-                    <button th:each="label : ${labels}"
-                            th:id="'addlabel-' + ${label}"
-                            th:class="${label} + ' btn'"
-                            th:classappend="${grouptype} == ${label} ? bestlabel : ignorelabel"
-                            th:text="${label}"></button>
-
-                    <div class="spacer"></div>
-
-
-                    <div class="btn-group" role="group" aria-label="Next and previous">
-                        <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
-                        <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
+                    <div th:if="${grouptype} != null">
+                        <span th:each="label : ${labels}">
+                            <button th:id="'addlabel-' + ${label}"
+                                    th:class="${label} + ' btn btn-sm'"
+                                    th:classappend="${grouptype} == ${label} ? bestlabel : ignorelabel"
+                                    th:text="${label}"></button>
+                        </span>
                     </div>
 
+                    <div class="spacer"></div>
+
+                    <div th:if="${previd != null || nextid != null}" class="btn-group" role="group" aria-label="Next and previous">
+
+
+                        <a th:if="${previd} != null" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
+                        <a th:if="${nextid} != null" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
+                    </div>
+
+
+                    <div class="spacer"></div>
+
+                    <div id="infobox"></div>
 
                     <div class="spacer"></div>
 
@@ -42,14 +51,6 @@
 
             </div>
         </div>
-
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-
-            var controller = "document";
-
-            /*]]>*/
-        </script>
 
         <script src="#" th:src="@{/js/annotate.js}"></script>
 
@@ -72,6 +73,13 @@
                         <div class="col-md-4">
                             <button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>
                         </div>
+                    </div>
+                </div>
+
+                <div class="input-group mb-3">
+                    <input type="text" id="definput" class="form-control labelbutton enter" placeholder="Definition" aria-label="Definition" aria-describedby="basic-addon2">
+                    <div class="input-group-append">
+                        <a class="btn btn-outline-secondary labelbutton" id="submitdict" type="button">Submit</a>
                     </div>
                 </div>
 

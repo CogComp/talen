@@ -1,3 +1,0 @@
-name	Bengali-MTurk
-path	/shared/corpora/ner/lorelei/bn/mturk
-labels	LOC:greenyellow PER:yellow ORG:lightblue

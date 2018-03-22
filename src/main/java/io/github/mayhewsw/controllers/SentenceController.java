@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.controllers;
 
 
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
@@ -10,9 +10,13 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 //import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
+import io.github.mayhewsw.*;
+import io.github.mayhewsw.Dictionary;
+import io.github.mayhewsw.utils.HtmlGenerator;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.index.IndexNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,7 +25,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.swing.text.html.HTML;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -121,7 +124,8 @@ public class SentenceController {
         model.addAttribute("labels", hs.getAttribute("labels"));
         model.addAttribute("grouptype", "(unknown)");
 
-        return "sentence/group-anno";
+        //return "sentence/group-anno";
+        return "sentence/annotation";
     }
 
 
@@ -137,7 +141,7 @@ public class SentenceController {
 
 
     @RequestMapping(value = "/loaddata", method = RequestMethod.GET)
-    public String loaddata(@RequestParam(value = "dataname") String dataname, HttpSession hs) throws Exception {
+    public String loaddata(@RequestParam(value = "dataname") String dataname, Model model, HttpSession hs) throws Exception {
 
         Properties prop = datasets.get(dataname);
         // this refers to a folder containing a large number of unannotated conll files.
@@ -147,18 +151,38 @@ public class SentenceController {
         String indexpath = prop.getProperty("indexpath");
         hs.setAttribute("indexpath", indexpath);
 
+        String errormsg = null;
+
+        if(indexpath == null){
+            errormsg = "The config value for indexpath is null. To fix this, run TextFileIndexer.java, and " +
+                    "include the path of the indexpath in the config file for " + dataname;
+        }else if(!(new File(indexpath)).exists()){
+            errormsg = "The config value for indexpath does not exist. Maybe you need to regenerate the index? Use TextFileIndexer.java. Indexpath:" +
+                    indexpath + ", dataname: " + dataname;
+        }
+
+        if(errormsg != null){
+            model.addAttribute("datasets", datasets.keySet());
+            model.addAttribute("user", new User());
+            model.addAttribute("errormsg", errormsg);
+            return "sentence/home";
+        }
+
+
         SentenceCache cache = new SentenceCache(folderpath, indexpath);
+
+        SessionData sd = new SessionData(hs);
 
         // load the dictionary, graceful fail if not there.
         String dictpath = prop.getProperty("dictionary");
-        Dictionary dict;
+        io.github.mayhewsw.Dictionary dict;
         if (dictpath != null) {
             logger.info("Loading dictionary: " + dictpath);
-            dict = new Dictionary(dataname, dictpath);
+            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath, sd.username);
             hs.setAttribute("dict", dict);
         } else {
             logger.info("No dictionary specified.");
-            dict = new Dictionary();
+            dict = new io.github.mayhewsw.Dictionary();
         }
 
         // this ensures that the suffixes item is never null.
@@ -173,7 +197,7 @@ public class SentenceController {
         }
         hs.setAttribute("suffixes", suffixes);
 
-        SessionData sd = new SessionData(hs);
+        sd = new SessionData(hs);
 
         // now check the annotation folder to see what this user has already annotated.
         // if there is anything, load it here.
@@ -244,7 +268,7 @@ public class SentenceController {
         }
         hs.setAttribute("contexts", contexts);
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 
     @RequestMapping("/")
@@ -497,7 +521,7 @@ public class SentenceController {
 
         save(grouparray, hs, model);
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 
 
@@ -583,7 +607,7 @@ public class SentenceController {
         }
     }
 
-    @RequestMapping(value = "/sents", method = RequestMethod.GET)
+    @RequestMapping(value = "/annotation", method = RequestMethod.GET)
     public String annotation(@RequestParam(value = "groupid", required = false) String groupid, Model model, HttpSession hs) throws IOException {
         SessionData sd = new SessionData(hs);
 
@@ -603,6 +627,9 @@ public class SentenceController {
             model.addAttribute("groupid", groupid);
             model.addAttribute("grouptype", sentids.maxType());
             model.addAttribute("html", html);
+            model.addAttribute("labels", hs.getAttribute("labels"));
+
+            return "sentence/annotation";
 
         } else {
 
@@ -686,7 +713,8 @@ public class SentenceController {
 
         model.addAttribute("labels", hs.getAttribute("labels"));
 
-        return "sentence/group-anno";
+        //return "sentence/group-anno";
+        return "sentence/getstarted";
     }
 
 
@@ -696,7 +724,7 @@ public class SentenceController {
 
         sd.groups.remove(term);
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 
     @RequestMapping(value = "/removetoken", method = RequestMethod.POST)
@@ -750,7 +778,7 @@ public class SentenceController {
         for(String sentid : sentids){
             Constituent sent = sd.cache.getSentence(sentid);
             String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs);
-            ret += html + "\n";
+            ret += html + "\n<br />";
         }
 
         return ret;
@@ -794,7 +822,7 @@ public class SentenceController {
 
     @RequestMapping(value = "/toggledefs", method = RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value = "sentids[]") String[] sentids, @RequestParam(value = "query") String query, Model model, HttpSession hs) throws FileNotFoundException {
+    public String toggledefs(@RequestParam(value = "idlist[]") String[] idlist, Model model, HttpSession hs) throws FileNotFoundException {
         SessionData sd = new SessionData(hs);
 
         Boolean showdefs = sd.showdefs;
@@ -802,7 +830,8 @@ public class SentenceController {
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        String html = this.gethtml(sentids, query, model, hs);
+        String query = "";
+        String html = this.gethtml(idlist, query, model, hs);
         return html;
     }
 
@@ -821,6 +850,6 @@ public class SentenceController {
             save(grouparray, hs, model);
         }
 
-        return "redirect:/sentence/sents";
+        return "redirect:/sentence/annotation";
     }
 }

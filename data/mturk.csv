@@ -1,2 +1,2 @@
-DOCID1,HTMLTEXT1,DOCID2,HTMLTEXT2,DOCID3,HTMLTEXT3,LABEL1,LABEL2,LABEL3,LABEL4,LANGUAGE
-id1,This is some cool stuff right here .,id2,John Smith is the coolest cat .,id3, when will we leave this place,LOC,PER,ORG,GPE,Bengali
+DOCID,HTMLTEXT,LABEL1,LABEL2,LABEL3,LANGUAGE
+id1,This is some cool stuff right here .,LOC,PER,ORG,English

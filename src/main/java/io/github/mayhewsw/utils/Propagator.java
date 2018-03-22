@@ -1,4 +1,4 @@
-package io.github.mayhewsw;
+package io.github.mayhewsw.utils;
 
 import edu.illinois.cs.cogcomp.core.datastructures.IntPair;
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
