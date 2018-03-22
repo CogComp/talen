@@ -1,4 +1,7 @@
 *.class
+*.log
+users.txt
+labels.css
 *~
 target/
 *.iml
