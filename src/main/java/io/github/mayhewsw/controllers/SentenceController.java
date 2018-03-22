@@ -24,6 +24,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.util.*;
@@ -212,11 +213,14 @@ public class SentenceController {
 
         // Load file. Build annosents based on which sentences are annotated.
         if ((new File(outfolder)).exists()) {
+            TextStatisticsController.resetstats();
             CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
             while (cnl.hasNext()) {
                 TextAnnotation ta = cnl.next();
                 View sents = ta.getView(ViewNames.SENTENCE);
                 talist.add(ta);
+
+                TextStatisticsController.updateCounts(ta.getTokenizedText());
 
                 // this will overwrite whatever was previously there.
                 for (Constituent sent : sents.getConstituents()) {
