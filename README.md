@@ -1,8 +1,8 @@
 
 
-<img src="/src/main/resources/static/img/logo-black-trans.png" align="left" width="50%" />
+<img src="/src/main/resources/static/img/logo-black-trans.png" width="50%" />
 
-# Tool for Annotation of Low-resource ENtities.
+# TALEN: Tool for Annotation of Low-resource ENtities.
 
 A lightweight web-based tool for annotating word sequences.
 
