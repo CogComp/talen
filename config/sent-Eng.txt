@@ -1,7 +1,0 @@
-name	EnglishConll
-folderpath	/home/mayhew/data/conll-cis419/Data/Real-World/CoNLL/train-conll/
-indexpath	/tmp/conll_indexsent
-type	conll
-# dictionary
-labels	ORG:lightblue LOC:greenyellow PER:yellow MISC:coral
-terms   Sampras

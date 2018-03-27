@@ -1,6 +1,0 @@
-name	Tamil
-path	/shared/corpora/ner/human/ta/conll-anno.urom
-type	conll
-# dictionary
-labels	ORG:lightblue LOC:greenyellow PER:yellow GPE:coral
-terms   obama,amerikka
