@@ -1,8 +1,12 @@
-# Annotation Interface for Named Entity Recognition
+![TALEN Logo](/src/main/resources/static/img/logo-black-trans.png "TALEN Logo")
+
+
+# TALEN: Tool for Annotation Low-resource ENtities.
+
+A lightweight web-based tool for annotating word sequences.
 
 ![Screenshot of web interface](/src/main/resources/static/img/screenshot.png?raw=true "Screenshot")
 
-A lightweight web-based tool for annotating word sequences.
 
 ## Usage
 
