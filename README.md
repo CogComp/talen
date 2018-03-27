@@ -1,7 +1,7 @@
-![TALEN Logo](/src/main/resources/static/img/logo-black-trans.png "TALEN Logo")
+![TALEN Logo](/src/main/resources/static/img/logo-black-trans.png "TALEN Logo"){:width="40%"}.
 
 
-# TALEN: Tool for Annotation Low-resource ENtities.
+# TALEN: Tool for Annotation of Low-resource ENtities.
 
 A lightweight web-based tool for annotating word sequences.
 
