@@ -38,8 +38,6 @@ public class TextStatisticsController {
 
         SessionData sd = new SessionData(hs);
 
-
-
         // need to keep track of the number of times this word appears in the document.
         HashMap<String, Integer> doccounts = new HashMap<>();
         for(String word : alltext){
@@ -47,13 +45,12 @@ public class TextStatisticsController {
             doccounts.put(word, c+1);
         }
 
-        String ret = "<small><table class=\"table table-sm\"><thead><tr>";
+        String ret = "<small><table class=\"table table-sm table-hover\"><thead><tr>";
         ret += "<th scope=\"col\">Word</th>";
         ret += "<th scope=\"col\">Cnt</th>";
         ret += "<th scope=\"col\">%docs</th>";
         ret += "<th scope=\"col\">Tfidf</th>";
         ret += "</tr></thead><tbody>";
-
 
         HashSet<Pair<String, Double>> toptfidf = new HashSet();
 
@@ -106,7 +103,7 @@ public class TextStatisticsController {
             doccounts.put(word, c+1);
         }
 
-        String ret = "<small><table class=\"table table-sm\"><thead><tr>";
+        String ret = "<small><table class=\"table table-hover\"><thead><tr>";
         ret += "<th scope=\"col\">Word</th>";
         ret += "<th scope=\"col\">Cnt</th>";
         ret += "<th scope=\"col\">%docs</th>";

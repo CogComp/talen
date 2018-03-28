@@ -32,10 +32,8 @@
                     <div class="spacer"></div>
 
                     <div th:if="${previd != null || nextid != null}" class="btn-group" role="group" aria-label="Next and previous">
-
-
-                        <a th:if="${previd} != null" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
-                        <a th:if="${nextid} != null" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
+                        <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
+                        <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
                     </div>
 
 
@@ -59,27 +57,31 @@
 
                 <div th:each="label,iterStat : ${labels}" th:if="${iterStat.index % 2 == 0}" class="form-group">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <button type="button" th:id="${labels[iterStat.index]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
                         </div>
-                        <div class="col-md-4" th:if="${iterStat.index+1} &lt; ${labels.size()}">
+                        <div class="col-md-6" th:if="${iterStat.index+1} &lt; ${labels.size()}">
                             <button type="button" th:id="${labels[iterStat.index+1]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>
-                        </div>
-                    </div>
-                </div>
+                <!--<div class="form-group">-->
+                    <!--<div class="row">-->
+                        <!--<div class="col-md-4">-->
+                            <!--<button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
 
-                <div class="input-group mb-3">
-                    <input type="text" id="definput" class="form-control labelbutton enter" placeholder="Definition" aria-label="Definition" aria-describedby="basic-addon2">
-                    <div class="input-group-append">
-                        <a class="btn btn-outline-secondary labelbutton" id="submitdict" type="button">Submit</a>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="input-group mb-3">
+                            <input type="text" id="definput" class="form-control labelbutton enter" placeholder="Definition" aria-label="Definition" aria-describedby="basic-addon2">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary labelbutton" role="button" id="submitdict" type="button">Submit</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
