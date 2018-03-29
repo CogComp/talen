@@ -9,6 +9,10 @@ A lightweight web-based tool for annotating word sequences.
 ![Screenshot of web interface](/src/main/resources/static/img/screenshot.png?raw=true "Screenshot")
 
 
+## Lightweight Demo
+
+See a lightweight Javascript-only demo here: [cogcomp.github.io/talen/](http://cogcomp.github.io/talen/)
+
 ## Usage
 
 Requires Java 8 and Maven. Run:
@@ -89,7 +93,6 @@ latter is a version of [annotate.js](src/main/resources/static/js/annotate.js), 
 removing spans is included in the Javascript instead of sent to a Java controller. This is less powerful (because we have
 NLP libraries written in Java, not Javascript), but can be run with no server.
 
-See a demo here: [mayhewsw.github.io/ner-annotation/](http://mayhewsw.github.io/ner-annotation/)
 
 All the scripts needed to create this file are included in this repository. It was created as follows:
 
