@@ -99,17 +99,22 @@ public class DocumentController {
         // This will be ordered by it's keys.
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
         TextStatisticsController.resetstats();
-        if(foldertype.equals(Common.FOLDERTA)) {
+        if (foldertype.equals(Common.FOLDERTA)) {
             String[] files = f.list();
             int limit = Math.min(files.length, 500);
             for (int i = 0; i < limit; i++) {
                 String file = files[i];
-                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
+                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file, true);
+                if(!ta.hasView(ViewNames.NER_CONLL)){
+                    View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
+                    ta.addView(ViewNames.NER_CONLL, ner);
+                }
+
                 ret.put(file, ta);
             }
-        }else if(foldertype.equals(Common.FOLDERCONLL)){
+        } else if (foldertype.equals(Common.FOLDERCONLL)) {
             CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
-            while(cnl.hasNext()){
+            while (cnl.hasNext()) {
                 TextAnnotation ta = cnl.next();
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
@@ -119,11 +124,11 @@ public class DocumentController {
 
         // now check the annotation folder to see what this user has already annotated.
         // if there is anything, load it here.
-        String outfolder = folderurl.replaceAll("/$","") + "-annotation-" + username + "/";
+        String outfolder = folderurl.replaceAll("/$", "") + "-annotation-" + username + "/";
 
         logger.info("Now looking in user annotation folder: " + outfolder);
 
-        if((new File(outfolder)).exists()) {
+        if ((new File(outfolder)).exists()) {
 
             if (foldertype.equals(Common.FOLDERTA)) {
                 File outf = new File(outfolder);
@@ -132,7 +137,7 @@ public class DocumentController {
 
                 for (int i = 0; i < limit; i++) {
                     String file = files[i];
-                    TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file);
+                    TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file, true);
                     ret.put(file, ta);
                 }
             } else if (foldertype.equals(Common.FOLDERCONLL)) {
@@ -357,7 +362,7 @@ public class DocumentController {
             String savepath = outpath + taid;
 
             if(foldertype.equals(Common.FOLDERTA)) {
-                SerializationHelper.serializeTextAnnotationToFile(taToSave, savepath, true);
+                SerializationHelper.serializeTextAnnotationToFile(taToSave, savepath, true,true);
             }else if(foldertype.equals(Common.FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }

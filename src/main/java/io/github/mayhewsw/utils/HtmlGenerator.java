@@ -63,11 +63,11 @@ public class HtmlGenerator {
         String[] text;
         if(ta.hasView(ViewNames.TRANSLITERATION)){
             View translit = ta.getView(ViewNames.TRANSLITERATION);
-            List<String> tokens = new ArrayList<>();
+            StringBuilder sb = new StringBuilder();
             for(Constituent c : translit.getConstituents()){
-                tokens.add(c.getLabel());
+                sb.append(c.getLabel()+" ");
             }
-            text = (String[]) tokens.toArray();
+            text = sb.toString().trim().split(" ");
         }else {
 
             if (sentspan.getFirst() == -1) {
