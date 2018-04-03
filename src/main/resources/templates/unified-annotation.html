@@ -4,93 +4,144 @@
     <title>Unified Annotation</title>
 </head>
 <body>
+    
+    
+    
+    <div layout:fragment="content">
+        
+        
+        
+        <div class="container">
+            
 
-<div layout:fragment="content">
-    <div class="container">
-
-        <div class="row">
-            <div class="col-md-8">
-                <div th:utext="${html}" id="htmlcontainer"></div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group position-fixed">
-                    <a id="savebutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
-                    <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="${session.dict.isEmpty()} ? disabled : nothing" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
-
-                    <a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="|${session.dict.isEmpty() ? 'disabled' : ''} ${session.showdefs != null && session.showdefs ? 'active' : ''}|" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
-
-                    <div class="spacer"></div>
-                    <div th:if="${grouptype} != null">
-                        <span th:each="label : ${labels}">
-                            <button th:id="'addlabel-' + ${label}"
-                                    th:class="${label} + ' btn btn-sm'"
-                                    th:classappend="${grouptype} == ${label} ? bestlabel : ignorelabel"
-                                    th:text="${label}"></button>
-                        </span>
-                    </div>
-
-                    <div class="spacer"></div>
-
-                    <div th:if="${previd != null || nextid != null}" class="btn-group" role="group" aria-label="Next and previous">
-                        <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
-                        <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
-                    </div>
-
-
-                    <div class="spacer"></div>
-
-                    <div id="infobox"></div>
-
-                    <div class="spacer"></div>
-
-                    <a style="color:gray" id="back2top" href="#top">Back to top</a>
-
+            <div class="row">
+                <div class="col-md-8">
+                    <div th:utext="${html}" id="htmlcontainer"></div>
                 </div>
-
-            </div>
-        </div>
-
-        <script src="#" th:src="@{/js/annotate.js}"></script>
-
-        <template id="buttons">
-            <div class="container-fluid">
-
-                <div th:each="label,iterStat : ${labels}" th:if="${iterStat.index % 2 == 0}" class="form-group">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <button type="button" th:id="${labels[iterStat.index]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
+                <div class="col-md-4">
+                    <div class="form-group position-fixed">
+                        <a id="savebutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
+                        <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="${session.dict.isEmpty()} ? disabled : nothing" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
+                        
+                        <a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="|${session.dict.isEmpty() ? 'disabled' : ''} ${session.showdefs != null && session.showdefs ? 'active' : ''}|" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
+                        
+                        <div class="spacer"></div>
+                        <div th:if="${grouptype} != null">
+                            <span th:each="label : ${labels}">
+                                <button th:id="'addlabel-' + ${label}"
+                                th:class="${label} + ' btn btn-sm'"
+                                th:classappend="${grouptype} == ${label} ? bestlabel : ignorelabel"
+                                th:text="${label}"></button>
+                            </span>
                         </div>
-                        <div class="col-md-6" th:if="${iterStat.index+1} &lt; ${labels.size()}">
-                            <button type="button" th:id="${labels[iterStat.index+1]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
+                        <!-- <div class="spacer"></div> -->
+                        
+                        <input type="text" name="keyword" class="form-control input-sm" placeholder="Search...">
+                        
+                        <div class="spacer"></div>
+                        
+                        <div th:if="${previd != null || nextid != null}" class="btn-group" role="group" aria-label="Next and previous">
+                            <a th:if="${previd} != -1" th:href="@{/document/annotation(taid=${previd})}" href="#" class="btn btn-outline-secondary saveclass" role="button"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</a>
+                            <a th:if="${nextid} != -1" th:href="@{/document/annotation(taid=${nextid})}" href="#" class="btn btn-outline-secondary saveclass" role="button">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></span></a>
                         </div>
+                        
+                        
+                        <div class="spacer"></div>
+                        
+                        <div id="infobox"></div>
+                        
+                        <div class="spacer"></div>
+                        
+                        <a style="color:gray" id="back2top" href="#top">Back to top</a>
+                        
                     </div>
+                    
                 </div>
+            </div>
+            
+            <script src="#" th:src="@{/js/annotate.js}"></script>
+            
+            <script>                                            
+                // Create an instance of mark.js and pass an argument containing
+                // the DOM object of the context (where to search for matches)
+                var markInstance = new Mark(document.querySelector("#htmlcontainer"));
+                // Cache DOM elements
+                var keywordInput = document.querySelector("input[name='keyword']");
+                
+                function performMark() {
+                    console.log("mark");
+                    
+                    // Read the keyword
+                    var keyword = keywordInput.value;
+                    
+                    // Determine selected options
+                    var options = {
+                        "accuracy" : {
+                            "value" : "complementary",
+                            "limiters" : ["?"]   // this is here to apostrophes in names don't block full match.
+                        }
+                    };
+                                    
+                    // Remove previous marked elements and mark
+                    // the new keyword inside the context
+                    markInstance.unmark({
+                        done: function(){
+                            markInstance.mark(keyword, options);
+                        }
+                    });
+                };
+                
+                // Listen to input and option changes
+                keywordInput.addEventListener("input", performMark);
+                
+                console.log($(".table-hover"));
 
-                <!--<div class="form-group">-->
-                    <!--<div class="row">-->
-                        <!--<div class="col-md-4">-->
-                            <!--<button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
-
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="input-group mb-3">
-                            <input type="text" id="definput" class="form-control labelbutton enter" placeholder="Definition" aria-label="Definition" aria-describedby="basic-addon2">
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-secondary labelbutton" role="button" id="submitdict" type="button">Submit</button>
+                $(".table-hover").mouseover(function() {
+                    console.log("over a td");
+                    // window.location = $(this).data("href");
+                });
+                
+            </script>
+            
+            <template id="buttons">
+                <div class="container-fluid">
+                    
+                    <div th:each="label,iterStat : ${labels}" th:if="${iterStat.index % 2 == 0}" class="form-group">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button type="button" th:id="${labels[iterStat.index]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index]}" th:field="${labels[iterStat.index]}" th:value="${labels[iterStat.index]}" th:text="${labels[iterStat.index]}"></button>
+                            </div>
+                            <div class="col-md-6" th:if="${iterStat.index+1} &lt; ${labels.size()}">
+                                <button type="button" th:id="${labels[iterStat.index+1]}" class="btn pointer btn-light labelbutton" th:classappend="${labels[iterStat.index+1]}" th:field="${labels[iterStat.index+1]}" th:value="${labels[iterStat.index+1]}" th:text="${labels[iterStat.index+1]}"></button>
                             </div>
                         </div>
                     </div>
+                    
+                    <!--<div class="form-group">-->
+                        <!--<div class="row">-->
+                            <!--<div class="col-md-4">-->
+                                <!--<button type="button" id="O" class="btn pointer btn-outline-secondary" value="O">No label</button>-->
+                                <!--</div>-->
+                                <!--</div>-->
+                                <!--</div>-->
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="input-group mb-3">
+                                            <input type="text" id="definput" class="form-control labelbutton enter" placeholder="Definition" aria-label="Definition" aria-describedby="basic-addon2">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary labelbutton" role="button" id="submitdict" type="button">Submit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </template>
+                        
+                    </div>
                 </div>
-
-            </div>
-        </template>
-
-    </div>
-</div>
-
-</body>
-
-</html>
+                
+            </body>
+            
+            </html>

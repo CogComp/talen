@@ -17,6 +17,7 @@ import java.util.*;
  */
 public class SessionData {
 
+    public  HashMap<String, Properties> datasets;
     public Dictionary dict;
     public String username;
     public Boolean showdefs;
@@ -68,6 +69,8 @@ public class SessionData {
         groups = (HashMap<String, Group>) hs.getAttribute("groups");
 
         logfile = (String) hs.getAttribute("logfile");
+
+        datasets = (HashMap<String, Properties>) hs.getAttribute("datasets");
 
     }
 

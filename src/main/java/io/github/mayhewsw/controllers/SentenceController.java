@@ -41,47 +41,47 @@ import java.util.stream.Collectors;
 public class SentenceController {
 
     // These are all common objects that don't change user by user.
-    private HashMap<String, Properties> datasets;
+    //private HashMap<String, Properties> datasets;
 
     private static Logger logger = LoggerFactory.getLogger(SentenceController.class);
 
     //CooccuranceMapLinker linker;
 
-    /**
-     * Load config files before anything else. This is the only object shared among user sessions.
-     * <p>
-     * This only loads config files with the prefix 'bs-' (for bootstrap)
-     */
-    public SentenceController() {
-
-        //linker= new CooccuranceMapLinker(true);
-
-        File configfolder = new File("config");
-
-        File[] configfiles = configfolder.listFiles();
-
-        datasets = new HashMap<>();
-
-        for (File f : configfiles) {
-            if (f.getName().endsWith("~")) continue;
-            if (!f.getName().startsWith("sent-")) continue;
-
-            Properties prop = new Properties();
-
-            try {
-                // we want utf-8.
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
-
-                // load a properties file
-                prop.load(in);
-
-                datasets.put(prop.getProperty("name"), prop);
-
-            } catch (IOException e) {
-
-            }
-        }
-    }
+//    /**
+//     * Load config files before anything else. This is the only object shared among user sessions.
+//     * <p>
+//     * This only loads config files with the prefix 'bs-' (for bootstrap)
+//     */
+//    public SentenceController() {
+//
+//        //linker= new CooccuranceMapLinker(true);
+//
+//        File configfolder = new File("config");
+//
+//        File[] configfiles = configfolder.listFiles();
+//
+//        datasets = new HashMap<>();
+//
+//        for (File f : configfiles) {
+//            if (f.getName().endsWith("~")) continue;
+//            if (!f.getName().startsWith("sent-")) continue;
+//
+//            Properties prop = new Properties();
+//
+//            try {
+//                // we want utf-8.
+//                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
+//
+//                // load a properties file
+//                prop.load(in);
+//
+//                datasets.put(prop.getProperty("name"), prop);
+//
+//            } catch (IOException e) {
+//
+//            }
+//        }
+//    }
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
     public String search(@RequestParam(value = "query", required = true) String query, @RequestParam(value = "searchinanno", required = false) String searchinanno, HttpSession hs, Model model) throws IOException {
@@ -144,7 +144,9 @@ public class SentenceController {
     @RequestMapping(value = "/loaddata", method = RequestMethod.GET)
     public String loaddata(@RequestParam(value = "dataname") String dataname, Model model, HttpSession hs) throws Exception {
 
-        Properties prop = datasets.get(dataname);
+        SessionData sd = new SessionData(hs);
+
+        Properties prop = sd.datasets.get(dataname);
         // this refers to a folder containing a large number of unannotated conll files.
         String folderpath = prop.getProperty("folderpath");
 
@@ -163,7 +165,7 @@ public class SentenceController {
         }
 
         if(errormsg != null){
-            model.addAttribute("datasets", datasets.keySet());
+            model.addAttribute("datasets", sd.datasets.keySet());
             model.addAttribute("user", new User());
             model.addAttribute("errormsg", errormsg);
             return "sentence/home";
@@ -172,7 +174,7 @@ public class SentenceController {
 
         SentenceCache cache = new SentenceCache(folderpath, indexpath);
 
-        SessionData sd = new SessionData(hs);
+        sd = new SessionData(hs);
 
         // load the dictionary, graceful fail if not there.
         String dictpath = prop.getProperty("dictionary");
@@ -277,7 +279,8 @@ public class SentenceController {
 
     @RequestMapping("/")
     public String home(Model model, HttpSession hs) throws IOException {
-        model.addAttribute("datasets", datasets.keySet());
+        SessionData sd = new SessionData(hs);
+        model.addAttribute("datasets", sd.datasets.keySet());
         model.addAttribute("user", new User());
 
         if (hs.getAttribute("dict") == null) {
@@ -597,7 +600,7 @@ public class SentenceController {
         String username = sd.username;
         String folder = sd.dataname;
 
-        Properties props = datasets.get(folder);
+        Properties props = sd.datasets.get(folder);
         String folderpath = props.getProperty("folderpath");
 
         if (username != null && folderpath != null) {

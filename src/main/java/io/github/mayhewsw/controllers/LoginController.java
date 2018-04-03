@@ -1,14 +1,22 @@
 package io.github.mayhewsw.controllers;
 
+import edu.illinois.cs.cogcomp.core.io.LineIO;
+import io.github.mayhewsw.ConfigFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.*;
+
+import org.springframework.ui.Model;
 
 /**
  * Created by stephen on 8/2/17.
@@ -20,15 +28,21 @@ public class LoginController {
     private static Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String adduser(HttpSession hs) {
+    public String adduser(Model model,  HttpSession hs) {
         // really... nothing happens here.
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName(); //get logged in username
 
         logger.info("Username is " + name);
-
         hs.setAttribute("username", name);
+
+        // This will also add datasets...
+        HashMap<String, Properties> datasets = Common.loadConfig();
+        hs.setAttribute("datasets", datasets);
+
+        model.addAttribute("config", new ConfigFile());
+
         return "index";
     }
 
@@ -37,6 +51,19 @@ public class LoginController {
 
         return "login";
     }
+
+    @PostMapping(value = "/config")
+    public String config(@ModelAttribute ConfigFile c, HttpSession hs) throws IOException {
+
+        System.out.println("Writing to: config/" + c.getFname());
+
+
+        LineIO.write("config/" + c.getFname(), Collections.singletonList(c.toString()));
+
+        return "redirect:/";
+
+    }
+
 
     @RequestMapping(value = "/logout")
     public void logout(HttpSession hs) {

@@ -53,48 +53,9 @@ public class DocumentController {
     private static Logger logger = LoggerFactory.getLogger(DocumentController.class);
 
     // These are all common objects that don't change user by user.
-    private HashMap<String, Properties> datasets;
+    //private HashMap<String, Properties> datasets;
 
     private List<String> labels;
-    private final String FOLDERTA = "ta";
-    private final String FOLDERCONLL = "conll";
-
-    /**
-     * When this class is loaded, it looks for files in config.
-     *
-     * @throws FileNotFoundException
-     */
-    public DocumentController() throws IOException {
-
-        File configfolder = new File("config");
-
-        File[] configfiles = configfolder.listFiles();
-
-        datasets = new HashMap<>();
-
-        for(File f : configfiles){
-            if(f.getName().endsWith("~")) continue;
-
-            if(!f.getName().startsWith("doc-")) continue;
-
-            System.out.println(f);
-            Properties prop = new Properties();
-            // there's probably a better way to set defaults...
-            prop.setProperty("type", FOLDERCONLL);
-
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
-
-                // load a properties file
-                prop.load(in);
-
-                datasets.put(prop.getProperty("name"), prop);
-
-            }catch(IOException e){
-
-            }
-        }
-    }
 
     /**
      * Important to add folders and user to the model.
@@ -103,7 +64,9 @@ public class DocumentController {
      */
     @RequestMapping("/")
     public String home(Model model, HttpSession hs){
-        model.addAttribute("datasets", datasets.keySet());
+        Common.loadConfig();
+
+        //model.addAttribute("datasets", datasets.keySet());
         model.addAttribute("user", new User());
 
         if(hs.getAttribute("dict") == null) {
@@ -120,10 +83,11 @@ public class DocumentController {
      * not correspond to the internal TextAnnotation id.
      *
      * @param folder folder identifier
+     * @param datasets
      * @return
      * @throws IOException
      */
-    public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username) throws Exception {
+    public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username, HashMap<String, Properties> datasets) throws Exception {
 
         Properties props = datasets.get(dataname);
         String folderurl = props.getProperty("folderpath");
@@ -135,7 +99,7 @@ public class DocumentController {
         // This will be ordered by it's keys.
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
         TextStatisticsController.resetstats();
-        if(foldertype.equals(FOLDERTA)) {
+        if(foldertype.equals(Common.FOLDERTA)) {
             String[] files = f.list();
             int limit = Math.min(files.length, 500);
             for (int i = 0; i < limit; i++) {
@@ -143,7 +107,7 @@ public class DocumentController {
                 TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file);
                 ret.put(file, ta);
             }
-        }else if(foldertype.equals(FOLDERCONLL)){
+        }else if(foldertype.equals(Common.FOLDERCONLL)){
             CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
             while(cnl.hasNext()){
                 TextAnnotation ta = cnl.next();
@@ -161,7 +125,7 @@ public class DocumentController {
 
         if((new File(outfolder)).exists()) {
 
-            if (foldertype.equals(FOLDERTA)) {
+            if (foldertype.equals(Common.FOLDERTA)) {
                 File outf = new File(outfolder);
                 String[] files = outf.list();
                 int limit = Math.min(files.length, 300);
@@ -171,7 +135,7 @@ public class DocumentController {
                     TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file);
                     ret.put(file, ta);
                 }
-            } else if (foldertype.equals(FOLDERCONLL)) {
+            } else if (foldertype.equals(Common.FOLDERCONLL)) {
                 CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
                 while (cnl.hasNext()) {
                     TextAnnotation ta = cnl.next();
@@ -269,7 +233,7 @@ public class DocumentController {
         SessionData sd = new SessionData(hs);
         String username = sd.username;
 
-        Properties prop = datasets.get(dataname);
+        Properties prop = sd.datasets.get(dataname);
         String folderpath = prop.getProperty("folderpath");
 
         String labelsproperty = prop.getProperty("labels");
@@ -323,7 +287,7 @@ public class DocumentController {
 
         HashMap<Pair<String, String>, Integer> patterns = new HashMap<>();
 
-        TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username);
+        TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username, sd.datasets);
 
         String logpath = ".";
         String logfile= String.format("%s/%s-%s.log", logpath, dataname,username);
@@ -374,7 +338,7 @@ public class DocumentController {
         String username = sd.username;
         String folder = sd.dataname;
 
-        Properties props = datasets.get(folder);
+        Properties props = sd.datasets.get(folder);
         String folderpath = props.getProperty("folderpath");
         String foldertype = props.getProperty("type");
 
@@ -392,9 +356,9 @@ public class DocumentController {
             TextAnnotation taToSave = tas.get(taid);
             String savepath = outpath + taid;
 
-            if(foldertype.equals(FOLDERTA)) {
+            if(foldertype.equals(Common.FOLDERTA)) {
                 SerializationHelper.serializeTextAnnotationToFile(taToSave, savepath, true);
-            }else if(foldertype.equals(FOLDERCONLL)) {
+            }else if(foldertype.equals(Common.FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
 
@@ -549,7 +513,7 @@ public class DocumentController {
 
         // Load all annotated files so far.
         String dataname = sd.dataname;
-        Properties props = datasets.get(dataname);
+        Properties props = sd.datasets.get(dataname);
         String folderpath = props.getProperty("folderpath");
         String username = sd.username;
 
@@ -678,7 +642,7 @@ public class DocumentController {
 
             // Load all annotated files so far.
             String dataname = sd.dataname;
-            Properties props = datasets.get(dataname);
+            Properties props = sd.datasets.get(dataname);
             String folderpath = props.getProperty("folderpath");
             String username = sd.username;
 
@@ -971,7 +935,7 @@ public class DocumentController {
     public String addsuffix(@RequestParam(value="suffix") String suffix, @RequestParam(value="taid") String taid, HttpSession hs) {
 
         SessionData sd = new SessionData(hs);
-        Properties prop = datasets.get(sd.dataname);
+        Properties prop = sd.datasets.get(sd.dataname);
         String folderpath = prop.getProperty("folderpath");
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
