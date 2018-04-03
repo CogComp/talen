@@ -59,13 +59,22 @@ public class HtmlGenerator {
             ta.addView("NER_SUGGESTION", nersugg);
         }
 
-        // take just the
-
+        // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text;
-        if(sentspan.getFirst() == -1){
-            text = ta.getTokens().clone();
+        if(ta.hasView(ViewNames.TRANSLITERATION)){
+            View translit = ta.getView(ViewNames.TRANSLITERATION);
+            List<String> tokens = new ArrayList<>();
+            for(Constituent c : translit.getConstituents()){
+                tokens.add(c.getLabel());
+            }
+            text = (String[]) tokens.toArray();
         }else {
-            text = Arrays.copyOfRange(ta.getTokenizedText().split(" "), sentspan.getFirst(), sentspan.getSecond());
+
+            if (sentspan.getFirst() == -1) {
+                text = ta.getTokens().clone();
+            } else {
+                text = Arrays.copyOfRange(ta.getTokenizedText().split(" "), sentspan.getFirst(), sentspan.getSecond());
+            }
         }
 
         // add spans to every word that is not a constituent.

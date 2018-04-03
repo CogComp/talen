@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.illinois.cs.cogcomp</groupId>
-    <artifactId>ner-annotation</artifactId>
+    <artifactId>talen</artifactId>
     <version>0.1.0</version>
 
     <properties>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>edu.illinois.cs.cogcomp</groupId>
             <artifactId>illinois-core-utilities</artifactId>
-            <version>3.1.19</version>
+            <version>4.0.4</version>
             <exclusions>
                 <exclusion>
                     <artifactId>slf4j-log4j12</artifactId>
