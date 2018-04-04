@@ -65,7 +65,7 @@ public class HtmlGenerator {
             View translit = ta.getView(ViewNames.TRANSLITERATION);
             StringBuilder sb = new StringBuilder();
             for(Constituent c : translit.getConstituents()){
-                sb.append(c.getLabel()+" ");
+                sb.append(c.getLabel().replace(" ", "_") +" ");
             }
             text = sb.toString().trim().split(" ");
         }else {
