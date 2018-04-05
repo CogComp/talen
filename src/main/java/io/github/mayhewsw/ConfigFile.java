@@ -113,7 +113,7 @@ public class ConfigFile extends Properties{
 
         StringJoiner sj = new StringJoiner("\n");
         for(String k : entries.keySet()){
-            if(entries.get(k) != null){
+            if(entries.get(k) != null && entries.get(k).trim().length() > 0){
                 sj.add(k + "\t" + entries.get(k));
             }
         }

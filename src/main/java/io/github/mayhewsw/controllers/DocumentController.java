@@ -90,6 +90,11 @@ public class DocumentController {
         Properties props = datasets.get(dataname);
         String folderurl = props.getProperty("folderpath");
         String foldertype = props.getProperty("format");
+        if(foldertype == null){
+            // default to ta
+            foldertype = "ta";
+            props.setProperty("format", "ta");
+        }
 
         File f = new File(folderurl);
 
