@@ -87,9 +87,9 @@ public class DocumentController {
      */
     public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username, HashMap<String, ConfigFile> datasets) throws Exception {
 
-        Properties props = datasets.get(dataname);
-        String folderurl = props.getProperty("folderpath");
-        String foldertype = props.getProperty("format");
+        ConfigFile props = datasets.get(dataname);
+        String folderurl = props.getFolderpath();
+        String foldertype = props.getFormat();
         if(foldertype == null){
             // default to ta
             foldertype = "ta";
@@ -244,9 +244,9 @@ public class DocumentController {
         String username = sd.username;
 
         ConfigFile prop = sd.datasets.get(dataname);
-        String folderpath = prop.getProperty("folderpath");
+        String folderpath = prop.getFolderpath();
 
-        String labelsproperty = prop.getProperty("labels");
+        String labelsproperty = prop.getLabels();
         labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
         for(String labelandcolor: labelsproperty.split(" ")){
@@ -348,9 +348,9 @@ public class DocumentController {
         String username = sd.username;
         String folder = sd.dataname;
 
-        Properties props = sd.datasets.get(folder);
-        String folderpath = props.getProperty("folderpath");
-        String foldertype = props.getProperty("format");
+        ConfigFile props = sd.datasets.get(folder);
+        String folderpath = props.getFolderpath();
+        String foldertype = props.getFormat();
 
         assert(sentids.length == 1);
         String taid = sentids[0];
@@ -372,7 +372,7 @@ public class DocumentController {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
 
-            String config = sd.prop.getProperty("nerconfig");
+            //String config = sd.prop.getProperty("nerconfig");
             //Sandbox.TrainAndAnnotate(config, outpath, tas);
 
         }

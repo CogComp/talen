@@ -146,7 +146,7 @@ public class SentenceController {
 
         SessionData sd = new SessionData(hs);
 
-        Properties prop = sd.datasets.get(dataname);
+        ConfigFile prop = sd.datasets.get(dataname);
         // this refers to a folder containing a large number of unannotated conll files.
         String folderpath = prop.getProperty("folderpath");
 
@@ -253,7 +253,7 @@ public class SentenceController {
         updategroups(cache, groups);
         hs.setAttribute("groups", groups);
 
-        String labelsproperty = prop.getProperty("labels");
+        String labelsproperty = prop.getLabels();
         List<String> labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
         for (String labelandcolor : labelsproperty.split(" ")) {

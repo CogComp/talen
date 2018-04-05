@@ -15,6 +15,7 @@ public class Common {
 
 
     public static HashMap<String, ConfigFile> loadConfig() {
+        // hardcoded to look in config path
         File configfolder = new File("config");
 
         File[] configfiles = configfolder.listFiles();
@@ -33,7 +34,7 @@ public class Common {
                     BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
 
                     // load a properties file
-                    c.load(in);
+                    c.loadProperties(in);
 
                     datasets.put(f.getName(), c);
 

@@ -2,6 +2,10 @@ package io.github.mayhewsw;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -10,12 +14,12 @@ import java.util.*;
 public class ConfigFile extends Properties{
     private String folderpath;
     private String name;
-    private String[] labels;
+    private String labels;
     private String dict;
     private String format;
     private String mode;
     private String indexpath;
-    private String[] terms;
+    private String terms;
 
     public List<String> allowableentries;
 
@@ -23,11 +27,43 @@ public class ConfigFile extends Properties{
         // do something with properties?
     }
 
+    public void loadProperties(BufferedReader var1) throws IOException {
+        super.load(var1);
+
+        System.out.println(StringUtils.join(this.stringPropertyNames(), " "));
+
+        // also load all the properties herein.
+        folderpath = this.getProperty("folderpath");
+        name = this.getProperty("name");
+        labels = this.getProperty("labels");
+        mode = this.getProperty("mode");
+
+        if(folderpath == null){
+            System.err.println("folderpath must be non-null!");
+        }
+        if(labels == null){
+            System.err.println("labels must be non-null!");
+        }
+        if(name == null){
+            System.err.println("name must be non-null!");
+        }
+        if(mode == null){
+            System.err.println("mode must be non-null!");
+        }
+
+        dict = this.getProperty("dict");
+        format = this.getProperty("format");
+
+        indexpath = this.getProperty("indexpath");
+        terms = this.getProperty("terms");
+    }
+
+
     public String getIndexpath() {
         return indexpath;
     }
 
-    public String[] getTerms() {
+    public String getTerms() {
         return terms;
     }
 
@@ -35,7 +71,7 @@ public class ConfigFile extends Properties{
         this.indexpath = indexpath;
     }
 
-    public void setTerms(String[] terms) {
+    public void setTerms(String terms) {
         this.terms = terms;
     }
 
@@ -48,7 +84,6 @@ public class ConfigFile extends Properties{
         }
         return fname;
     }
-
     public String getFolderpath() {
         return folderpath;
     }
@@ -57,8 +92,12 @@ public class ConfigFile extends Properties{
         return name;
     }
 
-    public String[] getLabels() {
-        return labels;
+    public String getLabels() {
+        return this.labels;
+    }
+
+    public void setLabels(String labels){
+        this.labels = labels;
     }
 
     public String getDict() {
@@ -81,10 +120,6 @@ public class ConfigFile extends Properties{
         this.name = name;
     }
 
-    public void setLabels(String[] labels) {
-        this.labels = labels;
-    }
-
     public void setDict(String dict) {
         this.dict = dict;
     }
@@ -104,12 +139,12 @@ public class ConfigFile extends Properties{
 
         entries.put("folderpath", folderpath);
         entries.put("name", name);
-        entries.put("labels", StringUtils.join(labels, " "));
+        entries.put("labels", labels);
         entries.put("dict", dict);
         entries.put("format", format);
         entries.put("mode", mode);
         entries.put("indexpath", indexpath);
-        entries.put("terms",  StringUtils.join(terms, ","));
+        entries.put("terms",  terms);
 
         StringJoiner sj = new StringJoiner("\n");
         for(String k : entries.keySet()){
