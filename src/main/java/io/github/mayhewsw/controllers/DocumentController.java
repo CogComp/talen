@@ -10,7 +10,9 @@ import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.*;
+import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.utils.HtmlGenerator;
+import io.github.mayhewsw.utils.Utils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -34,7 +36,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.xml.soap.Text;
 import java.io.*;
 import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -69,9 +70,6 @@ public class DocumentController {
         //model.addAttribute("datasets", datasets.keySet());
         model.addAttribute("user", new User());
 
-        if(hs.getAttribute("dict") == null) {
-            hs.setAttribute("dict", new io.github.mayhewsw.Dictionary());
-        }
         return "document/home";
     }
 
@@ -87,12 +85,11 @@ public class DocumentController {
      * @return
      * @throws IOException
      */
-    public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username, HashMap<String, Properties> datasets) throws Exception {
+    public TreeMap<String, TextAnnotation> loadFolder(String dataname, String username, HashMap<String, ConfigFile> datasets) throws Exception {
 
         Properties props = datasets.get(dataname);
         String folderurl = props.getProperty("folderpath");
-        String foldertype = props.getProperty("type");
-
+        String foldertype = props.getProperty("format");
 
         File f = new File(folderurl);
 
@@ -118,8 +115,11 @@ public class DocumentController {
                 TextAnnotation ta = cnl.next();
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
-                TextStatisticsController.updateCounts(ta.getTokenizedText());
             }
+        }
+
+        for(TextAnnotation ta : ret.values()){
+            TextStatisticsController.updateCounts(Utils.getRomanTaToksIfPresent(ta));
         }
 
         // now check the annotation folder to see what this user has already annotated.
@@ -238,7 +238,7 @@ public class DocumentController {
         SessionData sd = new SessionData(hs);
         String username = sd.username;
 
-        Properties prop = sd.datasets.get(dataname);
+        ConfigFile prop = sd.datasets.get(dataname);
         String folderpath = prop.getProperty("folderpath");
 
         String labelsproperty = prop.getProperty("labels");
@@ -252,14 +252,14 @@ public class DocumentController {
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
 
-        String dictpath = prop.getProperty("dictionary");
-        io.github.mayhewsw.Dictionary dict;
+        String dictpath = prop.getProperty("dict");
+        Dictionary dict;
         if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
-            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath, sd.username);
+            dict = new Dictionary(dataname, dictpath, sd.username);
         }else{
             logger.info("No dictionary specified.");
-            dict = new io.github.mayhewsw.Dictionary();
+            dict = new Dictionary(dataname, sd.username);
         }
         hs.setAttribute("dict", dict);
 
@@ -294,7 +294,7 @@ public class DocumentController {
 
         TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username, sd.datasets);
 
-        String logpath = ".";
+        String logpath = "logs/";
         String logfile= String.format("%s/%s-%s.log", logpath, dataname,username);
         hs.setAttribute("logfile", logfile);
 
@@ -345,7 +345,7 @@ public class DocumentController {
 
         Properties props = sd.datasets.get(folder);
         String folderpath = props.getProperty("folderpath");
-        String foldertype = props.getProperty("type");
+        String foldertype = props.getProperty("format");
 
         assert(sentids.length == 1);
         String taid = sentids[0];

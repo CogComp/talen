@@ -142,10 +142,9 @@ public class TextStatisticsController {
     /**
      * Assume that the text is tokenized with spaces. Assume this is
      * called once per document!
-     * @param text
+     * @param words
      */
-    public static void updateCounts(String text){
-        String[] words = text.split(" ");
+    public static void updateCounts(String[] words){
         HashSet<String> uniqwords = new HashSet<>();
         for (String word : words){
             int c  = counts.getOrDefault(word, 0);

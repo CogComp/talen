@@ -29,7 +29,6 @@ public class LoginController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String adduser(Model model,  HttpSession hs) {
-        // really... nothing happens here.
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String name = auth.getName(); //get logged in username
@@ -38,9 +37,10 @@ public class LoginController {
         hs.setAttribute("username", name);
 
         // This will also add datasets...
-        HashMap<String, Properties> datasets = Common.loadConfig();
+        HashMap<String, ConfigFile> datasets = Common.loadConfig();
         hs.setAttribute("datasets", datasets);
 
+        // in case you want to add a new one!
         model.addAttribute("config", new ConfigFile());
 
         return "index";

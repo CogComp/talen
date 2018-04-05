@@ -177,15 +177,15 @@ public class SentenceController {
         sd = new SessionData(hs);
 
         // load the dictionary, graceful fail if not there.
-        String dictpath = prop.getProperty("dictionary");
-        io.github.mayhewsw.Dictionary dict;
+        String dictpath = prop.getProperty("dict");
+        Dictionary dict;
         if (dictpath != null) {
             logger.info("Loading dictionary: " + dictpath);
-            dict = new io.github.mayhewsw.Dictionary(dataname, dictpath, sd.username);
+            dict = new Dictionary(dataname, dictpath, sd.username);
             hs.setAttribute("dict", dict);
         } else {
             logger.info("No dictionary specified.");
-            dict = new io.github.mayhewsw.Dictionary();
+            dict = new Dictionary(dataname, sd.username);
         }
 
         // this ensures that the suffixes item is never null.
@@ -222,7 +222,7 @@ public class SentenceController {
                 View sents = ta.getView(ViewNames.SENTENCE);
                 talist.add(ta);
 
-                TextStatisticsController.updateCounts(ta.getTokenizedText());
+                TextStatisticsController.updateCounts(Utils.getRomanTaToksIfPresent(ta));
 
                 // this will overwrite whatever was previously there.
                 for (Constituent sent : sents.getConstituents()) {
@@ -282,10 +282,6 @@ public class SentenceController {
         SessionData sd = new SessionData(hs);
         model.addAttribute("datasets", sd.datasets.keySet());
         model.addAttribute("user", new User());
-
-        if (hs.getAttribute("dict") == null) {
-            hs.setAttribute("dict", new Dictionary());
-        }
 
         return "sentence/home";
     }

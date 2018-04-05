@@ -2,15 +2,42 @@ package io.github.mayhewsw;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
+import java.util.*;
 
-public class ConfigFile {
+/**
+ * This class represents the exact names of each element in a config file.
+ */
+public class ConfigFile extends Properties{
     private String folderpath;
     private String name;
     private String[] labels;
     private String dict;
     private String format;
     private String mode;
+    private String indexpath;
+    private String[] terms;
+
+    public List<String> allowableentries;
+
+    public ConfigFile(){
+        // do something with properties?
+    }
+
+    public String getIndexpath() {
+        return indexpath;
+    }
+
+    public String[] getTerms() {
+        return terms;
+    }
+
+    public void setIndexpath(String indexpath) {
+        this.indexpath = indexpath;
+    }
+
+    public void setTerms(String[] terms) {
+        this.terms = terms;
+    }
 
     public String getFname() {
         String fname;
@@ -72,11 +99,25 @@ public class ConfigFile {
 
     @Override
     public String toString() {
-        return "folderpath\t" + folderpath + '\n' +
-                "name\t" + name + '\n' +
-                "labels\t" + StringUtils.join(labels, " ") + '\n' +
-                "dict\t" + dict + '\n' +
-                "format\t" + format + '\n' +
-                "mode\t" + mode;
+
+        HashMap<String, String> entries = new HashMap<>();
+
+        entries.put("folderpath", folderpath);
+        entries.put("name", name);
+        entries.put("labels", StringUtils.join(labels, " "));
+        entries.put("dict", dict);
+        entries.put("format", format);
+        entries.put("mode", mode);
+        entries.put("indexpath", indexpath);
+        entries.put("terms",  StringUtils.join(terms, ","));
+
+        StringJoiner sj = new StringJoiner("\n");
+        for(String k : entries.keySet()){
+            if(entries.get(k) != null){
+                sj.add(k + "\t" + entries.get(k));
+            }
+        }
+
+        return sj.toString();
     }
 }

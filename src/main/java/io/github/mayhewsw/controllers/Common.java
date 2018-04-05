@@ -1,7 +1,11 @@
 package io.github.mayhewsw.controllers;
 
+import edu.illinois.cs.cogcomp.core.io.LineIO;
+import io.github.mayhewsw.ConfigFile;
+
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 public class Common {
@@ -10,12 +14,12 @@ public class Common {
     public static final String FOLDERCONLL = "conll";
 
 
-    public static HashMap<String, Properties> loadConfig(){
+    public static HashMap<String, ConfigFile> loadConfig() {
         File configfolder = new File("config");
 
         File[] configfiles = configfolder.listFiles();
 
-        HashMap<String, Properties> datasets = new HashMap<>();
+        HashMap<String, ConfigFile> datasets = new HashMap<>();
 
         for(File f : configfiles){
             if(f.getName().endsWith("~")) continue;
@@ -23,17 +27,15 @@ public class Common {
             if(f.getName().startsWith("doc-") || f.getName().startsWith("sent-")) {
 
                 System.out.println(f);
-                Properties prop = new Properties();
-                // there's probably a better way to set defaults...
-                prop.setProperty("type", FOLDERCONLL);
+                ConfigFile c = new ConfigFile();
 
                 try {
                     BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF8"));
 
                     // load a properties file
-                    prop.load(in);
+                    c.load(in);
 
-                    datasets.put(f.getName(), prop);
+                    datasets.put(f.getName(), c);
 
                 } catch (IOException e) {
 

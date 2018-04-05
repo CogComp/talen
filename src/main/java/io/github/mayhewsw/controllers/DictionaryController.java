@@ -34,7 +34,7 @@ public class DictionaryController {
         // this is called if we go to /dict
 
         if(sd.dict == null){
-            Dictionary dict = new Dictionary();
+            Dictionary dict = new Dictionary(sd.dataname, sd.username);
             hs.setAttribute("dict", dict);
             sd.dict = dict;
         }
@@ -86,7 +86,7 @@ public class DictionaryController {
 
         if(key.length() > 0 && val.length() > 0) {
             sd.dict.add(key, val);
-            sd.dict.save(sd.username);
+            sd.dict.save(sd.dataname, sd.username);
         }
 
         return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);

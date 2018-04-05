@@ -7,7 +7,7 @@
 
 <div layout:fragment="navlinks">
     <ul class="navbar-nav" id="pagesbar">
-        <li class="nav-item"><a class="nav-link" href="/document/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="/document/annotation">All annotations</a></li>
         <!--<li><a href="/document/dict">Dictionary</a></li>-->
     </ul>
@@ -16,21 +16,7 @@
 <div layout:fragment="content">
 <div class="container">
 
-    <div th:if="${session.dict.isEmpty()}">
-
-        <div class="col-md-12">
-
-            <h3>No dictionary</h3>
-
-            <p>No dictionary has been loaded. To include a dictionary, your properties file needs to include a <code>dictionary</code> property. </p>
-
-            <pre>dictionary	/path/to/dict/file</pre>
-
-        </div>
-
-    </div>
-
-    <div th:unless="${session.dict.isEmpty()}">
+    <div>
 
         <div class="row">
 

@@ -97,25 +97,27 @@ public class Dictionary extends HashMap<String, List<String>> {
     /**
      * This saves the user-generated pairs to file.
      */
-    public void save(String username) throws IOException {
-        if(this.dictpath != null) {
-            List<String> outlines = newpairs.stream().map(p -> p.getFirst() + "\t" + p.getSecond()).collect(toList());
-            LineIO.write(this.dictpath + "." + username, outlines);
-        }else{
-            logger.error("dictpath is null! nothing is being saved!");
-        }
+    public void save(String dataname, String username) throws IOException {
+        List<String> outlines = newpairs.stream().map(p -> p.getFirst() + "\t" + p.getSecond()).collect(toList());
+        LineIO.write(getUserDictPath(dataname, username), outlines);
     }
 
     /**
-     * Just load an empty dictionary.
+     * This defines a standard for the user dictionary path
+     * @param dataname
+     * @param username
+     * @return
      */
-    public Dictionary(){
-        this.newpairs = new ArrayList<>();
+    public String getUserDictPath(String dataname, String username){
+        String userdictpath = String.format("dicts/%s-%s.txt", dictname, username);
+        return userdictpath;
+    }
 
-        this.dictpath = "/tmp/dictionary.txt";
-        logger.info("Empty dictionary has been created. Path is: " + this.dictpath);
-        logger.warn("It is highly recommended to include the dictionary path in your config file.");
-
+    /**
+     * This creates a default name based on the dataname and username.
+     */
+    public Dictionary(String dataname, String username){
+        this(dataname, null, username);
     }
 
     public Dictionary(String dictname, String dictpath, String username) {
@@ -128,62 +130,63 @@ public class Dictionary extends HashMap<String, List<String>> {
 
         ArrayList<String> dictlines = null;
 
-        try {
-            dictlines = LineIO.read(dictpath);
-        } catch (IOException e) {
-            // an empty dictionary is a graceful failure.
-            logger.info("Dictionary file not found: "+dictpath+". Dictionary is empty.");
-            return;
-        }
+        if(dictpath != null) {
+            try {
+                dictlines = LineIO.read(dictpath);
 
-        // I want a dictionary that maps from foreign->english.
+                // I want a dictionary that maps from foreign->english.
 
-        // This keeps track of pair counts, so we can sort according to popularity.
-        HashMap<Pair<String, String>, Integer> pairs = new HashMap<>();
+                // This keeps track of pair counts, so we can sort according to popularity.
+                HashMap<Pair<String, String>, Integer> pairs = new HashMap<>();
 
-        logger.info("Loading dictionary...");
-        for(String line : dictlines){
-            String[] sline = line.split("\t");
-            String f = sline[0];
-            String e = sline[1];
+                logger.info("Loading dictionary...");
+                for (String line : dictlines) {
+                    String[] sline = line.split("\t");
+                    String f = sline[0];
+                    String e = sline[1];
 
-            Pair<String, String> ef = new Pair<>(e,f);
-            Pair<String, String> eflower = new Pair<>(e.toLowerCase(),f.toLowerCase());
+                    Pair<String, String> ef = new Pair<>(e, f);
+                    Pair<String, String> eflower = new Pair<>(e.toLowerCase(), f.toLowerCase());
 
-            addOrIncrement(pairs, ef);
-            addOrIncrement(pairs, eflower);
+                    addOrIncrement(pairs, ef);
+                    addOrIncrement(pairs, eflower);
 
-            for(Pair<String, String> p : product(e.split(" "), f.split(" "))){
-                addOrIncrement(pairs, p);
-                Pair<String, String> plower = new Pair<>(p.getFirst().toLowerCase(), p.getSecond().toLowerCase());
-                addOrIncrement(pairs, plower);
+                    for (Pair<String, String> p : product(e.split(" "), f.split(" "))) {
+                        addOrIncrement(pairs, p);
+                        Pair<String, String> plower = new Pair<>(p.getFirst().toLowerCase(), p.getSecond().toLowerCase());
+                        addOrIncrement(pairs, plower);
+                    }
+
+                    // actually add to dictionary.
+                    this.add(f, e, false);
+                }
+
+                // this is now f2e.
+                for (String k : this.keySet()) {
+                    // scores gathers
+
+                    Comparator<Pair<String, Integer>> comparator = Comparator.comparing(Pair::getSecond);
+
+                    List<String> sortedpairs = this.get(k).stream()
+                            .map(w -> new Pair<>(w, k))
+                            .map(p -> new Pair<>(p.getFirst(), pairs.get(p)))
+                            .sorted(comparator.reversed())
+                            .map(p -> p.getFirst())
+                            .collect(toList());
+
+                    this.put(k, sortedpairs);
+                }
+            } catch (IOException e) {
+                // an empty dictionary is a graceful failure.
+                logger.info("Dictionary file not found: " + dictpath + ". Dictionary is empty.");
             }
-
-            // actually add to dictionary.
-            this.add(f, e, false);
-
-        }
-
-        // this is now f2e.
-        for(String k : this.keySet()){
-            // scores gathers
-
-            Comparator<Pair<String, Integer>> comparator = Comparator.comparing(Pair::getSecond);
-
-            List<String> sortedpairs = this.get(k).stream()
-                    .map(w -> new Pair<>(w, k))
-                    .map(p -> new Pair<>(p.getFirst(), pairs.get(p)))
-                    .sorted(comparator.reversed())
-                    .map(p -> p.getFirst())
-                    .collect(toList());
-
-            this.put(k, sortedpairs);
         }
 
         // Also read the user generated pairs.
         ArrayList<String> userlines = new ArrayList<>();
+        String userdictpath = this.getUserDictPath(dictname, username);
         try {
-            userlines = LineIO.read(dictpath + "." + username);
+            userlines = LineIO.read(userdictpath);
         } catch (IOException e) {
             // an empty dictionary is a graceful failure.
             logger.info("User dictionary file not found: " + dictpath + "." + username +". User dictionary is empty.");
