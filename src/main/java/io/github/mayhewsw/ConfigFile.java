@@ -58,7 +58,6 @@ public class ConfigFile extends Properties{
         terms = this.getProperty("terms");
     }
 
-
     public String getIndexpath() {
         return indexpath;
     }
