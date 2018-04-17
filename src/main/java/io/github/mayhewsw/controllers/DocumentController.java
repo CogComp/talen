@@ -5,6 +5,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
@@ -367,6 +368,9 @@ public class DocumentController {
             String savepath = outpath + taid;
 
             if(foldertype.equals(Common.FOLDERTA)) {
+                if(!IOUtils.exists(outpath)) {
+                    IOUtils.mkdir(outpath);
+                }
                 SerializationHelper.serializeTextAnnotationToFile(taToSave, savepath, true,true);
             }else if(foldertype.equals(Common.FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
