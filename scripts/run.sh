@@ -4,5 +4,7 @@ if [ ! -f config/users.txt ]; then
     exit
 fi
 
+mkdir -p logs
+mkdir -p dicts
 
 mvn spring-boot:run -Drun.addResources=true
