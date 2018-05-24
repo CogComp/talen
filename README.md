@@ -3,7 +3,7 @@
 <img src="/src/main/resources/static/img/logo-black-trans.png" width="50%" />
 -->
 
-# TALEN: Tool for Annotation of Low-resource ENtities.
+# TALEN: Tool for Annotation of Low-resource ENtities
 
 A lightweight web-based tool for annotating word sequences.
 
@@ -20,7 +20,6 @@ If you use this in your research paper, please cite us!
     title = {TALEN: Tool for Annotation of Low-resource ENtities},
     booktitle = {ACL System Demonstrations},
     year = {2018},
-    url = "http://cogcomp.org/papers/MayhewRo18.pdf",
 }
 ```
 

@@ -158,12 +158,11 @@ $(document).ready(function() {
             }
         });
 
-        // click on anything but a letter, and they hide.
+        // click on anything but a word, and they hide.
         $(document).mousedown(function(e){
 
             var hasclass = $(e.target).hasClass("labelbutton");
-
-            if(!e.target.id.startsWith("tok") && !hasclass) {
+            if(!e.target.id.startsWith("tok") && !hasclass && !(e.target.tagName == "MARK")) {
                 console.log("extraneous click");
                 $("[id^=tok]").popover("hide");
                 resetrange();
@@ -218,6 +217,7 @@ $(document).ready(function() {
                 highlighting = true;
                 resetrange();
                 updaterange(this.id);
+                console.log(range);
             }
         });
 
@@ -401,6 +401,7 @@ $(document).ready(function() {
         }).done(function (msg) {
             $("#htmlcontainer").html(msg);
             loadtok();
+            performMark();
         });
     }
 
@@ -451,4 +452,45 @@ $(document).ready(function() {
     $( "#savebutton" ).click(save);
     $( ".saveclass" ).click(save);
 
+});
+
+
+
+// Create an instance of mark.js and pass an argument containing
+// the DOM object of the context (where to search for matches)
+var markInstance = new Mark(document.querySelector("#htmlcontainer"));
+// Cache DOM elements
+var keywordInput = document.querySelector("input[name='keyword']");
+
+function performMark() {
+    console.log("mark");
+
+    // Read the keyword
+    var keyword = keywordInput.value;
+
+    // Determine selected options
+    var options = {
+        "accuracy" : {
+            "value" : "complementary",
+            "limiters" : ["?"]   // this is here to apostrophes in names don't block full match.
+        }
+    };
+
+    // Remove previous marked elements and mark
+    // the new keyword inside the context
+    markInstance.unmark({
+        done: function(){
+            markInstance.mark(keyword, options);
+        }
+    });
+};
+
+// Listen to input and option changes
+keywordInput.addEventListener("input", performMark);
+
+console.log($(".table-hover"));
+
+$(".table-hover").mouseover(function() {
+    console.log("over a td");
+    // window.location = $(this).data("href");
 });

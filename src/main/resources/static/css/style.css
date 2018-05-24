@@ -142,3 +142,9 @@ body {
 /*.highlighted {*/
     /*background-color: #fff2ac;*/
 /*}*/
+
+mark{
+    padding: 0;
+    background: transparent;
+    color: red;
+}

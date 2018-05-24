@@ -1,7 +1,7 @@
 #!/bin/sh
 if [ ! -f config/users.txt ]; then
-    echo "config/users.txt not found. Try running: python scripts/quickstart.py"
-    exit
+    echo "config/users.txt not found... creating with default username and password (user/user)";
+    echo "user user" > config/users.txt;
 fi
 
 mkdir -p logs
