@@ -7,7 +7,7 @@
 
 A lightweight web-based tool for annotating word sequences.
 
-![Screenshot of web interface](/src/main/resources/static/img/selection.jpg?raw=true "Screenshot")
+![Screenshot of web interface](/src/main/resources/static/img/selection.png?raw=true "Screenshot")
 
 
 ## Citation
