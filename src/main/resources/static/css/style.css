@@ -19,15 +19,16 @@
 }
 
 .cons {
-    padding-top: 3px;
-    padding-bottom: 3px;
+    /*padding-top: 2px;*/
+    /*padding-bottom: 2px;*/
     border-radius: 5px;
 }
 
 .token {
-    padding-left: 2px;
-    padding-right: 2px;
-
+    padding: 1px;
+    /*padding-left: 1px;*/
+    /*padding-right: 1px;*/
+    border: 1px solid transparent;
 }
 
 .bestlabel {
@@ -121,25 +122,20 @@ body {
 }
 
 .highlightstart {
-    border-right: none;
-    border-left: lightgray solid 1px;
-    border-top: lightgray solid 1px;
-    border-bottom: lightgray solid 1px;
+    border: 1px solid lightgray;
+    border-right-color: transparent;
     border-radius: 3px 0 0 3px;
 }
 
 .highlighted {
-    border-right: none;
-    border-left: none;
-    border-top: lightgray solid 1px;
-    border-bottom: lightgray solid 1px;
+    border: 1px solid lightgray;
+    border-right-color: transparent;
+    border-left-color: transparent;
 }
 
 .highlightend {
-    border-left: none;
-    border-right: lightgray solid 1px;
-    border-top: lightgray solid 1px;
-    border-bottom: lightgray solid 1px;
+    border: 1px solid lightgray;
+    border-left-color: transparent;
     border-radius: 0 3px 3px 0;
 }
 

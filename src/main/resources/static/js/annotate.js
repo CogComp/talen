@@ -115,6 +115,12 @@ $(document).ready(function() {
         return ret;
     }
 
+    function iscurrentrange(id){
+        var docid = id.split("-")[1];
+        var intid = parseInt(id.split("-")[2]);
+        return range.id == docid && (range.start == intid || range.end == intid);
+    }
+
 
     function loadtok(){
         console.log("loadtok called...");
@@ -140,7 +146,8 @@ $(document).ready(function() {
                 return text + " (" + link + " )";
             },
             html: true,
-            trigger: "focus"
+            trigger: "focus",
+            animation: false,
         });
 
 
@@ -168,7 +175,9 @@ $(document).ready(function() {
         // the top whenever definput has focus.
         var cursorFocus = function(elem) {
             var x = window.scrollX, y = window.scrollY;
-            elem.focus();
+            if(elem != null) {
+                elem.focus();
+            }
             window.scrollTo(x, y);
         }
 
@@ -178,7 +187,6 @@ $(document).ready(function() {
             if(event.which == 1) {
                 $("[id^=tok]").not($(this)).popover('hide');
                 $(this).popover("toggle");
-
 
                 highlighting = false;
 
@@ -191,22 +199,26 @@ $(document).ready(function() {
                     }
                 });
 
-                $.ajax({
-                    method: "POST",
-                    url: "/stats/getstats",
-                    data: {text: gettextinrange(), alltext: getalltext()}
-                }).done(function (msg) {
-                    $("#infobox").html(msg);
-                });
+                if(range.start > -1) {
+                    $.ajax({
+                        method: "POST",
+                        url: "/stats/getstats",
+                        data: {text: gettextinrange(), alltext: getalltext()}
+                    }).done(function (msg) {
+                        $("#infobox").html(msg);
+                    });
+                }else{
+                    showtopstats();
+                }
             }
-
-
         });
 
         $("[id^=tok]").mousedown(function(event){
-            highlighting = true;
-            resetrange();
-            updaterange(this.id);
+            if(event.which == 1) {
+                highlighting = true;
+                resetrange();
+                updaterange(this.id);
+            }
         });
 
         $("div.text")
@@ -218,6 +230,9 @@ $(document).ready(function() {
 
         // on right click, change label to nothing.
         $("[id^=tok]").contextmenu(function(event){
+            resetrange();
+            $("[id^=tok]").popover('hide');
+            showtopstats();
             event.preventDefault();
             var span = event.currentTarget;
 

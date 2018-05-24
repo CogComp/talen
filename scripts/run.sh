@@ -7,4 +7,4 @@ fi
 mkdir -p logs
 mkdir -p dicts
 
-mvn spring-boot:run -Drun.addResources=true
+mvn spring-boot:run
