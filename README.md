@@ -1,13 +1,28 @@
 
-
+<!--
 <img src="/src/main/resources/static/img/logo-black-trans.png" width="50%" />
+-->
 
 # TALEN: Tool for Annotation of Low-resource ENtities.
 
 A lightweight web-based tool for annotating word sequences.
 
-![Screenshot of web interface](/src/main/resources/static/img/screenshot.png?raw=true "Screenshot")
+![Screenshot of web interface](/src/main/resources/static/img/selection.jpg?raw=true "Screenshot")
 
+
+## Citation
+
+If you use this in your research paper, please cite us!
+
+```
+@inproceedings{talen2018,
+    author = {Stephen Mayhew, Dan Roth},
+    title = {TALEN: Tool for Annotation of Low-resource ENtities},
+    booktitle = {ACL System Demonstrations},
+    year = {2018},
+    url = "http://cogcomp.org/papers/MayhewRo18.pdf",
+}
+```
 
 ## Lightweight Demo
 
@@ -105,3 +120,4 @@ $ python scripts/preparedata.py testfile tmp.csv docs/index.html
 can all be removed if desired. I found it was useful for mturk tasks. When you create the mturk task, there will be a 
 submit button, and the answer will be put into the `#finalsubmission` field. The output string is a Javascript list of token spans along with 
 label. 
+
