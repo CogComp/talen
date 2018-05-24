@@ -1,0 +1,4 @@
+name	EnglishDefault
+folderpath	data/eng-conll/
+format	conll
+labels	PER:yellow ORG:lightblue LOC:greenyellow MISC:coral
