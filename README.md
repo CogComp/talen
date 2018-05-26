@@ -23,6 +23,8 @@ If you use this in your research paper, please cite us!
 }
 ```
 
+Read the paper here: [http://cogcomp.org/papers/MayhewRo18.pdf]() 
+
 ## Lightweight Demo
 
 See a lightweight Javascript-only demo here: [cogcomp.github.io/talen/](http://cogcomp.github.io/talen/)
