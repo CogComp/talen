@@ -23,7 +23,7 @@ If you use this in your research paper, please cite us!
 }
 ```
 
-Read the paper here: [http://cogcomp.org/papers/MayhewRo18.pdf]() 
+Read the paper here: [http://cogcomp.org/papers/MayhewRo18.pdf](http://cogcomp.org/papers/MayhewRo18.pdf) 
 
 ## Lightweight Demo
 
