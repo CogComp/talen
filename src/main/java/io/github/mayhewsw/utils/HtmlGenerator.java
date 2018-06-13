@@ -62,26 +62,9 @@ public class HtmlGenerator {
         // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text = Utils.getRomanTaToksIfPresent(ta);
 
-//        if(ta.hasView(ViewNames.TRANSLITERATION)){
-//            View translit = ta.getView(ViewNames.TRANSLITERATION);
-//            StringBuilder sb = new StringBuilder();
-//            for(Constituent c : translit.getConstituents()){
-//                sb.append(c.getLabel().replace(" ", "_") +" ");
-//            }
-//            text = sb.toString().trim().split(" ");
-//        }else {
-//
-//            if (sentspan.getFirst() == -1) {
-//                text = ta.getTokens().clone();
-//            } else {
-//                text = Arrays.copyOfRange(ta.getTokenizedText().split(" "), sentspan.getFirst(), sentspan.getSecond());
-//            }
-//        }
-
         if(sentspan.getFirst() != -1) {
-            text = Arrays.copyOfRange(ta.getTokenizedText().split(" "), sentspan.getFirst(), sentspan.getSecond());
+            text = Arrays.copyOfRange(text, sentspan.getFirst(), sentspan.getSecond());
         }
-
 
         // add spans to every word that is not a constituent.
         for (int t = 0; t < text.length; t++) {
@@ -128,15 +111,15 @@ public class HtmlGenerator {
             text[end - 1] += "</span>";
         }
 
-        for (Constituent c : sentnersugg) {
-
-            int start = c.getStartSpan() - startoffset;
-            int end = c.getEndSpan() - startoffset;
-
-            // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<strong>%s", text[start]);
-            text[end - 1] += "</strong>";
-        }
+//        for (Constituent c : sentnersugg) {
+//
+//            int start = c.getStartSpan() - startoffset;
+//            int end = c.getEndSpan() - startoffset;
+//
+//            // important to also include 'cons' class, as it is a keyword in the html
+//            text[start] = String.format("<strong>%s", text[start]);
+//            text[end - 1] += "</strong>";
+//        }
 
         // Then add sentences.
         List<Constituent> sentlist;

@@ -325,9 +325,7 @@ $(document).ready(function() {
             url: "/dict/add",
             data: {key:key, val:val, idlist: getsentids()}
         }).done(function (msg) {
-            console.log("successful addition");
-            $("#htmlcontainer").html(msg);
-            loadtok();
+            refreshsents();
         });
     };
 

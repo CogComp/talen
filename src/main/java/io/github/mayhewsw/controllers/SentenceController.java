@@ -7,7 +7,9 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
+import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 //import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
 import io.github.mayhewsw.*;
@@ -23,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
 import javax.servlet.http.HttpSession;
@@ -84,7 +88,7 @@ public class SentenceController {
 //    }
 
     @RequestMapping(value = "/search", method = RequestMethod.GET)
-    public String search(@RequestParam(value = "query", required = true) String query, @RequestParam(value = "searchinanno", required = false) String searchinanno, HttpSession hs, Model model) throws IOException {
+    public String search(@RequestParam(value = "query", required = true) String query, @RequestParam(value = "searchinanno", required = false) String searchinanno, HttpSession hs, Model model) throws Exception {
         SessionData sd = new SessionData(hs);
 
         boolean annosearch = false;
@@ -117,7 +121,7 @@ public class SentenceController {
         }
 
         // this is a special group.
-        //String html = HtmlGenerator.getAllHTML(grouplist, query, sd);
+        //String html = HtmlGenerator.getAllHTML(grouplist, query, sd);g
         String html = this.gethtml(grouplist.toArray(new String[grouplist.size()]), query, model, hs);
 
         model.addAttribute("groupid", "specialgroup-" + query);
@@ -216,15 +220,17 @@ public class SentenceController {
         // Load file. Build annosents based on which sentences are annotated.
         if ((new File(outfolder)).exists()) {
             TextStatisticsController.resetstats();
-            CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
-            while (cnl.hasNext()) {
-                TextAnnotation ta = cnl.next();
+
+            File tapath = new File(outfolder);
+            File[] filelist = tapath.listFiles();
+            for(File f : filelist){
+                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(f.getAbsolutePath());
                 View sents = ta.getView(ViewNames.SENTENCE);
                 talist.add(ta);
 
                 TextStatisticsController.updateCounts(Utils.getRomanTaToksIfPresent(ta));
 
-                // this will overwrite whatever was previously there.
+                // this will overwrite whatever was previously in the cache.
                 for (Constituent sent : sents.getConstituents()) {
                     String sentid = getSentId(sent);
 
@@ -232,6 +238,7 @@ public class SentenceController {
                     cache.put(sentid, sent);
                     List<Constituent> nercons = sent.getTextAnnotation().getView(ViewNames.NER_CONLL).getConstituentsCovering(sent);
                     for (Constituent nercon : nercons) {
+
                         String stemmed = Utils.stem(nercon.getTokenizedSurfaceForm(), sd.suffixes);
 
                         groups.putIfAbsent(stemmed, new Group());
@@ -322,7 +329,7 @@ public class SentenceController {
      * @param groups
      * @throws IOException
      */
-    public static void updategroups(SentenceCache cache, HashMap<String, Group> groups) throws IOException {
+    public static void updategroups(SentenceCache cache, HashMap<String, Group> groups) throws Exception {
         logger.info("Updating groups...");
 
         // all sentence ids that appear in groups.
@@ -421,7 +428,7 @@ public class SentenceController {
     @RequestMapping(value = "/addtext", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public void addtext(@RequestParam(value = "text") String text, @RequestParam(value = "label") String label, @RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws IOException {
+    public void addtext(@RequestParam(value = "text") String text, @RequestParam(value = "label") String label, @RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws Exception {
         SessionData sd = new SessionData(hs);
 
         List<Constituent> candidates = new ArrayList<>();
@@ -512,7 +519,7 @@ public class SentenceController {
      * @throws IOException
      */
     @RequestMapping(value = "/addtextsave", method = RequestMethod.GET)
-    public String addtextandsave(@RequestParam(value = "text") String text, @RequestParam(value = "label") String label, @RequestParam(value = "groupid") String groupid, HttpSession hs, Model model) throws IOException {
+    public String addtextandsave(@RequestParam(value = "text") String text, @RequestParam(value = "label") String label, @RequestParam(value = "groupid") String groupid, HttpSession hs, Model model) throws Exception {
 
         SessionData sd = new SessionData(hs);
 
@@ -531,7 +538,7 @@ public class SentenceController {
 
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
-    public void save(@RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws IOException {
+    public void save(@RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws Exception {
         logger.info("Save has been called for list: " + sentids);
 
         SessionData sd = new SessionData(hs);
@@ -604,14 +611,22 @@ public class SentenceController {
             String outpath = folderpath + "-sentanno-" + username + "/";
             logger.info("Writing out to: " + outpath);
 
-            CoNLLNerReader.TaToConll(talist, outpath);
+            if(!IOUtils.exists(outpath)){
+                IOUtils.mkdir(outpath);
+            }
+
+            for(TextAnnotation ta : talist){
+                SerializationHelper.serializeTextAnnotationToFile(ta, outpath + "/" + ta.getId(), true,true);
+            }
+            //CoNLLNerReader.TaToConll(talist, outpath);
+
         } else {
             logger.error("Output folder is null. Probably because the config file needs a 'folderpath' option.");
         }
     }
 
     @RequestMapping(value = "/annotation", method = RequestMethod.GET)
-    public String annotation(@RequestParam(value = "groupid", required = false) String groupid, Model model, HttpSession hs) throws IOException {
+    public String annotation(@RequestParam(value = "groupid", required = false) String groupid, Model model, HttpSession hs) throws Exception {
         SessionData sd = new SessionData(hs);
 
         HashMap<String, Group> groups = sd.groups;
@@ -622,6 +637,7 @@ public class SentenceController {
 
         // this means we are looking at a specific sentence.
         if (groupid != null) {
+            System.out.println("MAKE SURE TO UNESCAPE! Looking at groupid: " + groupid);
             Group sentids = groups.get(groupid);
 
             //String html = HtmlGenerator.getAllHTML(new ArrayList<String>(sentids), sd);
@@ -658,14 +674,18 @@ public class SentenceController {
                 int numunlabeled = 0;
                 for (String sentid : group) {
                     Constituent sent = sd.cache.getSentence(sentid);
-                    View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
 
-                    List<Constituent> nercons = ner.getConstituentsCovering(sent);
                     boolean grouplabeledinsentence = false;
-                    for (Constituent nercon : nercons) {
-                        if (nercon.getTokenizedSurfaceForm().contains(groupkey)) {
-                            grouplabeledinsentence = true;
-                            break;
+                    if(sent.getTextAnnotation().hasView(ViewNames.NER_CONLL)) {
+                        View ner = sent.getTextAnnotation().getView(ViewNames.NER_CONLL);
+
+                        List<Constituent> nercons = ner.getConstituentsCovering(sent);
+
+                        for (Constituent nercon : nercons) {
+                            if (nercon.getTokenizedSurfaceForm().contains(groupkey)) {
+                                grouplabeledinsentence = true;
+                                break;
+                            }
                         }
                     }
                     // by here, I know if sentence is group labeled. If answer is YES, then keep checking sentences.
@@ -774,7 +794,7 @@ public class SentenceController {
     @RequestMapping(value = "/gethtml", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String gethtml(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
+    public String gethtml(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws Exception {
         SessionData sd = new SessionData(hs);
 
         String ret = "";
@@ -790,7 +810,7 @@ public class SentenceController {
     @RequestMapping(value = "/getsuggestions", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String getsuggestions(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws FileNotFoundException {
+    public String getsuggestions(@RequestParam(value = "sentids[]", required = true) String[] sentids, String query, Model model, HttpSession hs) throws Exception {
         SessionData sd = new SessionData(hs);
 
         Set<String> entities = new HashSet<String>();
@@ -825,7 +845,7 @@ public class SentenceController {
 
     @RequestMapping(value = "/toggledefs", method = RequestMethod.GET)
     @ResponseBody
-    public String toggledefs(@RequestParam(value = "idlist[]") String[] idlist, Model model, HttpSession hs) throws FileNotFoundException {
+    public String toggledefs(@RequestParam(value = "idlist[]") String[] idlist, Model model, HttpSession hs) throws Exception {
         SessionData sd = new SessionData(hs);
 
         Boolean showdefs = sd.showdefs;
@@ -840,7 +860,7 @@ public class SentenceController {
 
 
     @RequestMapping(value = "/annotateall", method = RequestMethod.GET)
-    public String annotateall(HttpSession hs, Model model) throws IOException {
+    public String annotateall(HttpSession hs, Model model) throws Exception {
         SessionData sd = new SessionData(hs);
 
         HashMap<String, Group> groups = sd.groups;

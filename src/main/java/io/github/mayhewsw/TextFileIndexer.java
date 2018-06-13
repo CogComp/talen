@@ -4,8 +4,10 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.controllers.SentenceController;
+import org.apache.commons.cli.*;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
@@ -21,6 +23,7 @@ import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * This terminal application creates an Apache Lucene index in a folder and adds files into this index
@@ -76,57 +79,58 @@ public class TextFileIndexer {
 
     /**
      * This reads documents one at a time, and builds an index of sentences.
-     * @param conlldir
-     * @param origfiledir
+     * @param inpath
      * @param indexDir
      * @throws IOException
      */
-    public static void buildsentenceindex(String conlldir, String origfiledir, String indexDir) throws IOException {
-        // we write to this open file object.
+    public static void buildsentenceindex(String inpath, String indexDir) throws Exception {
 
         FSDirectory dir = FSDirectory.open(Paths.get(indexDir));
-
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-
         IndexWriter writer = new IndexWriter(dir, config);
 
-        TextAnnotation ta;
-        File file = new File(conlldir);
+        File tapath = new File(inpath);
+        File[] filelist = tapath.listFiles();
+        for(File f : filelist){
+            TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(f.getAbsolutePath(), true);
 
-        //int k =0;
 
-        for(File fname : file.listFiles()){
-            CoNLLNerReader cnr = new CoNLLNerReader(fname.getAbsolutePath());
-            CoNLLNerReader origcnr = new CoNLLNerReader(origfiledir + "/" + fname.getName());
 
-            ta = cnr.next();
             View sentview = ta.getView(ViewNames.SENTENCE);
             List<Constituent> sentences = sentview.getConstituents();
 
-            ta = origcnr.next();
-            View origsentview = ta.getView(ViewNames.SENTENCE);
-            List<Constituent> origsentences = origsentview.getConstituents();
-
-            if(sentences.size() != origsentences.size()) {
-                System.err.println("Sentences aren't the same size!");
-                continue;
+            View translit = null;
+            if(ta.hasView(ViewNames.TRANSLITERATION)){
+                translit = ta.getView(ViewNames.TRANSLITERATION);
+                System.out.println("Has translteration view...");
             }
-
 
             for(int i = 0; i < sentences.size(); i++){
                 Constituent sent = sentences.get(i);
-                Constituent origsent = origsentences.get(i);
-
-                //StringReader sr = new StringReader(sent.getTokenizedSurfaceForm());
 
                 Document d = new Document();
-                TextField tf = new TextField("body", sent.getTokenizedSurfaceForm(), Field.Store.YES);
+
+                String rom = sent.getTokenizedSurfaceForm();
+
+                if(translit != null) {
+                    StringJoiner sb = new StringJoiner(" ");
+                    for(Constituent c : translit.getConstituentsCoveringSpan(sent.getStartSpan(), sent.getEndSpan())){
+                        sb.add(c.getLabel());
+                    }
+                    rom = sb.toString();
+                    System.out.println(rom);
+                }
+
+                TextField tf = new TextField("body", rom, Field.Store.YES);
                 //TextField tf = new TextField("body", sr, Field.Store.YES);
                 d.add(tf);
+
                 d.add(new StringField("filename", SentenceController.getSentId(sent), Field.Store.YES));
 
-                TextField origtf = new TextField("origbody", origsent.getTokenizedSurfaceForm(), Field.Store.YES);
+
+                TextField origtf = new TextField("origbody", sent.getTokenizedSurfaceForm(), Field.Store.YES);
                 d.add(origtf);
+
 
                 writer.addDocument(d);
             }
@@ -202,32 +206,39 @@ public class TextFileIndexer {
         reader.close();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
-        //String dir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E86_LORELEI_Amharic_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/";
+        Options options = new Options();
+        Option help = new Option( "help", "print this message" );
 
-        //String filedir = dir + "conll-pyrom/";
-        //String origfiledir = dir + "conll/";
-        //String indexdir = "/shared/experiments/mayhew2/indices/amharic-indexsent/";
 
-        // IL6
-        //String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E29_LORELEI_IL6_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
-        //String dir = "/shared/corpora/corporaWeb/lorelei/evaluation-20170804/LDC2017E27_LORELEI_IL5_Incident_Language_Pack_for_Year_2_Eval_V1.1/";
+        Option infolder = Option.builder("infolder")
+                .hasArg()
+                .required()
+                .build();
 
-        //String filedir = dir + "conll-set0-rom";
-        //String origfiledir = dir + "conll-set0";
-        //String indexdir = dir + "conll-set0-indexsent";
+        Option indexfolder = Option.builder("indexfolder")
+                .hasArg()
+                .required()
+                .build();
 
-        //String filedir = "/shared/corpora/ner/lorelei/bn/Train-anno-urom";
-        String filedir= "/shared/corpora/ner/lorelei/am/All-pyrom-nolabels/";
-        String origfiledir = filedir;
-        String indexdir = "/tmp/amharic-index";
+        Option testopt = Option.builder("test")
+                .desc("Whether or not to test the index after creation")
+                .build();
 
-        //String filedir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll/";
-        //String indexdir = "/shared/corpora/corporaWeb/lorelei/data/LDC2016E90_LORELEI_Somali_Representative_Language_Pack_Monolingual_Text_V1.1/data/monolingual_text/zipped/conll-indexsent";
+        options.addOption(help);
+        options.addOption(infolder);
+        options.addOption(indexfolder);
+        options.addOption(testopt);
 
-        buildsentenceindex(filedir, origfiledir, indexdir);
-        testindex(indexdir);
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse(options, args);
+
+        buildsentenceindex(cmd.getOptionValue("infolder"), cmd.getOptionValue("indexfolder"));
+
+        if(cmd.hasOption("test")) {
+            testindex(cmd.getOptionValue("indexfolder"));
+        }
     }
 
 

@@ -34,7 +34,7 @@
 
                                 <div class="d-flex">
 
-                                    <a th:href="'/sentence/annotation?groupid=' + ${groupid}" class="mr-1"><span th:text="${groupid}" class="list-group-item-heading"></span></a>
+                                    <a th:href="'/sentence/annotation?groupid=' + ${#strings.replace(groupid,'#','%23')}" class="mr-1"><span th:text="${groupid}" class="list-group-item-heading"></span></a>
                                     <span class="mr-auto" th:text="'(' + ${unlabeledamount.get(groupid)} + '/' + ${unannogroups.get(groupid).size()} + ' unlabeled)'"></span>
 
                                     <a th:each="label : ${labels}"

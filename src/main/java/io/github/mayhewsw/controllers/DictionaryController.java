@@ -9,6 +9,7 @@ import io.github.mayhewsw.utils.HtmlGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -76,20 +77,16 @@ public class DictionaryController {
 
 
     @RequestMapping(value="add", method=RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public String adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="idlist[]") String[] idlist, HttpSession hs, Model model) throws IOException {
+    public void adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="idlist[]") String[] idlist, HttpSession hs, Model model) throws IOException {
 
         SessionData sd = new SessionData(hs);
-
-        TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(idlist[0]);
 
         if(key.length() > 0 && val.length() > 0) {
             sd.dict.add(key, val);
             sd.dict.save(sd.dataname, sd.username);
         }
-
-        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
     }
 
 

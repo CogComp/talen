@@ -4,6 +4,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.controllers.SentenceController;
 import org.apache.lucene.document.Document;
@@ -66,11 +67,18 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * @return
      * @throws FileNotFoundException
      */
-    public Constituent getSentence(String sentid) throws FileNotFoundException {
+    public Constituent getSentence(String sentid) throws Exception {
         if(!this.containsKey(sentid)){
             String fileid = sentid.split(":")[0];
 
-            TextAnnotation ta = new CoNLLNerReader(new File(folderpath, fileid).getAbsolutePath()).next();
+            //TextAnnotation ta = new CoNLLNerReader(new File(folderpath, fileid).getAbsolutePath()).next();
+            TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(new File(folderpath, fileid).getAbsolutePath(), true);
+
+            // I got tired of checking every TA to see if it has the NER_CONLL view...
+            if(!ta.hasView(ViewNames.NER_CONLL)){
+                View ner = new View(ViewNames.NER_CONLL, "SentenceController",ta,1.0);
+                ta.addView(ViewNames.NER_CONLL, ner);
+            }
 
             View sentview = ta.getView(ViewNames.SENTENCE);
             for(Constituent sent : sentview.getConstituents()){
@@ -128,7 +136,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
      * @param k  @return
      * @throws IOException
      */
-    public HashSet<String> gatherTopK(String term, HashSet<String> allgroups, int k) throws IOException {
+    public HashSet<String> gatherTopK(String term, HashSet<String> allgroups, int k) throws Exception {
         // at the very least, we need to have all the results from this term.
 
         // copy allgroups so we never modify it.
