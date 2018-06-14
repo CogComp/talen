@@ -4,6 +4,24 @@
     <title>Annotation Home</title>
 
 
+    <script>
+        function edit(name){
+            console.log(name);
+
+            $.ajax({
+                method: "POST",
+                url: "/loadconfig",
+                data: {config: name}
+            }).done(function (msg) {
+                console.log(msg);
+            });
+
+            $('#exampleModal').modal("show");
+            return false;
+        }
+    </script>
+
+
 </head>
 <body>
 
@@ -119,7 +137,12 @@
                     </div>
 
                     <div class="list-group list-group-flush">
-                        <a th:each="dataname : ${session.datasets.keySet()}" th:if="${dataname.startsWith('doc')}" href="#" th:href="@{/document/loaddata(dataname=${dataname})}" class="list-group-item list-group-item-action"  th:text="${dataname}"></a>
+                        <a th:each="dataname : ${session.datasets.keySet()}" th:if="${dataname.startsWith('doc')}" href="#" th:href="@{/document/loaddata(dataname=${dataname})}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <span class="mb-1" th:text="${dataname}"></span>
+                                <!--<button type="button" class="btn btn-sm btn-outline-primary" th:onclick="'return edit(\'' + ${dataname} + '\')'">Edit</button>-->
+                            </div>
+                        </a>
                         <a href="#" class="list-group-item" data-toggle="modal" data-target="#exampleModal">Add new...</a>
                     </div>
                 </div>

@@ -2,15 +2,13 @@ package io.github.mayhewsw.controllers;
 
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import io.github.mayhewsw.ConfigFile;
+import io.github.mayhewsw.SessionData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -62,6 +60,16 @@ public class LoginController {
 
         return "redirect:/";
 
+    }
+
+    @PostMapping(value = "/loadconfig")
+    @ResponseBody
+    public String config(@RequestParam(value="config") String configname, Model model, HttpSession hs) throws IOException {
+        SessionData sd = new SessionData(hs);
+        ConfigFile c = sd.datasets.get(configname);
+        model.addAttribute("config", c);
+
+        return "success";
     }
 
 
