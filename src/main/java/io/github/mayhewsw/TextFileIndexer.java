@@ -102,7 +102,6 @@ public class TextFileIndexer {
             View translit = null;
             if(ta.hasView(ViewNames.TRANSLITERATION)){
                 translit = ta.getView(ViewNames.TRANSLITERATION);
-                System.out.println("Has translteration view...");
             }
 
             for(int i = 0; i < sentences.size(); i++){
@@ -118,7 +117,6 @@ public class TextFileIndexer {
                         sb.add(c.getLabel());
                     }
                     rom = sb.toString();
-                    System.out.println(rom);
                 }
 
                 TextField tf = new TextField("body", rom, Field.Store.YES);
