@@ -21,6 +21,8 @@ import org.apache.lucene.analysis.shingle.ShingleFilter;
 import org.apache.lucene.analysis.core.WhitespaceTokenizer;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.StringJoiner;
@@ -76,6 +78,23 @@ public class TextFileIndexer {
 
     }
 
+    /**
+     * Faster than LineIO.slurp() ...
+     * @param fname
+     * @return
+     */
+    private static String read(String fname){
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(fname), StandardCharsets.UTF_8)) {
+            for (String line = null; (line = br.readLine()) != null;) {
+                sb.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+
 
     /**
      * This reads documents one at a time, and builds an index of sentences.
@@ -92,10 +111,8 @@ public class TextFileIndexer {
         File tapath = new File(inpath);
         File[] filelist = tapath.listFiles();
         for(File f : filelist){
-            TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(f.getAbsolutePath(), true);
-
-
-
+            TextAnnotation ta = SerializationHelper.deserializeFromJson(TextFileIndexer.read(f.getAbsolutePath()));
+            
             View sentview = ta.getView(ViewNames.SENTENCE);
             List<Constituent> sentences = sentview.getConstituents();
 
