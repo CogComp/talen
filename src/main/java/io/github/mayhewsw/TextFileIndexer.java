@@ -110,9 +110,15 @@ public class TextFileIndexer {
 
         File tapath = new File(inpath);
         File[] filelist = tapath.listFiles();
+        int i = 0;
         for(File f : filelist){
+            if(i%10 == 0){
+                System.out.println("On file " + i + "/" + filelist.length);
+            }
+            i++;
+
             TextAnnotation ta = SerializationHelper.deserializeFromJson(TextFileIndexer.read(f.getAbsolutePath()));
-            
+
             View sentview = ta.getView(ViewNames.SENTENCE);
             List<Constituent> sentences = sentview.getConstituents();
 
