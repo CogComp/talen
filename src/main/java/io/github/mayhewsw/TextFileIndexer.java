@@ -83,7 +83,7 @@ public class TextFileIndexer {
      * @param fname
      * @return
      */
-    private static String read(String fname){
+    public static String read(String fname){
         StringBuilder sb = new StringBuilder();
         try (BufferedReader br = Files.newBufferedReader(Paths.get(fname), StandardCharsets.UTF_8)) {
             for (String line = null; (line = br.readLine()) != null;) {
@@ -248,18 +248,28 @@ public class TextFileIndexer {
                 .desc("Whether or not to test the index after creation")
                 .build();
 
+
+        Option testonlyopt = Option.builder("testonly")
+                .desc("Should we build index before testing, or only test.")
+                .build();
+
         options.addOption(help);
         options.addOption(infolder);
         options.addOption(indexfolder);
         options.addOption(testopt);
+        options.addOption(testonlyopt);
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 
-        buildsentenceindex(cmd.getOptionValue("infolder"), cmd.getOptionValue("indexfolder"));
-
-        if(cmd.hasOption("test")) {
+        if(cmd.hasOption("testonly")) {
             testindex(cmd.getOptionValue("indexfolder"));
+
+        }else {
+            buildsentenceindex(cmd.getOptionValue("infolder"), cmd.getOptionValue("indexfolder"));
+            if (cmd.hasOption("test")) {
+                testindex(cmd.getOptionValue("indexfolder"));
+            }
         }
     }
 

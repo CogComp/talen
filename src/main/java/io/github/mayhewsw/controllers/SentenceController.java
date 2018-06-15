@@ -224,7 +224,8 @@ public class SentenceController {
             File tapath = new File(outfolder);
             File[] filelist = tapath.listFiles();
             for(File f : filelist){
-                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(f.getAbsolutePath());
+                TextAnnotation ta = SerializationHelper.deserializeFromJson(TextFileIndexer.read(f.getAbsolutePath()));
+
                 View sents = ta.getView(ViewNames.SENTENCE);
                 talist.add(ta);
 
