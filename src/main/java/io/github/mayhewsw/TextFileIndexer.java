@@ -112,6 +112,7 @@ public class TextFileIndexer {
         File[] filelist = tapath.listFiles();
         int j = 0;
         for(File f : filelist){
+            System.out.println(f.getAbsolutePath());
             if(j%10 == 0){
                 System.out.println("On file " + j + "/" + filelist.length);
             }
