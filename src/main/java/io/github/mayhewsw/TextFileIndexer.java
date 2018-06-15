@@ -110,12 +110,12 @@ public class TextFileIndexer {
 
         File tapath = new File(inpath);
         File[] filelist = tapath.listFiles();
-        int i = 0;
+        int j = 0;
         for(File f : filelist){
-            if(i%10 == 0){
-                System.out.println("On file " + i + "/" + filelist.length);
+            if(j%10 == 0){
+                System.out.println("On file " + j + "/" + filelist.length);
             }
-            i++;
+            j++;
 
             TextAnnotation ta = SerializationHelper.deserializeFromJson(TextFileIndexer.read(f.getAbsolutePath()));
 
