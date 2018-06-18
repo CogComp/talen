@@ -142,8 +142,8 @@ public class Dictionary extends HashMap<String, List<String>> {
                 logger.info("Loading dictionary...");
                 for (String line : dictlines) {
                     String[] sline = line.split("\t");
-                    if(sline.length == 0) continue;
-                    
+                    if(sline.length < 2) continue;
+
                     String f = sline[0];
                     String e = sline[1];
 
