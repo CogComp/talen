@@ -21,22 +21,21 @@ public class Utils {
      */
     public static String[] getRomanTaToksIfPresent(TextAnnotation ta){
         String[] text;
-//        if(ta.hasView(ViewNames.TRANSLITERATION)){
-//            View translit = ta.getView(ViewNames.TRANSLITERATION);
-//            StringBuilder sb = new StringBuilder();
-//            for(Constituent c : translit.getConstituents()){
-//                String romantext = c.getLabel().replace(" ", "_");
-//                if (romantext.length() == 0){
-//                    romantext = "_";
-//                }
-//                sb.append(romantext +" ");
-//            }
-//            text = sb.toString().trim().split(" ");
-//        }else {
-//            text = ta.getTokens().clone();
-//        }
+        if(ta.hasView("ROMANIZATION")){
+            View translit = ta.getView("ROMANIZATION");
+            StringBuilder sb = new StringBuilder();
+            for(Constituent c : translit.getConstituents()){
+                String romantext = c.getLabel().replace(" ", "_");
+                if (romantext.length() == 0){
+                    romantext = "_";
+                }
+                sb.append(romantext +" ");
+            }
+            text = sb.toString().trim().split(" ");
+        }else {
+            text = ta.getTokens().clone();
+        }
 
-        text = ta.getTokens().clone();
         return text;
     }
 

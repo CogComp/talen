@@ -124,8 +124,8 @@ public class TextFileIndexer {
             List<Constituent> sentences = sentview.getConstituents();
 
             View translit = null;
-            if(ta.hasView(ViewNames.TRANSLITERATION)){
-                translit = ta.getView(ViewNames.TRANSLITERATION);
+            if(ta.hasView("ROMANIZATION")){
+                translit = ta.getView("ROMANIZATION");
             }
 
             for(int i = 0; i < sentences.size(); i++){

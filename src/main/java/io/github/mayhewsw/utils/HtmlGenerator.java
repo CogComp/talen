@@ -32,19 +32,25 @@ public class HtmlGenerator {
 //    }
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false);
     }
 
     public static String getHTMLfromTA(TextAnnotation ta, String query, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false);
     }
+
+
+    public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, Boolean showdefs, Boolean showroman) {
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman);
+    }
+
 
     /**
      * Given a sentence, produce the HTML for display. .
 
      * @return
      */
-    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs) {
+    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman) {
 
         IntPair sentspan = span;
 
@@ -60,7 +66,12 @@ public class HtmlGenerator {
         }
 
         // We clone the text so that when we modify it (below) the TA is unchanged.
-        String[] text = Utils.getRomanTaToksIfPresent(ta);
+        String[] text;
+        if(showroman) {
+            text = Utils.getRomanTaToksIfPresent(ta);
+        }else {
+            text = ta.getTokens().clone();
+        }
 
         if(sentspan.getFirst() != -1) {
             text = Arrays.copyOfRange(text, sentspan.getFirst(), sentspan.getSecond());
@@ -232,6 +243,5 @@ public class HtmlGenerator {
         String out = StringUtils.join("", text);
         return out;
     }
-
 
 }

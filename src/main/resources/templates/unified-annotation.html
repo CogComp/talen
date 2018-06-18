@@ -23,8 +23,33 @@
                         <a id="savebutton" class="btn btn-outline-dark" href="#" role="button"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</a>
                         <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="${session.dict.isEmpty()} ? disabled : nothing" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
                         
-                        <a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="${session.showdefs != null && session.showdefs ? 'active' : ''}" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>
-                        
+                        <!--<a id="dictbutton" class="btn btn-outline-dark" href="#" data-toggle="button" th:classappend="${session.showdefs != null && session.showdefs ? 'active' : ''}" role="button"><i class="fa fa-book" aria-hidden="true"></i> Toggle Dict.</a>-->
+
+                        <div class="spacer"></div>
+
+
+                        Options:
+
+                        <div class="form-check">
+                            <div class="pretty p-icon">
+                                <input id="dictbutton" type="checkbox" th:checked="${session.showdefs != null && session.showdefs}" />
+                                <div class="state p-default">
+                                    <i class="icon fa fa-check"></i>
+                                    <label>Show dictionary</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-check">
+                            <div class="pretty p-icon">
+                                <input id="romanbutton" type="checkbox" th:checked="${session.showroman != null && session.showroman}" />
+                                <div class="state p-default">
+                                    <i class="icon fa fa-check"></i>
+                                    <label>Show romanization</label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="spacer"></div>
                         <div th:if="${grouptype} != null">
                             <span th:each="label : ${labels}">

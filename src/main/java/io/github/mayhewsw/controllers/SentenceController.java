@@ -789,7 +789,7 @@ public class SentenceController {
         }
 
         String query = "";
-        return HtmlGenerator.getHTMLfromTA(ta, sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs, sd.showroman);
     }
 
     @RequestMapping(value = "/gethtml", method = RequestMethod.POST)
@@ -801,7 +801,7 @@ public class SentenceController {
         String ret = "";
         for(String sentid : sentids){
             Constituent sent = sd.cache.getSentence(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs);
+            String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs, sd.showroman);
             ret += html + "\n<br />";
         }
 
@@ -853,6 +853,25 @@ public class SentenceController {
         showdefs = !showdefs;
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
+
+        String query = "";
+        String html = this.gethtml(idlist, query, model, hs);
+        return html;
+    }
+
+    @RequestMapping(value="/toggleroman", method= RequestMethod.GET)
+    @ResponseBody
+    public String toggleroman(@RequestParam(value="idlist[]") String[] idlist, Model model, HttpSession hs) throws Exception {
+
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        TextAnnotation ta = tas.get(idlist[0]);
+
+        Boolean showroman = sd.showroman;
+        showroman = !showroman;
+        hs.setAttribute("showroman", showroman);
+        sd.showroman = showroman;
+
 
         String query = "";
         String html = this.gethtml(idlist, query, model, hs);

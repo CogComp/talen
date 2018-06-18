@@ -624,7 +624,7 @@ public class DocumentController {
         Map.Entry<String, TextAnnotation> entry = sd.tas.firstEntry();
         TextAnnotation ta = entry.getValue();
 
-        String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+        String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
 
         model.addAttribute("html", html);
 
@@ -642,8 +642,6 @@ public class DocumentController {
 
         TreeMap<String, TextAnnotation> tas = sd.tas;
         io.github.mayhewsw.Dictionary dict = sd.dict;
-
-        Boolean showdefs = sd.showdefs;
 
         // Go to the homepage.
         if(tas == null){
@@ -708,7 +706,7 @@ public class DocumentController {
         View sents = ta.getView(ViewNames.SENTENCE);
 
         // set up the html string.
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
         model.addAttribute("html", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -786,7 +784,7 @@ public class DocumentController {
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
         if(sentlc.size() != 1){
-            String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+            String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
             return;
         }
 
@@ -901,7 +899,7 @@ public class DocumentController {
         // TODO: remove this because it is slow!!!
         //updateallpatterns(sd);
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
         return out;
     }
 
@@ -924,7 +922,7 @@ public class DocumentController {
             ner.removeConstituent(c);
         }
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
         return out;
     }
 
@@ -941,8 +939,25 @@ public class DocumentController {
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
     }
+
+    @RequestMapping(value="/togglerom", method= RequestMethod.GET)
+    @ResponseBody
+    public String toggleroman(@RequestParam(value="idlist[]") String[] idlist, HttpSession hs) {
+
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        TextAnnotation ta = tas.get(idlist[0]);
+
+        Boolean showroman = sd.showroman;
+        showroman = !showroman;
+        hs.setAttribute("showroman", showroman);
+        sd.showroman = showroman;
+
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+    }
+
 
     @RequestMapping(value="/addsuffix", method= RequestMethod.GET)
     @ResponseBody
@@ -981,7 +996,7 @@ public class DocumentController {
 
         }
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
     }
 
 
@@ -1013,7 +1028,7 @@ public class DocumentController {
         String ret = "";
         for(String sentid : sentids){
             TextAnnotation ta = sd.tas.get(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs);
+            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
             ret += html + "\n";
         }
 

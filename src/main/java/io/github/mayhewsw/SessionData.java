@@ -21,6 +21,7 @@ public class SessionData {
     public Dictionary dict;
     public String username;
     public Boolean showdefs;
+    public Boolean showroman;
     public TreeMap<String, TextAnnotation> tas;
     public String dataname;
     public HashMap<Pair<String, String>, Double> patterns;
@@ -53,6 +54,11 @@ public class SessionData {
         showdefs = (Boolean) hs.getAttribute("showdefs");
         if(showdefs == null){
             showdefs = false;
+        }
+
+        showroman = (Boolean) hs.getAttribute("showroman");
+        if(showroman == null){
+            showroman = false;
         }
 
         suffixes = (ArrayList<String>) hs.getAttribute("suffixes");
