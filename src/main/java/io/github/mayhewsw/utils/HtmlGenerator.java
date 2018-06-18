@@ -65,6 +65,8 @@ public class HtmlGenerator {
             ta.addView("NER_SUGGESTION", nersugg);
         }
 
+        String[] nonroman_text = ta.getTokens().clone();
+
         // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text;
         if(showroman) {
@@ -80,8 +82,8 @@ public class HtmlGenerator {
         // add spans to every word that is not a constituent.
         for (int t = 0; t < text.length; t++) {
             String def = null;
-            if (dict != null && dict.containsKey(text[t])) {
-                def = dict.get(text[t]).get(0);
+            if (dict != null && dict.containsKey(nonroman_text[t])) {
+                def = dict.get(nonroman_text[t]).get(0);
             }
 
             String tokid = String.format("tok-%s-%s", id, t);
