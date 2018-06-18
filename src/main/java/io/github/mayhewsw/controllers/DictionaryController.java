@@ -83,6 +83,8 @@ public class DictionaryController {
 
         SessionData sd = new SessionData(hs);
 
+        System.out.println("Adddef: add " + key + " -> " + val);
+
         if(key.length() > 0 && val.length() > 0) {
             sd.dict.add(key, val);
             sd.dict.save(sd.dataname, sd.username);

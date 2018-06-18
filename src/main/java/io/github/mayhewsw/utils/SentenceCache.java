@@ -236,7 +236,7 @@ public class SentenceCache extends HashMap<String, Constituent> {
         ScoreDoc[] hits = searchresults.scoreDocs;
 
         HashSet<String> queryids = new HashSet<>();
-        HashSet<String> querytexts = new HashSet<>();
+        //HashSet<String> querytexts = new HashSet<>();
 
         for (int i = 0; i < hits.length; ++i) {
             int luceneId = hits[i].doc;
@@ -250,10 +250,10 @@ public class SentenceCache extends HashMap<String, Constituent> {
                 continue;
             }
 
-            querytexts.add(d.get("body"));
+            //querytexts.add(d.get("body"));
             queryids.add(sentid);
-            this.sentid2text.put(sentid, d.get("body"));
-            this.sentid2origtext.put(sentid, d.get("origbody"));
+            //this.sentid2text.put(sentid, d.get("body"));
+            //this.sentid2origtext.put(sentid, d.get("origbody"));
         }
 
         //logger.debug("Found {} results for term {}", queryids.size(), term);

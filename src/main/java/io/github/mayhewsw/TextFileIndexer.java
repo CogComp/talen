@@ -24,6 +24,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -123,9 +124,9 @@ public class TextFileIndexer {
             View sentview = ta.getView(ViewNames.SENTENCE);
             List<Constituent> sentences = sentview.getConstituents();
 
-            View translit = null;
+            View roman = null;
             if(ta.hasView("ROMANIZATION")){
-                translit = ta.getView("ROMANIZATION");
+                roman = ta.getView("ROMANIZATION");
             }
 
             for(int i = 0; i < sentences.size(); i++){
@@ -133,26 +134,26 @@ public class TextFileIndexer {
 
                 Document d = new Document();
 
-                String rom = sent.getTokenizedSurfaceForm();
+                TextField tf = new TextField("body", sent.getTokenizedSurfaceForm(), Field.Store.YES);
+                d.add(tf);
 
-                if(translit != null) {
+                // add romanization text (also as body) if the view exists.
+                if(roman != null) {
                     StringJoiner sb = new StringJoiner(" ");
-                    for(Constituent c : translit.getConstituentsCoveringSpan(sent.getStartSpan(), sent.getEndSpan())){
+                    for(Constituent c : roman.getConstituentsCoveringSpan(sent.getStartSpan(), sent.getEndSpan())){
                         sb.add(c.getLabel());
                     }
-                    rom = sb.toString();
+                    String rom = sb.toString();
+                    TextField romtf = new TextField("body", rom, Field.Store.YES);
+                    d.add(romtf);
                 }
-
-                TextField tf = new TextField("body", rom, Field.Store.YES);
-                //TextField tf = new TextField("body", sr, Field.Store.YES);
-                d.add(tf);
 
                 d.add(new StringField("filename", SentenceController.getSentId(sent), Field.Store.YES));
 
-
-                TextField origtf = new TextField("origbody", sent.getTokenizedSurfaceForm(), Field.Store.YES);
-                d.add(origtf);
-
+                // "orig" in this case refers to original script. If the script is already roman, or if the ROMANIZATION view
+                // is not present, then body and origbody will be identical.
+                //TextField origtf = new TextField("origbody", sent.getTokenizedSurfaceForm(), Field.Store.YES);
+                //d.add(origtf);
 
                 writer.addDocument(d);
             }
@@ -179,45 +180,73 @@ public class TextFileIndexer {
         String s = "";
         while (!s.equalsIgnoreCase("q")) {
             try {
+                System.out.println("==============================================================================");
                 System.out.println("Enter the search query (q=quit): ");
                 s = br.readLine();
                 if (s.equalsIgnoreCase("q")) {
                     break;
                 }
-                QueryParser parser = new QueryParser("body", analyzer);
-                parser.setAllowLeadingWildcard(true);
+                //QueryParser parser = new QueryParser("body", analyzer);
+                //parser.setAllowLeadingWildcard(true);
 
                 //Query q = parser.parse("*" + s + "*");
 
-                Query q = new PrefixQuery(new Term("body", s));
+                Query query = new PrefixQuery(new Term("body", s));
 
-                System.out.println(q);
-                TopScoreDocCollector collector = TopScoreDocCollector.create(40);
-                searcher.search(q, collector);
-                ScoreDoc[] hits = collector.topDocs().scoreDocs;
+                // Assume a large text collection. We want to store EVERY SINGLE INSTANCE.
+                int k = 40;
+                TopDocs searchresults = searcher.search(query, k);
+                ScoreDoc[] hits = searchresults.scoreDocs;
 
-                //System.out.println("There are total of: " + searcher.count(q) + " hits.");
+                HashSet<String> queryids = new HashSet<>();
 
-                // 4. display results
-                System.out.println("Found " + hits.length + " hits.");
-                for(int i=0; i<hits.length; ++i) {
-                    int docId = hits[i].doc;
-                    Document d = searcher.doc(docId);
+                for (int i = 0; i < hits.length; ++i) {
+                    int luceneId = hits[i].doc;
+                    Document d = searcher.doc(luceneId);
 
-                    String[] b = d.get("body").split(" ");
-                    String[] ob = d.get("origbody").split(" ");
+                    String b = d.get("body");
 
-                    for(int j = 0; j < b.length; j++){
-                        if(b[j].contains(s)){
-                            System.out.println(b[j] + " " + ob[j]);
-                        }
+                    String sentid = d.get("filename");
+
+                    System.out.println(sentid);
+                    System.out.println(b);
+
+                    // This avoids have discussion forum results (which can be noisy) and huge files.
+                    int sentind = Integer.parseInt(sentid.split(":")[1]);
+                    if(sentid.contains("_DF_") || sentind > 200){
+                        continue;
                     }
 
-                    //System.out.println((i + 1) + ". " + d.get("body") + " score=" + hits[i].score);
-                    //System.out.println((i + 1) + ". " + d.get("origbody") + " score=" + hits[i].score);
-                    //System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
-
+                    queryids.add(sentid);
                 }
+
+
+
+//                Query q = new PrefixQuery(new Term("body", s));
+//
+//
+//                //System.out.println("There are total of: " + searcher.count(q) + " hits.");
+//
+//                // 4. display results
+//                System.out.println("Found " + hits.length + " hits.");
+//                for(int i=0; i<hits.length; ++i) {
+//                    int docId = hits[i].doc;
+//                    Document d = searcher.doc(docId);
+//
+//                    String[] b = d.get("body").split(" ");
+//                    String[] ob = d.get("origbody").split(" ");
+//
+//                    for(int j = 0; j < b.length; j++){
+//                        if(b[j].contains(s)){
+//                            System.out.println(b[j] + " " + ob[j]);
+//                        }
+//                    }
+//
+//                    //System.out.println((i + 1) + ". " + d.get("body") + " score=" + hits[i].score);
+//                    //System.out.println((i + 1) + ". " + d.get("origbody") + " score=" + hits[i].score);
+//                    //System.out.println((i + 1) + ". " + d.get("filename") + " score=" + hits[i].score);
+//
+//                }
 
             } catch (Exception e) {
                 e.printStackTrace();

@@ -181,16 +181,18 @@ public class SentenceController {
         sd = new SessionData(hs);
 
         // load the dictionary, graceful fail if not there.
+
         String dictpath = prop.getProperty("dict");
         Dictionary dict;
-        if (dictpath != null) {
+        if(dictpath != null){
             logger.info("Loading dictionary: " + dictpath);
             dict = new Dictionary(dataname, dictpath, sd.username);
-            hs.setAttribute("dict", dict);
-        } else {
+        }else{
             logger.info("No dictionary specified.");
             dict = new Dictionary(dataname, sd.username);
         }
+        hs.setAttribute("dict", dict);
+
 
         // this ensures that the suffixes item is never null.
         String suffixlist = prop.getProperty("suffixes");
@@ -859,7 +861,7 @@ public class SentenceController {
         return html;
     }
 
-    @RequestMapping(value="/toggleroman", method= RequestMethod.GET)
+    @RequestMapping(value="/togglerom", method= RequestMethod.GET)
     @ResponseBody
     public String toggleroman(@RequestParam(value="idlist[]") String[] idlist, Model model, HttpSession hs) throws Exception {
 
