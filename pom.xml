@@ -144,6 +144,22 @@
                 <configuration>
                     <addResources>true</addResources>
                 </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>spring-boot</classifier>
+                            <mainClass>
+                                io.github.mayhewsw.utils.TalenCLI
+                            </mainClass>
+                        </configuration>
+
+                    </execution>
+                </executions>
+
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>

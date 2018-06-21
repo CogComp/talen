@@ -7,18 +7,12 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import io.github.mayhewsw.Dictionary;
-import io.github.mayhewsw.SessionData;
-import io.github.mayhewsw.Suggestion;
-
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
-import java.util.ArrayList;
+
 import java.util.Arrays;
 import java.util.List;
-
-import static io.github.mayhewsw.controllers.DocumentController.getdocsuggestions;
 
 /**
  * Created by stephen on 8/31/17.
@@ -40,14 +34,13 @@ public class HtmlGenerator {
     }
 
 
-    public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, Boolean showdefs, Boolean showroman) {
+    public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman);
     }
 
 
     /**
      * Given a sentence, produce the HTML for display. .
-
      * @return
      */
     public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman) {
@@ -156,6 +149,7 @@ public class HtmlGenerator {
 
         String html = StringUtils.join(text, "");
 
+
         String htmltemplate = "<div class=\"card\">" +
                 "<div class=\"card-header\">%s</div>" +
                 "<div class=\"card-body text\" id=%s>%s</div></div>";
@@ -166,84 +160,84 @@ public class HtmlGenerator {
     }
 
 
-    /**
-     * Given a TA, this returns the HTML string.
-     * @param
-     * @return
-     */
-    public static String getHTMLfromTA_OLD(TextAnnotation ta, SessionData sd){
-
-        View ner = ta.getView(ViewNames.NER_CONLL);
-        View sents = ta.getView(ViewNames.SENTENCE);
-
-        String[] text = ta.getTokenizedText().split(" ");
-
-        ArrayList<String> suffixes = sd.suffixes;
-
-        if(suffixes == null){
-            new ArrayList<>();
-        }else{
-            suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
-        }
-
-        // add spans to every word that is not a constituent.
-        for(int t = 0; t < text.length; t++){
-            String def = null;
-            if(sd.dict != null && sd.dict.containsKey(text[t])){
-                def = sd.dict.get(text[t]).get(0);
-            }
-
-            for(String suffix : suffixes){
-                if(text[t].endsWith(suffix)){
-                    //System.out.println(text[t] + " ends with " + suffix);
-                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span class='suffix'>" + suffix + "</span>";
-                    break;
-                }
-            }
-
-            if(sd.showdefs && def != null) {
-                text[t] = "<span class='token pointer def' id='tok-"+ t + "'>" + def + "</span>";
-            }else{
-                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
-            }
-        }
-
-        for(Constituent c : ner.getConstituents()){
-
-            int start = c.getStartSpan();
-            int end = c.getEndSpan();
-
-            // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
-            text[end-1] += "</span>";
-        }
-
-        List<Suggestion> suggestions = getdocsuggestions(ta, sd);
-
-        for(Suggestion s : suggestions){
-
-            int start = s.getStartSpan();
-            int end = s.getEndSpan();
-
-            // don't suggest spans that cover already tagged areas.
-            if(ner.getConstituentsCoveringSpan(start, end).size() > 0) continue;
-
-            System.out.println(start + " " + end + ": " + s.reason + " " + s);
-
-            // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='pointer suggestion' data-toggle=\"tooltip\" title='%s' id='cons-%d-%d'>%s", s.reason, start, end, text[start]);
-            text[end-1] += "</span>";
-        }
-
-        for(Constituent c : sents.getConstituents()){
-            int start = c.getStartSpan();
-            int end = c.getEndSpan();
-            text[start] = "<p>" + text[start];
-            text[end-1] += "</p>";
-        }
-
-        String out = StringUtils.join("", text);
-        return out;
-    }
+//    /**
+//     * Given a TA, this returns the HTML string.
+//     * @param
+//     * @return
+//     */
+//    public static String getHTMLfromTA_OLD(TextAnnotation ta, SessionData sd){
+//
+//        View ner = ta.getView(ViewNames.NER_CONLL);
+//        View sents = ta.getView(ViewNames.SENTENCE);
+//
+//        String[] text = ta.getTokenizedText().split(" ");
+//
+//        ArrayList<String> suffixes = sd.suffixes;
+//
+//        if(suffixes == null){
+//            new ArrayList<>();
+//        }else{
+//            suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
+//        }
+//
+//        // add spans to every word that is not a constituent.
+//        for(int t = 0; t < text.length; t++){
+//            String def = null;
+//            if(sd.dict != null && sd.dict.containsKey(text[t])){
+//                def = sd.dict.get(text[t]).get(0);
+//            }
+//
+//            for(String suffix : suffixes){
+//                if(text[t].endsWith(suffix)){
+//                    //System.out.println(text[t] + " ends with " + suffix);
+//                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span class='suffix'>" + suffix + "</span>";
+//                    break;
+//                }
+//            }
+//
+//            if(sd.showdefs && def != null) {
+//                text[t] = "<span class='token pointer def' id='tok-"+ t + "'>" + def + "</span>";
+//            }else{
+//                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
+//            }
+//        }
+//
+//        for(Constituent c : ner.getConstituents()){
+//
+//            int start = c.getStartSpan();
+//            int end = c.getEndSpan();
+//
+//            // important to also include 'cons' class, as it is a keyword in the html
+//            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
+//            text[end-1] += "</span>";
+//        }
+//
+//        List<Suggestion> suggestions = getdocsuggestions(ta, sd);
+//
+//        for(Suggestion s : suggestions){
+//
+//            int start = s.getStartSpan();
+//            int end = s.getEndSpan();
+//
+//            // don't suggest spans that cover already tagged areas.
+//            if(ner.getConstituentsCoveringSpan(start, end).size() > 0) continue;
+//
+//            System.out.println(start + " " + end + ": " + s.reason + " " + s);
+//
+//            // important to also include 'cons' class, as it is a keyword in the html
+//            text[start] = String.format("<span class='pointer suggestion' data-toggle=\"tooltip\" title='%s' id='cons-%d-%d'>%s", s.reason, start, end, text[start]);
+//            text[end-1] += "</span>";
+//        }
+//
+//        for(Constituent c : sents.getConstituents()){
+//            int start = c.getStartSpan();
+//            int end = c.getEndSpan();
+//            text[start] = "<p>" + text[start];
+//            text[end-1] += "</p>";
+//        }
+//
+//        String out = StringUtils.join("", text);
+//        return out;
+//    }
 
 }
