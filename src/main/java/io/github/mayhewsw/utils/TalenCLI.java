@@ -54,6 +54,7 @@ public class TalenCLI {
 
         Option portopt = Option.builder("port")
                 .desc("Which port to use. Default is 8008")
+                .hasArg()
                 .build();
 
         options.addOption(help);
