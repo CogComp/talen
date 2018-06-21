@@ -77,6 +77,7 @@ public class TalenCLI {
         }
 
         labelcolors = new HashMap<>();
+        // put some common label colors here.
         labelcolors.put("PER", "yellow");
         labelcolors.put("LOC", "greenyellow");
         labelcolors.put("GPE", "coral");
@@ -128,7 +129,6 @@ public class TalenCLI {
             if(labelcolors.containsKey(label)){
                 color = labelcolors.get(label);
             }else{
-                color = "????";
                 Random random = new Random();
                 int nextInt = random.nextInt(256*256*256);
                 color = String.format("#%06x", nextInt);
