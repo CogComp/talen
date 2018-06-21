@@ -100,6 +100,33 @@ mutual information.
 Run `TextFileIndexer.java`, but modify the strings in the main method. The `indexdir` variable
 will be put in the sentence-based config file.
 
+## Command line tool
+We also ship a lightweight command line tool for TALEN. This tool will read a folder of JSON TextAnnotations (more formats coming soon)
+and spin up a Java-only server, serving static HTML versions of each document. This will be used only for examination and exploration.
+
+Install it as follows:
+```bash
+$ ./scripts/install-cli.sh
+$ export PATH=$PATH:$HOME/software/talen/
+```  
+
+(You can change the `INSTALLDIR` in `install-cli.sh` if you want it installed somewhere else). Now it is installed, you can run it 
+from any folder in your terminal:
+
+```bash
+$ talen-cli FolderOfTAFiles
+```
+
+This will serve static HTML documents at `localhost:PORT` (default `PORT` is 8008). You can run with additional options:
+
+```bash
+$ talen-cli FolderOfTAFiles -roman -port 8888
+```
+
+Where the `-roman` option uses the ROMANIZATION view in the TextAnnotation for text (if available), and the `-port` option
+uses the specified port.
+
+
 ## Mechanical Turk
 Although the main function of this software is a server based system, there is also a lightweight version that runs
 entirely in Javascript, for the express purpose of creating Mechanical Turk jobs.
