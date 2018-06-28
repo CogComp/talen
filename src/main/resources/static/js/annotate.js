@@ -142,8 +142,8 @@ $(document).ready(function() {
             },
             title: function () {
                 var text = gettextinrange(true);
-                var link = "<a href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>"
-                return text + " (" + link + " )";
+                var link = "<a class='search' href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>"
+                return text + " (" + link + ")";
             },
             html: true,
             trigger: "focus",
@@ -160,8 +160,7 @@ $(document).ready(function() {
 
         // click on anything but a word, and they hide.
         $(document).mousedown(function(e){
-
-            var hasclass = $(e.target).hasClass("labelbutton");
+            var hasclass = $(e.target).hasClass("labelbutton") || $(e.target).hasClass("search");
             if(!e.target.id.startsWith("tok") && !hasclass && !(e.target.tagName == "MARK")) {
                 console.log("extraneous click");
                 $("[id^=tok]").popover("hide");
@@ -185,7 +184,7 @@ $(document).ready(function() {
             // only toggle on the left click.
             if(event.which == 1) {
                 $("[id^=tok]").not($(this)).popover('hide');
-                $(this).popover("toggle");
+                $(this).popover("show");
 
                 highlighting = false;
 

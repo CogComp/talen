@@ -781,30 +781,35 @@ public class DocumentController {
         TextAnnotation ta = tas.get(idstring);
 
         // cannot annotate across sentence boundaries. Return with no changes if this happens.
-        View sents = ta.getView(ViewNames.SENTENCE);
-        List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
-        if(sentlc.size() != 1){
-            String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
-            return;
+        if(ta.hasView(ViewNames.SENTENCE)){
+            View sents = ta.getView(ViewNames.SENTENCE);
+            List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
+            if(sentlc.size() != 1){
+                String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+                System.out.println("Cannot annotate across sentences");
+                return;
+            }
         }
 
         String text = StringUtils.join(" ", ta.getTokensInSpan(starttokint, endtokint));
 
         // spans is either the single span that was entered, or all matching spans.
-        List<IntPair> spans;
+        List<IntPair> spans = new ArrayList<>();
         boolean propagate = true;
         if(propagate){
             spans = ta.getSpansMatching(text);
-        }else{
+        }
+
+        if(spans.size() == 0 || !propagate){
             spans = new ArrayList<>();
             spans.add(new IntPair(starttokint, endtokint));
         }
 
         View ner = ta.getView(ViewNames.NER_CONLL);
 
+        
         for(IntPair span : spans) {
             List<Constituent> lc = ner.getConstituentsCoveringSpan(span.getFirst(), span.getSecond());
-
 
             // this span is already labeled!
             if (lc.size() > 0) {
