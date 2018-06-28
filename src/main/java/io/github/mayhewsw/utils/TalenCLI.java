@@ -7,31 +7,28 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
-import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import org.apache.commons.cli.*;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class TalenCLI {
 
-    private static HashMap<String, String> id2html;
+    private static HashMap<String, String> id2filepath;
 
-
+    private static HashSet<String> labels = new HashSet<>();
     private static HashMap<String, String> labelcolors;
+    private static boolean roman = false;
+
+    private static String bootstrap = "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' crossorigin='anonymous'>";
+
 
     public static void main(String[] args) throws ParseException, IOException, URISyntaxException {
 
@@ -69,12 +66,11 @@ public class TalenCLI {
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 
-        String indir = cmd.getOptionValue("indir");
-
-        boolean roman = false;
         if(cmd.hasOption("roman")){
             roman = true;
         }
+
+        String indir = cmd.getOptionValue("indir");
 
         labelcolors = new HashMap<>();
         // put some common label colors here.
@@ -86,39 +82,66 @@ public class TalenCLI {
 
         int port = Integer.parseInt(cmd.getOptionValue("port", "8080"));
 
-        System.out.println("Reading from "+ indir);
+        System.out.println("Looking at "+ indir);
 
-        id2html = new HashMap<>();
+        id2filepath = new HashMap<>();
 
         File[] files = (new File(indir)).listFiles();
 
-        HashSet<String> labels = new HashSet<>();
-
         // load TextAnnotations and create a list.
-        List<TextAnnotation> tas = new ArrayList<>();
+        // don't do this til later.
+        // load on demand.
+        // this means that you can't know about all labels (potentially?)
+        // every document will be a link on the index.
+        StringBuilder listoflinks = new StringBuilder();
         for(File f : files) {
-            try {
-                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(f.getAbsolutePath(), true);
+            id2filepath.put(f.getName(), f.getAbsolutePath());
+            listoflinks.append("<a href='"+f.getName() + "'>" + f.getName() + "</a><br />");
+        }
 
-                // add a dummy view if
-                if(!ta.hasView(ViewNames.NER_CONLL)){
-                    View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
-                    ta.addView(ViewNames.NER_CONLL, ner);
-                }else{
-                    for(Constituent c : ta.getView(ViewNames.NER_CONLL).getConstituents()){
-                        labels.add(c.getLabel());
-                    }
-                }
+        String index = "<html><head>"+bootstrap+"</head><body><div class='container'>";
+        index += "<h1>" + indir + "</h1>";
+        index = index + listoflinks.toString() + "</div></body></html>";
+        id2filepath.put("index", index);
 
-                tas.add(ta);
 
-            } catch (Exception e) {
-                e.printStackTrace();
+        System.out.println("Server started on " + port);
+        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        server.createContext("/", new MyHandler());
+        server.setExecutor(null); // creates a default executor
+        server.start();
+
+    }
+
+    @NotNull
+    private static String loadTextAnnotation(String docid) throws Exception {
+        TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(docid, true);
+
+        // add a dummy view if
+        if(!ta.hasView(ViewNames.NER_CONLL)){
+            View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
+            ta.addView(ViewNames.NER_CONLL, ner);
+        }else{
+            for(Constituent c : ta.getView(ViewNames.NER_CONLL).getConstituents()){
+                labels.add(c.getLabel());
             }
         }
 
-        ArrayList<String> stylecss = LineIO.readFromClasspath("BOOT-INF/classes/static/css/style.css");
+        // Some style features are not wanted in this version. In particular: we want to
+        // be able to select text.
+        String overrides = ".pointer{cursor:auto}" +
+                ".text{-webkit-user-select: text;-moz-user-select: text;-ms-user-select: text;}" +
+                ".token {padding:0px;border:0px}";
 
+
+        String labellegend = "";
+        for(String label : labels){
+            labellegend += "<span class='"+label+"'>"+label+"</span>";
+        }
+
+        String html = HtmlGenerator.getHTMLfromTA(ta, null, false, roman);
+
+        ArrayList<String> stylecss = LineIO.readFromClasspath("BOOT-INF/classes/static/css/style.css");
         StringBuilder sb_css = new StringBuilder();
         for(String l : stylecss){
             sb_css.append(l);
@@ -135,49 +158,13 @@ public class TalenCLI {
             }
             sb_css.append("." + label + "{background-color: " + color + "}");
         }
+        html = "<html><head>"+bootstrap+"<style>"+ sb_css.toString() +overrides +"</style></head><body><div class='container'><div><a href='/'>Back to list</a></div><div>"+labellegend+"</div>"+ html +"</div></body></html>";
 
-        String bootstrap = "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' crossorigin='anonymous'>";
-        String index = "<html><head>"+bootstrap+"</head><body><div class='container'>";
+        html = html.replaceAll("</span><span", "</span> <span");
 
-        // Some style features are not wanted in this version. In particular: we want to
-        // be able to select text.
-        String overrides = ".pointer{cursor:auto}" +
-                ".text{-webkit-user-select: text;-moz-user-select: text;-ms-user-select: text;}" +
-                ".token {padding:0px;border:0px}";
-
-        // every document will be a link on the index.
-        StringBuilder listoflinks = new StringBuilder();
-
-        String labellegend = "";
-        for(String label : labels){
-            labellegend += "<span class='"+label+"'>"+label+"</span>";
-        }
-
-        // we do a second loop so we can discover the labels.
-        for(TextAnnotation ta : tas){
-            String html = HtmlGenerator.getHTMLfromTA(ta, null, false, roman);
-
-            html = "<html><head>"+bootstrap+"<style>"+ sb_css.toString() +overrides +"</style></head><body><div class='container'><div><a href='/'>Back to list</a></div><div>"+labellegend+"</div>"+ html +"</div></body></html>";
-
-            listoflinks.append("<a href='"+ta.getId()+"'>" + ta.getId() + "</a><br />");
-
-            html = html.replaceAll("</span><span", "</span> <span");
-
-            id2html.put(ta.getId(), html);
-        }
-
-
-        index = index + listoflinks.toString() + "</div></body></html>";
-        id2html.put("index", index);
-
-
-        System.out.println("Server started on " + port);
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-        server.createContext("/", new MyHandler());
-        server.setExecutor(null); // creates a default executor
-        server.start();
-
+        return html;
     }
+
 
     static class MyHandler implements HttpHandler {
         @Override
@@ -186,17 +173,28 @@ public class TalenCLI {
             URI uri = t.getRequestURI();
             String arg = uri.getPath().substring(1);
 
-            String response;
+            String html;
             if(arg.length() == 0 || arg.equals("index") || arg.equals("index.html")){
-                response = id2html.get("index");
+                // this is a special case.
+                html = id2filepath.get("index");
             }else {
-                response = id2html.getOrDefault(arg, "<html><head></head><body><div>Oops no ta with id: " + arg + "</div></body></html>");
+                // start with a default message
+                html = "<html><head></head><body><div>Oops no ta with id: " + arg + "</div></body></html>";
+                if(id2filepath.containsKey(arg)){
+                    String filepath = id2filepath.get(arg);
+                    try {
+                        html = loadTextAnnotation(filepath);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        html = "<html><head></head><body><div>Whoops something wrong with doc id: " + arg + "</div></body></html>";
+                    }
+                }
             }
 
             String encoding = "UTF-8";
             t.getResponseHeaders().set("Content-Type", "text/html; charset=" + encoding);
 
-            byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
+            byte[] bytes = html.getBytes(StandardCharsets.UTF_8);
             t.sendResponseHeaders(200, bytes.length);
             OutputStream os = t.getResponseBody();
             os.write(bytes);
