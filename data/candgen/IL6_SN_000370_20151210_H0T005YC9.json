@@ -1,0 +1,407 @@
+{
+ "corpusId": "",
+ "id": "IL6_SN_000370_20151210_H0T005YC9",
+ "text": "Barattooti Oromoo Yuuniversitii Finfinnee Mudde 9,2015 Gaddaan Mataa Qabachuu fi Calleensaan Diddaa Sirna\u2026 https://t.co/DnpIUVmOux",
+ "tokens": [
+  "Barattooti",
+  "Oromoo",
+  "Yuuniversitii",
+  "Finfinnee",
+  "Mudde",
+  "9,2015",
+  "Gaddaan",
+  "Mataa",
+  "Qabachuu",
+  "fi",
+  "Calleensaan",
+  "Diddaa",
+  "Sirna",
+  "\u2026",
+  "https://t.co/DnpIUVmOux"
+ ],
+ "tokenOffsets": [
+  {
+   "form": "Barattooti",
+   "startCharOffset": 0,
+   "endCharOffset": 10
+  },
+  {
+   "form": "Oromoo",
+   "startCharOffset": 11,
+   "endCharOffset": 17
+  },
+  {
+   "form": "Yuuniversitii",
+   "startCharOffset": 18,
+   "endCharOffset": 31
+  },
+  {
+   "form": "Finfinnee",
+   "startCharOffset": 32,
+   "endCharOffset": 41
+  },
+  {
+   "form": "Mudde",
+   "startCharOffset": 42,
+   "endCharOffset": 47
+  },
+  {
+   "form": "9,2015",
+   "startCharOffset": 48,
+   "endCharOffset": 54
+  },
+  {
+   "form": "Gaddaan",
+   "startCharOffset": 55,
+   "endCharOffset": 62
+  },
+  {
+   "form": "Mataa",
+   "startCharOffset": 63,
+   "endCharOffset": 68
+  },
+  {
+   "form": "Qabachuu",
+   "startCharOffset": 69,
+   "endCharOffset": 77
+  },
+  {
+   "form": "fi",
+   "startCharOffset": 78,
+   "endCharOffset": 80
+  },
+  {
+   "form": "Calleensaan",
+   "startCharOffset": 81,
+   "endCharOffset": 92
+  },
+  {
+   "form": "Diddaa",
+   "startCharOffset": 93,
+   "endCharOffset": 99
+  },
+  {
+   "form": "Sirna",
+   "startCharOffset": 100,
+   "endCharOffset": 105
+  },
+  {
+   "form": "\u2026",
+   "startCharOffset": 105,
+   "endCharOffset": 106
+  },
+  {
+   "form": "https://t.co/DnpIUVmOux",
+   "startCharOffset": 107,
+   "endCharOffset": 130
+  }
+ ],
+ "sentences": {
+  "generator": "UserSpecified",
+  "score": 1.0,
+  "sentenceEndPositions": [
+   15
+  ]
+ },
+ "views": [
+  {
+   "viewName": "NER_CONLL",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "NER_CONLL",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "ORG",
+       "score": 1.0,
+       "start": 2,
+       "end": 4,
+       "tokens": "Yuuniversitii Finfinnee"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TOKENS",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.TokenLabelView",
+     "viewName": "TOKENS",
+     "generator": "UserSpecified",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "Barattooti",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "Barattooti"
+      },
+      {
+       "label": "Oromoo",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "Oromoo"
+      },
+      {
+       "label": "Yuuniversitii",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "Yuuniversitii"
+      },
+      {
+       "label": "Finfinnee",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Finfinnee"
+      },
+      {
+       "label": "Mudde",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Mudde"
+      },
+      {
+       "label": "9,2015",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "9,2015"
+      },
+      {
+       "label": "Gaddaan",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Gaddaan"
+      },
+      {
+       "label": "Mataa",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "Mataa"
+      },
+      {
+       "label": "Qabachuu",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "Qabachuu"
+      },
+      {
+       "label": "fi",
+       "score": 1.0,
+       "start": 9,
+       "end": 10,
+       "tokens": "fi"
+      },
+      {
+       "label": "Calleensaan",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Calleensaan"
+      },
+      {
+       "label": "Diddaa",
+       "score": 1.0,
+       "start": 11,
+       "end": 12,
+       "tokens": "Diddaa"
+      },
+      {
+       "label": "Sirna",
+       "score": 1.0,
+       "start": 12,
+       "end": 13,
+       "tokens": "Sirna"
+      },
+      {
+       "label": "\u2026",
+       "score": 1.0,
+       "start": 13,
+       "end": 14,
+       "tokens": "\u2026"
+      },
+      {
+       "label": "https://t.co/DnpIUVmOux",
+       "score": 1.0,
+       "start": 14,
+       "end": 15,
+       "tokens": "https://t.co/DnpIUVmOux"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TRANSLITERATION",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "TRANSLITERATION",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "Barattooti",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "Barattooti"
+      },
+      {
+       "label": "Oromoo",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "Oromoo"
+      },
+      {
+       "label": "Yuuniversitii",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "Yuuniversitii"
+      },
+      {
+       "label": "Finfinnee",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Finfinnee"
+      },
+      {
+       "label": "Mudde",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Mudde"
+      },
+      {
+       "label": "9,2015",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "9,2015"
+      },
+      {
+       "label": "Gaddaan",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Gaddaan"
+      },
+      {
+       "label": "Mataa",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "Mataa"
+      },
+      {
+       "label": "Qabachuu",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "Qabachuu"
+      },
+      {
+       "label": "fi",
+       "score": 1.0,
+       "start": 9,
+       "end": 10,
+       "tokens": "fi"
+      },
+      {
+       "label": "Calleensaan",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Calleensaan"
+      },
+      {
+       "label": "Diddaa",
+       "score": 1.0,
+       "start": 11,
+       "end": 12,
+       "tokens": "Diddaa"
+      },
+      {
+       "label": "Sirna",
+       "score": 1.0,
+       "start": 12,
+       "end": 13,
+       "tokens": "Sirna"
+      },
+      {
+       "label": "...",
+       "score": 1.0,
+       "start": 13,
+       "end": 14,
+       "tokens": "\u2026"
+      },
+      {
+       "label": "https://t.co/DnpIUVmOux",
+       "score": 1.0,
+       "start": 14,
+       "end": 15,
+       "tokens": "https://t.co/DnpIUVmOux"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "WIKIFIER",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "WIKIFIER",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "71000082",
+       "score": 1.0,
+       "start": 2,
+       "end": 4,
+       "tokens": "Yuuniversitii Finfinnee"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "CANDGEN",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "CANDGEN",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "344979|Addis_Ababa",
+       "score": 1.0,
+       "start": 2,
+       "end": 4,
+       "tokens": "Yuuniversitii Finfinnee",
+       "labelScoreMap": {
+        "344979|Addis_Ababa": 1.0
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

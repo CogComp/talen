@@ -1,0 +1,305 @@
+{
+ "corpusId": "",
+ "id": "IL6_SN_000370_20151228_H0T005YLD",
+ "text": "Mudde 28,2015 FDG Yuuniversitii Wallaggaa Itti Fufe. https://t.co/IHWG8XxoOp",
+ "tokens": [
+  "Mudde",
+  "28,2015",
+  "FDG",
+  "Yuuniversitii",
+  "Wallaggaa",
+  "Itti",
+  "Fufe",
+  ".",
+  "https://t.co/IHWG8XxoOp"
+ ],
+ "tokenOffsets": [
+  {
+   "form": "Mudde",
+   "startCharOffset": 0,
+   "endCharOffset": 5
+  },
+  {
+   "form": "28,2015",
+   "startCharOffset": 6,
+   "endCharOffset": 13
+  },
+  {
+   "form": "FDG",
+   "startCharOffset": 14,
+   "endCharOffset": 17
+  },
+  {
+   "form": "Yuuniversitii",
+   "startCharOffset": 18,
+   "endCharOffset": 31
+  },
+  {
+   "form": "Wallaggaa",
+   "startCharOffset": 32,
+   "endCharOffset": 41
+  },
+  {
+   "form": "Itti",
+   "startCharOffset": 42,
+   "endCharOffset": 46
+  },
+  {
+   "form": "Fufe",
+   "startCharOffset": 47,
+   "endCharOffset": 51
+  },
+  {
+   "form": ".",
+   "startCharOffset": 51,
+   "endCharOffset": 52
+  },
+  {
+   "form": "https://t.co/IHWG8XxoOp",
+   "startCharOffset": 53,
+   "endCharOffset": 76
+  }
+ ],
+ "sentences": {
+  "generator": "UserSpecified",
+  "score": 1.0,
+  "sentenceEndPositions": [
+   9
+  ]
+ },
+ "views": [
+  {
+   "viewName": "NER_CONLL",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "NER_CONLL",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "PER",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "FDG"
+      },
+      {
+       "label": "ORG",
+       "score": 1.0,
+       "start": 3,
+       "end": 5,
+       "tokens": "Yuuniversitii Wallaggaa"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TOKENS",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.TokenLabelView",
+     "viewName": "TOKENS",
+     "generator": "UserSpecified",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "Mudde",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "Mudde"
+      },
+      {
+       "label": "28,2015",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "28,2015"
+      },
+      {
+       "label": "FDG",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "FDG"
+      },
+      {
+       "label": "Yuuniversitii",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Yuuniversitii"
+      },
+      {
+       "label": "Wallaggaa",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Wallaggaa"
+      },
+      {
+       "label": "Itti",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "Itti"
+      },
+      {
+       "label": "Fufe",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Fufe"
+      },
+      {
+       "label": ".",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "."
+      },
+      {
+       "label": "https://t.co/IHWG8XxoOp",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "https://t.co/IHWG8XxoOp"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TRANSLITERATION",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "TRANSLITERATION",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "Mudde",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "Mudde"
+      },
+      {
+       "label": "28,2015",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "28,2015"
+      },
+      {
+       "label": "FDG",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "FDG"
+      },
+      {
+       "label": "Yuuniversitii",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Yuuniversitii"
+      },
+      {
+       "label": "Wallaggaa",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Wallaggaa"
+      },
+      {
+       "label": "Itti",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "Itti"
+      },
+      {
+       "label": "Fufe",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Fufe"
+      },
+      {
+       "label": ".",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "."
+      },
+      {
+       "label": "https://t.co/IHWG8XxoOp",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "https://t.co/IHWG8XxoOp"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "WIKIFIER",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "WIKIFIER",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "NIL62496",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "FDG"
+      },
+      {
+       "label": "NIL62527",
+       "score": 1.0,
+       "start": 3,
+       "end": 5,
+       "tokens": "Yuuniversitii Wallaggaa"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "CANDGEN",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "CANDGEN",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "NIL",
+       "score": 0.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "FDG"
+      },
+      {
+       "label": "NIL",
+       "score": 0.0,
+       "start": 3,
+       "end": 5,
+       "tokens": "Yuuniversitii Wallaggaa"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

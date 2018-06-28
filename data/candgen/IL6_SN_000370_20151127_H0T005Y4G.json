@@ -1,0 +1,422 @@
+{
+ "corpusId": "",
+ "id": "IL6_SN_000370_20151127_H0T005Y4G",
+ "text": "Goototi Barattooti Oromoo Mana Barnootaa Qophaa\u2019ina Naqamtee Ittisa Humna Tika Wayyaanee\u2026 https://t.co/C4xhlHJS0s https://t.co/kS63nj4q8c",
+ "tokens": [
+  "Goototi",
+  "Barattooti",
+  "Oromoo",
+  "Mana",
+  "Barnootaa",
+  "Qophaa\u2019ina",
+  "Naqamtee",
+  "Ittisa",
+  "Humna",
+  "Tika",
+  "Wayyaanee",
+  "\u2026",
+  "https://t.co/C4xhlHJS0s",
+  "https://t.co/kS63nj4q8c"
+ ],
+ "tokenOffsets": [
+  {
+   "form": "Goototi",
+   "startCharOffset": 0,
+   "endCharOffset": 7
+  },
+  {
+   "form": "Barattooti",
+   "startCharOffset": 8,
+   "endCharOffset": 18
+  },
+  {
+   "form": "Oromoo",
+   "startCharOffset": 19,
+   "endCharOffset": 25
+  },
+  {
+   "form": "Mana",
+   "startCharOffset": 26,
+   "endCharOffset": 30
+  },
+  {
+   "form": "Barnootaa",
+   "startCharOffset": 31,
+   "endCharOffset": 40
+  },
+  {
+   "form": "Qophaa\u2019ina",
+   "startCharOffset": 41,
+   "endCharOffset": 51
+  },
+  {
+   "form": "Naqamtee",
+   "startCharOffset": 52,
+   "endCharOffset": 60
+  },
+  {
+   "form": "Ittisa",
+   "startCharOffset": 61,
+   "endCharOffset": 67
+  },
+  {
+   "form": "Humna",
+   "startCharOffset": 68,
+   "endCharOffset": 73
+  },
+  {
+   "form": "Tika",
+   "startCharOffset": 74,
+   "endCharOffset": 78
+  },
+  {
+   "form": "Wayyaanee",
+   "startCharOffset": 79,
+   "endCharOffset": 88
+  },
+  {
+   "form": "\u2026",
+   "startCharOffset": 88,
+   "endCharOffset": 89
+  },
+  {
+   "form": "https://t.co/C4xhlHJS0s",
+   "startCharOffset": 90,
+   "endCharOffset": 113
+  },
+  {
+   "form": "https://t.co/kS63nj4q8c",
+   "startCharOffset": 114,
+   "endCharOffset": 137
+  }
+ ],
+ "sentences": {
+  "generator": "UserSpecified",
+  "score": 1.0,
+  "sentenceEndPositions": [
+   14
+  ]
+ },
+ "views": [
+  {
+   "viewName": "NER_CONLL",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "NER_CONLL",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "ORG",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Wayyaanee"
+      },
+      {
+       "label": "ORG",
+       "score": 1.0,
+       "start": 3,
+       "end": 7,
+       "tokens": "Mana Barnootaa Qophaa\u2019ina Naqamtee"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TOKENS",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.TokenLabelView",
+     "viewName": "TOKENS",
+     "generator": "UserSpecified",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "Goototi",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "Goototi"
+      },
+      {
+       "label": "Barattooti",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "Barattooti"
+      },
+      {
+       "label": "Oromoo",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "Oromoo"
+      },
+      {
+       "label": "Mana",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Mana"
+      },
+      {
+       "label": "Barnootaa",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Barnootaa"
+      },
+      {
+       "label": "Qophaa\u2019ina",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "Qophaa\u2019ina"
+      },
+      {
+       "label": "Naqamtee",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Naqamtee"
+      },
+      {
+       "label": "Ittisa",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "Ittisa"
+      },
+      {
+       "label": "Humna",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "Humna"
+      },
+      {
+       "label": "Tika",
+       "score": 1.0,
+       "start": 9,
+       "end": 10,
+       "tokens": "Tika"
+      },
+      {
+       "label": "Wayyaanee",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Wayyaanee"
+      },
+      {
+       "label": "\u2026",
+       "score": 1.0,
+       "start": 11,
+       "end": 12,
+       "tokens": "\u2026"
+      },
+      {
+       "label": "https://t.co/C4xhlHJS0s",
+       "score": 1.0,
+       "start": 12,
+       "end": 13,
+       "tokens": "https://t.co/C4xhlHJS0s"
+      },
+      {
+       "label": "https://t.co/kS63nj4q8c",
+       "score": 1.0,
+       "start": 13,
+       "end": 14,
+       "tokens": "https://t.co/kS63nj4q8c"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TRANSLITERATION",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "TRANSLITERATION",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "Goototi",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "Goototi"
+      },
+      {
+       "label": "Barattooti",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "Barattooti"
+      },
+      {
+       "label": "Oromoo",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "Oromoo"
+      },
+      {
+       "label": "Mana",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Mana"
+      },
+      {
+       "label": "Barnootaa",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Barnootaa"
+      },
+      {
+       "label": "Qophaa'ina",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "Qophaa\u2019ina"
+      },
+      {
+       "label": "Naqamtee",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Naqamtee"
+      },
+      {
+       "label": "Ittisa",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "Ittisa"
+      },
+      {
+       "label": "Humna",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "Humna"
+      },
+      {
+       "label": "Tika",
+       "score": 1.0,
+       "start": 9,
+       "end": 10,
+       "tokens": "Tika"
+      },
+      {
+       "label": "Wayyaanee",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Wayyaanee"
+      },
+      {
+       "label": "...",
+       "score": 1.0,
+       "start": 11,
+       "end": 12,
+       "tokens": "\u2026"
+      },
+      {
+       "label": "https://t.co/C4xhlHJS0s",
+       "score": 1.0,
+       "start": 12,
+       "end": 13,
+       "tokens": "https://t.co/C4xhlHJS0s"
+      },
+      {
+       "label": "https://t.co/kS63nj4q8c",
+       "score": 1.0,
+       "start": 13,
+       "end": 14,
+       "tokens": "https://t.co/kS63nj4q8c"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "WIKIFIER",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "WIKIFIER",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "71000046",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Wayyaanee"
+      },
+      {
+       "label": "NIL60458",
+       "score": 1.0,
+       "start": 3,
+       "end": 7,
+       "tokens": "Mana Barnootaa Qophaa\u2019ina Naqamtee"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "CANDGEN",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "CANDGEN",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "NIL",
+       "score": 0.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "Wayyaanee"
+      },
+      {
+       "label": "5854968|United_States_Minor_Outlying_Islands",
+       "score": 0.2568306010928962,
+       "start": 3,
+       "end": 7,
+       "tokens": "Mana Barnootaa Qophaa\u2019ina Naqamtee",
+       "labelScoreMap": {
+        "5854968|United_States_Minor_Outlying_Islands": 0.2568306010928962,
+        "7668580|Swami_Vivekananda_Airport": 0.22950819672131148,
+        "1263956|Mana_Pass": 0.12021857923497267,
+        "2187823|Mana_Island_(New_Zealand)": 0.10382513661202186,
+        "326739|Mena_River": 0.0546448087431694,
+        "6425527|Mane,_Alpes-de-Haute-Provence": 0.04371584699453552,
+        "3146465|M\u00e5na": 0.04371584699453552,
+        "1499420|Mana_River": 0.03278688524590164,
+        "6690694|Mana,_French_Guiana": 0.03278688524590164,
+        "331620|Mana_(woreda)": 0.02185792349726776,
+        "3655117|La_Man\u00e1": 0.01639344262295082,
+        "2204099|Mana_Island,_Fiji": 0.01639344262295082,
+        "7668366|Mana_Island_Airport": 0.01639344262295082,
+        "6637460|Mana_Mountain": 0.00546448087431694,
+        "10792507|La_Man\u00e1_Canton": 0.00546448087431694
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

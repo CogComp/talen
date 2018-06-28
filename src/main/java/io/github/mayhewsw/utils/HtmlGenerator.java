@@ -17,6 +17,10 @@ import org.apache.commons.text.StringEscapeUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.json.JSONObject;
 
 import static io.github.mayhewsw.controllers.DocumentController.getdocsuggestions;
 
@@ -155,6 +159,41 @@ public class HtmlGenerator {
         }
 
         String html = StringUtils.join(text, "");
+
+        View candgen = null;
+        if(ta.hasView("CANDGEN")){
+          candgen = ta.getView("CANDGEN");
+        } else {
+          candgen = new SpanLabelView("CANDGEN", ta);
+          ta.addView("CANDGEN", candgen);
+        }
+
+        List<Constituent> candlist;
+        if(sentspan.getFirst() == -1){
+            candlist = candgen.getConstituents();
+            startoffset = 0;
+        }else {
+            candlist = candgen.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            startoffset = sentspan.getFirst();
+        }
+
+        for(Constituent c: candlist){
+
+              Map<String, Double> labelScoreMap = c.getLabelsToScores();
+              TreeMap<String, String> labelScoreMapString = new TreeMap<>();
+              if(labelScoreMap != null){
+                for(String s : labelScoreMap.keySet()){
+                  labelScoreMapString.put(s, labelScoreMap.get(s).toString());
+                }
+              }
+
+              String jsonString  = (labelScoreMap == null) ? "{}" : new JSONObject(labelScoreMapString).toString();
+
+              int end = c.getEndSpan() - startoffset;
+              int start = c.getStartSpan() - startoffset;
+              html += String.format("<span id='candgen-tok-%s-%d-%d' class='candgen-list-hidden' hidden>", id, start, end - 1) + jsonString + "</span>";
+
+        }
 
         String htmltemplate = "<div class=\"card\">" +
                 "<div class=\"card-header\">%s</div>" +

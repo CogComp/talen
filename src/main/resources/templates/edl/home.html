@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{edl/doc-base}">
+<head>
+    <title>Choose a dataset</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
+
+                <div th:if="${datasets.size() == 0}">
+                    <h1>Welcome!</h1>
+                    <p>Looks like you are new here. This page will display datasets once they are created
+                    and the config file is placed in the config folder.</p>
+
+                    <p>Here is a small example config file:</p>
+                    <pre>
+name    MyDatasetName
+path    /path/to/file
+labels  LABEL1 LABEL2 LABEL3
+                    </pre>
+
+                    <p>Important: the name of this config file must be prefixed with doc- in order to show up here.</p>
+
+
+                </div>
+
+                <div th:unless="${datasets.size() == 0}">
+                    <p>Please select an option:</p>
+                    <div class="list-group">
+                        <a th:each="dataname : ${datasets}" href="#" th:href="@{/edl/loaddata(dataname=${dataname})}" class="list-group-item list-group-item-action"  th:text="${dataname}"></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+
+</html>

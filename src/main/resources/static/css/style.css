@@ -139,6 +139,15 @@ body {
     border-radius: 0 3px 3px 0;
 }
 
+.underline{
+    font-weight: bold;
+}
+
+.top-user-choice{
+  background-color: #D3CFCF;
+  text-decoration-color: #FFFFFF;
+}
+
 /*.highlighted {*/
     /*background-color: #fff2ac;*/
 /*}*/
@@ -147,4 +156,8 @@ mark{
     padding: 0;
     background: transparent;
     color: red;
+}
+
+ul{
+    list-style-type: none;
 }

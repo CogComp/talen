@@ -15,11 +15,15 @@ $(document).ready(function() {
 
     var highlighting = false;
     var range = {start:-1, end:-1, id:""};
+    var underlined_range = [];
 
     function resetrange(){
         range = {start:-1, end:-1, id:""};
         highlightrange();
     }
+
+    fillunderlinerange();
+    console.log($(".candgen-list-hidden"));
 
     // This retrieves the text within a range. If the range
     // is empty, then it returns the empty string.
@@ -41,6 +45,21 @@ $(document).ready(function() {
         }else{
             return "";
         }
+    }
+
+    function fillunderlinerange(){
+      for(i = 0; i < $(".candgen-list-hidden").length; i++){
+          cand_dict = JSON.parse($(".candgen-list-hidden").get(i).textContent);
+          for(var keys in cand_dict){
+            if(parseFloat(cand_dict[keys]) >= 1000.0){
+                id_list = $(".candgen-list-hidden").get(i).id.split('-');
+
+                var ranges = {start:parseInt(id_list[3]), end:parseInt(id_list[4]), id:id_list[2]};
+                console.log(ranges);
+                underlined_range.push($.extend(true, {}, ranges));
+            }
+          }
+      }
     }
 
     // This returns a list of all words in the document.
@@ -110,6 +129,12 @@ $(document).ready(function() {
             ret = true;
         }
 
+        if(controller.startsWith('edl')){
+          var id_needed = $(document.getElementById(id))[0].closest('.cons').id.split('-');
+          range.start = parseInt(id_needed[1]);
+          range.end = parseInt(id_needed[2]) - 1;
+        }
+
         highlightrange();
 
         return ret;
@@ -136,13 +161,37 @@ $(document).ready(function() {
         $("[id^=tok]").popover({
             placement: "bottom",
             content: function () {
+              if(controller.startsWith('doc')){
                 var html = $("#buttons").html();
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
+              } else {
+                var raw_id = $(this)[0].id.split('-')
+                var end = parseInt($(this)[0].closest('.cons').id.split('-')[2]) - 1;
+                var start = parseInt($(this)[0].closest('.cons').id.split('-')[1]);
+                raw_id[2] = (start).toString() + '-' + (end).toString();
+                var id_tok = "candgen-" + raw_id.join("-");
+                var json_dict = JSON.parse($(document.getElementById(id_tok)).html());
+                console.log(json_dict);
+                var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>"
+                for(var key in json_dict){
+                  if(key == "NIL"){
+                    continue;
+                  }
+                  var id_name = key.split('|');
+                  if(parseFloat(json_dict[key]) >= 1000.0){
+                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + "</button>";
+                  } else{
+                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1] + "</button>";
+                  }
+                }
+                out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
+                return out;
+              }
             },
             title: function () {
                 var text = gettextinrange(true);
-                var link = "<a href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>"
+                var link = "<a href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>";
                 return text + " (" + link + " )";
             },
             html: true,
@@ -239,6 +288,10 @@ $(document).ready(function() {
             removelabel(span);
         });
 
+        fillunderlinerange();
+        underlined_range.forEach(function(ranges){
+            underlinerange(ranges.id, ranges.start, ranges.end);
+        });
     }
 
     loadtok();
@@ -310,7 +363,11 @@ $(document).ready(function() {
         var startid = "tok-" + range.start;
         var endid = "tok-" + (range.end+1);
 
+        var start = range.start;
+        var end = range.end;
+
         $("[id^=tok]").popover("hide");
+        underlined_range.push($.extend(true, {}, range));
         resetrange();
         showtopstats();
 
@@ -343,6 +400,15 @@ $(document).ready(function() {
             refreshsents();
         });
     };
+
+    function underlinerange(sentid, startid, endid){
+        id_doc = sentid;
+        for(i = startid; i <= endid; i++){
+            id_final = "tok-" + id_doc +"-" + i.toString();
+            console.log("Tok id prasanna: " + id_final);
+            $(document.getElementById(id_final)).addClass("underline");
+        }
+    }
 
 
 

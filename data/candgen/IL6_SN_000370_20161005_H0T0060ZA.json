@@ -1,0 +1,459 @@
+{
+ "corpusId": "",
+ "id": "IL6_SN_000370_20161005_H0T0060ZA",
+ "text": "#OromoRevolution \"G/Shawaa Lixaa Aanaa Meettaa Roobiitti mormii cimaan Onk.3_hanga har'atti geggeffameen namni 4... https://t.co/VT7ucCdyHJ",
+ "tokens": [
+  "#OromoRevolution",
+  "\"",
+  "G/Shawaa",
+  "Lixaa",
+  "Aanaa",
+  "Meettaa",
+  "Roobiitti",
+  "mormii",
+  "cimaan",
+  "Onk.3_hanga",
+  "har'atti",
+  "geggeffameen",
+  "namni",
+  "4",
+  "...",
+  "https://t.co/VT7ucCdyHJ"
+ ],
+ "tokenOffsets": [
+  {
+   "form": "#OromoRevolution",
+   "startCharOffset": 0,
+   "endCharOffset": 16
+  },
+  {
+   "form": "\"",
+   "startCharOffset": 17,
+   "endCharOffset": 18
+  },
+  {
+   "form": "G/Shawaa",
+   "startCharOffset": 18,
+   "endCharOffset": 26
+  },
+  {
+   "form": "Lixaa",
+   "startCharOffset": 27,
+   "endCharOffset": 32
+  },
+  {
+   "form": "Aanaa",
+   "startCharOffset": 33,
+   "endCharOffset": 38
+  },
+  {
+   "form": "Meettaa",
+   "startCharOffset": 39,
+   "endCharOffset": 46
+  },
+  {
+   "form": "Roobiitti",
+   "startCharOffset": 47,
+   "endCharOffset": 56
+  },
+  {
+   "form": "mormii",
+   "startCharOffset": 57,
+   "endCharOffset": 63
+  },
+  {
+   "form": "cimaan",
+   "startCharOffset": 64,
+   "endCharOffset": 70
+  },
+  {
+   "form": "Onk.3_hanga",
+   "startCharOffset": 71,
+   "endCharOffset": 82
+  },
+  {
+   "form": "har'atti",
+   "startCharOffset": 83,
+   "endCharOffset": 91
+  },
+  {
+   "form": "geggeffameen",
+   "startCharOffset": 92,
+   "endCharOffset": 104
+  },
+  {
+   "form": "namni",
+   "startCharOffset": 105,
+   "endCharOffset": 110
+  },
+  {
+   "form": "4",
+   "startCharOffset": 111,
+   "endCharOffset": 112
+  },
+  {
+   "form": "...",
+   "startCharOffset": 112,
+   "endCharOffset": 115
+  },
+  {
+   "form": "https://t.co/VT7ucCdyHJ",
+   "startCharOffset": 116,
+   "endCharOffset": 139
+  }
+ ],
+ "sentences": {
+  "generator": "UserSpecified",
+  "score": 1.0,
+  "sentenceEndPositions": [
+   16
+  ]
+ },
+ "views": [
+  {
+   "viewName": "NER_CONLL",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "NER_CONLL",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "GPE",
+       "score": 1.0,
+       "start": 4,
+       "end": 7,
+       "tokens": "Aanaa Meettaa Roobiitti"
+      },
+      {
+       "label": "GPE",
+       "score": 1.0,
+       "start": 2,
+       "end": 4,
+       "tokens": "G/Shawaa Lixaa"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TOKENS",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.TokenLabelView",
+     "viewName": "TOKENS",
+     "generator": "UserSpecified",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "#OromoRevolution",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "#OromoRevolution"
+      },
+      {
+       "label": "\"",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "\""
+      },
+      {
+       "label": "G/Shawaa",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "G/Shawaa"
+      },
+      {
+       "label": "Lixaa",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Lixaa"
+      },
+      {
+       "label": "Aanaa",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Aanaa"
+      },
+      {
+       "label": "Meettaa",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "Meettaa"
+      },
+      {
+       "label": "Roobiitti",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Roobiitti"
+      },
+      {
+       "label": "mormii",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "mormii"
+      },
+      {
+       "label": "cimaan",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "cimaan"
+      },
+      {
+       "label": "Onk.3_hanga",
+       "score": 1.0,
+       "start": 9,
+       "end": 10,
+       "tokens": "Onk.3_hanga"
+      },
+      {
+       "label": "har'atti",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "har'atti"
+      },
+      {
+       "label": "geggeffameen",
+       "score": 1.0,
+       "start": 11,
+       "end": 12,
+       "tokens": "geggeffameen"
+      },
+      {
+       "label": "namni",
+       "score": 1.0,
+       "start": 12,
+       "end": 13,
+       "tokens": "namni"
+      },
+      {
+       "label": "4",
+       "score": 1.0,
+       "start": 13,
+       "end": 14,
+       "tokens": "4"
+      },
+      {
+       "label": "...",
+       "score": 1.0,
+       "start": 14,
+       "end": 15,
+       "tokens": "..."
+      },
+      {
+       "label": "https://t.co/VT7ucCdyHJ",
+       "score": 1.0,
+       "start": 15,
+       "end": 16,
+       "tokens": "https://t.co/VT7ucCdyHJ"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "TRANSLITERATION",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "TRANSLITERATION",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "#OromoRevolution",
+       "score": 1.0,
+       "start": 0,
+       "end": 1,
+       "tokens": "#OromoRevolution"
+      },
+      {
+       "label": "\"",
+       "score": 1.0,
+       "start": 1,
+       "end": 2,
+       "tokens": "\""
+      },
+      {
+       "label": "G/Shawaa",
+       "score": 1.0,
+       "start": 2,
+       "end": 3,
+       "tokens": "G/Shawaa"
+      },
+      {
+       "label": "Lixaa",
+       "score": 1.0,
+       "start": 3,
+       "end": 4,
+       "tokens": "Lixaa"
+      },
+      {
+       "label": "Aanaa",
+       "score": 1.0,
+       "start": 4,
+       "end": 5,
+       "tokens": "Aanaa"
+      },
+      {
+       "label": "Meettaa",
+       "score": 1.0,
+       "start": 5,
+       "end": 6,
+       "tokens": "Meettaa"
+      },
+      {
+       "label": "Roobiitti",
+       "score": 1.0,
+       "start": 6,
+       "end": 7,
+       "tokens": "Roobiitti"
+      },
+      {
+       "label": "mormii",
+       "score": 1.0,
+       "start": 7,
+       "end": 8,
+       "tokens": "mormii"
+      },
+      {
+       "label": "cimaan",
+       "score": 1.0,
+       "start": 8,
+       "end": 9,
+       "tokens": "cimaan"
+      },
+      {
+       "label": "Onk.3_hanga",
+       "score": 1.0,
+       "start": 9,
+       "end": 10,
+       "tokens": "Onk.3_hanga"
+      },
+      {
+       "label": "har'atti",
+       "score": 1.0,
+       "start": 10,
+       "end": 11,
+       "tokens": "har'atti"
+      },
+      {
+       "label": "geggeffameen",
+       "score": 1.0,
+       "start": 11,
+       "end": 12,
+       "tokens": "geggeffameen"
+      },
+      {
+       "label": "namni",
+       "score": 1.0,
+       "start": 12,
+       "end": 13,
+       "tokens": "namni"
+      },
+      {
+       "label": "4",
+       "score": 1.0,
+       "start": 13,
+       "end": 14,
+       "tokens": "4"
+      },
+      {
+       "label": "...",
+       "score": 1.0,
+       "start": 14,
+       "end": 15,
+       "tokens": "..."
+      },
+      {
+       "label": "https://t.co/VT7ucCdyHJ",
+       "score": 1.0,
+       "start": 15,
+       "end": 16,
+       "tokens": "https://t.co/VT7ucCdyHJ"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "WIKIFIER",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "WIKIFIER",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "11257894",
+       "score": 1.0,
+       "start": 4,
+       "end": 7,
+       "tokens": "Aanaa Meettaa Roobiitti"
+      },
+      {
+       "label": "7670715",
+       "score": 1.0,
+       "start": 2,
+       "end": 4,
+       "tokens": "G/Shawaa Lixaa"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "viewName": "CANDGEN",
+   "viewData": [
+    {
+     "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+     "viewName": "CANDGEN",
+     "generator": "Ltf2TextAnnotation",
+     "score": 1,
+     "constituents": [
+      {
+       "label": "3674810|Meta_Department",
+       "score": 0.4452054794520548,
+       "start": 4,
+       "end": 7,
+       "tokens": "Aanaa Meettaa Roobiitti",
+       "labelScoreMap": {
+        "3674810|Meta_Department": 0.4452054794520548,
+        "3674807|Meta_River": 0.2054794520547945,
+        "2344078|Ebute_Metta": 0.08904109589041095,
+        "6540586|Meda,_Lombardy": 0.07191780821917808,
+        "278934|A'ana": 0.0547945205479452,
+        "6072459|Meta_Incognita_Peninsula": 0.03424657534246575,
+        "6541904|Meta,_Campania": 0.030821917808219176,
+        "329606|Robe_(woreda)": 0.02054794520547945,
+        "330814|Meta_(woreda)": 0.017123287671232876,
+        "11257894|Meta_Robi": 0.0136986301369863,
+        "4398082|Meta,_Missouri": 0.010273972602739725,
+        "4300605|Meta,_Kentucky": 0.00684931506849315
+       }
+      },
+      {
+       "label": "NIL",
+       "score": 0.0,
+       "start": 2,
+       "end": 4,
+       "tokens": "G/Shawaa Lixaa"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

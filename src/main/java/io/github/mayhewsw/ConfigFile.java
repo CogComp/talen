@@ -52,6 +52,7 @@ public class ConfigFile extends Properties{
         }
 
         dict = this.getProperty("dict");
+        System.out.println(dict);
         format = this.getProperty("format");
 
         indexpath = this.getProperty("indexpath");
