@@ -140,6 +140,11 @@
             <version>20090211</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>3.0.5</version>
+        </dependency>
 
     </dependencies>
 
