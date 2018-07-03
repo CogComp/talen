@@ -22,6 +22,9 @@ public class SessionData {
     public String username;
     public Boolean showdefs;
     public Boolean showroman;
+    public Boolean allowcopy;
+
+
     public TreeMap<String, TextAnnotation> tas;
     public String dataname;
     public HashMap<Pair<String, String>, Double> patterns;
@@ -59,6 +62,11 @@ public class SessionData {
         showroman = (Boolean) hs.getAttribute("showroman");
         if(showroman == null){
             showroman = false;
+        }
+
+        allowcopy = (Boolean) hs.getAttribute("allowcopy");
+        if(allowcopy == null){
+            allowcopy = false;
         }
 
         suffixes = (ArrayList<String>) hs.getAttribute("suffixes");

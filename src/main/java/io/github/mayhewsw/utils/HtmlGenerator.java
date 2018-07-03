@@ -26,16 +26,117 @@ public class HtmlGenerator {
 //    }
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false, false);
     }
 
     public static String getHTMLfromTA(TextAnnotation ta, String query, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false, false);
     }
 
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, false);
+    }
+
+
+    public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy) {
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy);
+    }
+
+    // this is basically read only
+    public static String getCopyableHTMLFromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman){
+        IntPair sentspan = new IntPair(-1, -1);
+        String id = ta.getId();
+
+        View ner = ta.getView(ViewNames.NER_CONLL);
+
+        View nersugg = null;
+        if(ta.hasView("NER_SUGGESTION")) {
+            nersugg = ta.getView("NER_SUGGESTION");
+        }else{
+            // create a dummy view!
+            nersugg = new SpanLabelView("NER_SUGGESTION", ta);
+            ta.addView("NER_SUGGESTION", nersugg);
+        }
+
+        String[] nonroman_text = ta.getTokens().clone();
+
+        // We clone the text so that when we modify it (below) the TA is unchanged.
+        String[] text;
+        if(showroman) {
+            text = Utils.getRomanTaToksIfPresent(ta);
+        }else {
+            text = ta.getTokens().clone();
+        }
+
+        if(sentspan.getFirst() != -1) {
+            text = Arrays.copyOfRange(text, sentspan.getFirst(), sentspan.getSecond());
+        }
+
+        // add spans to every word that is not a constituent.
+        for (int t = 0; t < text.length; t++) {
+            String def = null;
+            if (dict != null && dict.containsKey(nonroman_text[t])) {
+                def = dict.get(nonroman_text[t]).get(0);
+            }
+
+            if (showdefs && def != null) {
+                text[t] = def;
+            }
+        }
+
+        List<Constituent> sentner;
+        List<Constituent> sentnersugg;
+        int startoffset;
+        if(sentspan.getFirst() == -1){
+            sentner = ner.getConstituents();
+            sentnersugg = nersugg.getConstituents();
+            startoffset = 0;
+        }else {
+            sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            sentnersugg = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            startoffset = sentspan.getFirst();
+        }
+
+        for (Constituent c : sentner) {
+
+            int start = c.getStartSpan() - startoffset;
+            int end = c.getEndSpan() - startoffset;
+
+            // important to also include 'cons' class, as it is a keyword in the html
+            text[start] = String.format("<span class='%s cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
+            text[end - 1] += "</span>";
+        }
+
+        // Then add sentences.
+        List<Constituent> sentlist;
+        View sentview = ta.getView(ViewNames.SENTENCE);
+        if(sentspan.getFirst() == -1){
+            sentlist = sentview.getConstituents();
+            startoffset = 0;
+        }else {
+            sentlist = sentview.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            startoffset = sentspan.getFirst();
+        }
+
+        for (Constituent c : sentlist) {
+
+            int start = c.getStartSpan() - startoffset;
+            int end = c.getEndSpan() - startoffset;
+
+            text[start] = "<p>" + text[start];
+            text[end - 1] += "</p>";
+        }
+
+        String html = StringUtils.join(text, " ");
+
+        String htmltemplate = "<div class=\"card\">" +
+                    "<div class=\"card-header\">%s</div>" +
+                    "<div class=\"card-body text\" id=%s>%s</div></div>";
+        String out = String.format(htmltemplate, id, id, html) + "\n";
+
+
+        return out;
     }
 
 
@@ -43,7 +144,7 @@ public class HtmlGenerator {
      * Given a sentence, produce the HTML for display. .
      * @return
      */
-    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman) {
+    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy) {
 
         IntPair sentspan = span;
 
@@ -147,12 +248,22 @@ public class HtmlGenerator {
             text[end - 1] += "</p>";
         }
 
-        String html = StringUtils.join(text, "");
+        String sep = "";
+        if(allowcopy){
+            sep = " ";
+        }
+        String html = StringUtils.join(text, sep);
 
-
-        String htmltemplate = "<div class=\"card\">" +
-                "<div class=\"card-header\">%s</div>" +
-                "<div class=\"card-body text\" id=%s>%s</div></div>";
+        String htmltemplate;
+        if(allowcopy){
+            htmltemplate = "<div class=\"card\">" +
+                    "<div class=\"card-header\">%s</div>" +
+                    "<div class=\"card-body text\" id=%s>%s</div></div>";
+        }else{
+            htmltemplate = "<div class=\"card\">" +
+                    "<div class=\"card-header\">%s</div>" +
+                    "<div class=\"card-body text nocopy\" id=%s>%s</div></div>";
+        }
         String out = String.format(htmltemplate, id, id, html) + "\n";
 
 

@@ -50,6 +50,16 @@
                             </div>
                         </div>
 
+                        <div class="form-check">
+                            <div class="pretty p-icon">
+                                <input id="copybutton" type="checkbox" th:checked="${session.allowcopy != null && session.allowcopy}" />
+                                <div class="state p-default">
+                                    <i class="icon fa fa-check"></i>
+                                    <label>Allow copying</label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="spacer"></div>
                         <div th:if="${grouptype} != null">
                             <span th:each="label : ${labels}">

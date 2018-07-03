@@ -10,6 +10,7 @@ import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
+import groovyjarjarantlr.HTMLCodeGenerator;
 import io.github.mayhewsw.*;
 import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.utils.HtmlGenerator;
@@ -961,6 +962,29 @@ public class DocumentController {
         sd.showroman = showroman;
 
         return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+    }
+
+    @RequestMapping(value="/togglecopy", method= RequestMethod.GET)
+    @ResponseBody
+    public String allowcopy(@RequestParam(value="idlist[]") String[] idlist, HttpSession hs) {
+
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        TextAnnotation ta = tas.get(idlist[0]);
+
+        Boolean allowcopy = sd.allowcopy;
+        allowcopy = !allowcopy;
+        hs.setAttribute("allowcopy", allowcopy);
+        sd.allowcopy = allowcopy;
+
+        String ret;
+        if(allowcopy) {
+            ret = HtmlGenerator.getCopyableHTMLFromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        }else{
+            ret = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        }
+
+        return ret;
     }
 
 

@@ -270,6 +270,20 @@ $(document).ready(function() {
     });
 
 
+    $("#copybutton").click(function(){
+        $.ajax({
+            method: "GET",
+            url: baseurl + "/" + controller + "/togglecopy",
+            data: {idlist: getsentids()}
+        }).done(function (msg) {
+            console.log("successful toggle");
+            $("#htmlcontainer").html(msg);
+            loadtok();
+        });
+
+    });
+
+
     $("#loadtokbutton").click(function(){
         loadtok();
     });
