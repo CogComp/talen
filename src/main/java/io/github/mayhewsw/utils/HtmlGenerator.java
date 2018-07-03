@@ -23,6 +23,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import edu.illinois.cs.cogcomp.lorelei.edl.KBEntity;
+import edu.illinois.cs.cogcomp.lorelei.kb.GeonamesLoader;
+import edu.illinois.cs.cogcomp.lorelei.kb.KBEntry;
+
 import org.json.JSONObject;
 
 import static io.github.mayhewsw.controllers.DocumentController.getdocsuggestions;
@@ -186,20 +190,20 @@ public class HtmlGenerator {
 
               Map<String, Double> labelScoreMap = c.getLabelsToScores();
               TreeMap<String, String> labelScoreMapString = new TreeMap<>();
-              Map<String, String> entity = getEntityMap();
-              TreeMap<String, String> entityToSend = new TreeMap<>();
+              Map<String, String> id2feature = new TreeMap<String, String>();
+
               if(labelScoreMap != null){
+                GeonamesLoader gl = new GeonamesLoader("9");
+
                 for(String s : labelScoreMap.keySet()){
                   labelScoreMapString.put(s, labelScoreMap.get(s).toString());
-                  String id_no = s.split("|")[0].trim();
-                  try{
-                    entityToSend.put(id_no, entity.get(id_no));
-                  } catch(Exception e){
-                    entityToSend.put(id_no, "");
-                  }
+
+                  String feature = gl.get(Integer.parseInt(s.split("|")[0].trim())).getFeatureClass();
+                  id2feature.put(s.split("|")[0], feature);
                 }
-                String jsonString  = new JSONObject(entityToSend).toString();
-                html+= "<span id='candgen-entitytype' class='candgen-hidden' hidden>" + entityToSend + "</span>";
+                String jsonS  =  new JSONObject(id2feature).toString();
+
+                html += "<span id='candgen-entitytype' class='candgen-hidden' hidden>" + jsonS + "</span>";
               }
 
               String jsonString  = (labelScoreMap == null) ? "{}" : new JSONObject(labelScoreMapString).toString();
@@ -218,33 +222,6 @@ public class HtmlGenerator {
 
         return out;
     }
-
-    private static Map<String, String> getEntityMap(){
-        if(entityType == null){
-          entityType  = new TreeMap<>();
-          try{
-            BufferedReader br = new BufferedReader(new FileReader("/Users/prasanna/Desktop/talen/data/entity_to_type"));
-            String line = null;
-
-            while((line = br.readLine()) != null){
-                
-                String[] entries = line.split("\t");
-                try{
-                  entityType.put(entries[0].trim(), entries[1].trim());
-                } catch(Exception e){
-                  entityType.put(entries[0].trim(), "");
-                }
-            }
-
-            System.out.println("entity_to_type found");
-          } catch(IOException e){
-            System.out.println("entity_to_type not found");
-          }
-        }
-
-        return entityType;
-    }
-
 
     /**
      * Given a TA, this returns the HTML string.
