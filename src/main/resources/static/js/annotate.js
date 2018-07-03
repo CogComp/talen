@@ -172,6 +172,7 @@ $(document).ready(function() {
                 raw_id[2] = (start).toString() + '-' + (end).toString();
                 var id_tok = "candgen-" + raw_id.join("-");
                 var json_dict = JSON.parse($(document.getElementById(id_tok)).html());
+                var json_entity_dict = JSON.parse($(document.getElementById('candgen-entitytype')).html());
                 console.log(json_dict);
                 var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>"
                 for(var key in json_dict){
@@ -180,7 +181,7 @@ $(document).ready(function() {
                   }
                   var id_name = key.split('|');
                   if(parseFloat(json_dict[key]) >= 1000.0){
-                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + "</button>";
+                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] +" "+ json_entity_dict[id_name[0]] + "</button>";
                   } else{
                       out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1] + "</button>";
                   }

@@ -19,6 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 import org.json.JSONObject;
 
@@ -34,6 +37,8 @@ public class HtmlGenerator {
 //    public static String getHTMLfromTA(TextAnnotation ta, boolean showdefs) {
 //        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
 //    }
+
+    private static Map<String, String> entityType = null;
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false);
@@ -181,10 +186,20 @@ public class HtmlGenerator {
 
               Map<String, Double> labelScoreMap = c.getLabelsToScores();
               TreeMap<String, String> labelScoreMapString = new TreeMap<>();
+              Map<String, String> entity = getEntityMap();
+              TreeMap<String, String> entityToSend = new TreeMap<>();
               if(labelScoreMap != null){
                 for(String s : labelScoreMap.keySet()){
                   labelScoreMapString.put(s, labelScoreMap.get(s).toString());
+                  String id_no = s.split("|")[0].trim();
+                  try{
+                    entityToSend.put(id_no, entity.get(id_no));
+                  } catch(Exception e){
+                    entityToSend.put(id_no, "");
+                  }
                 }
+                String jsonString  = new JSONObject(entityToSend).toString();
+                html+= "<span id='candgen-entitytype' class='candgen-hidden' hidden>" + entityToSend + "</span>";
               }
 
               String jsonString  = (labelScoreMap == null) ? "{}" : new JSONObject(labelScoreMapString).toString();
@@ -202,6 +217,32 @@ public class HtmlGenerator {
 
 
         return out;
+    }
+
+    private static Map<String, String> getEntityMap(){
+        if(entityType == null){
+          entityType  = new TreeMap<>();
+          try{
+            BufferedReader br = new BufferedReader(new FileReader("/Users/prasanna/Desktop/talen/data/entity_to_type"));
+            String line = null;
+
+            while((line = br.readLine()) != null){
+                
+                String[] entries = line.split("\t");
+                try{
+                  entityType.put(entries[0].trim(), entries[1].trim());
+                } catch(Exception e){
+                  entityType.put(entries[0].trim(), "");
+                }
+            }
+
+            System.out.println("entity_to_type found");
+          } catch(IOException e){
+            System.out.println("entity_to_type not found");
+          }
+        }
+
+        return entityType;
     }
 
 

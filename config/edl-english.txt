@@ -2,4 +2,4 @@ name	EnglishDefault
 folderpath	data/candgen/
 format	ta
 labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral
-dict  dicts/dict_noto.th
+dict  dicts/dict.rw
