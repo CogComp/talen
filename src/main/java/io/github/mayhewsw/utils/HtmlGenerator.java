@@ -19,9 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 import edu.illinois.cs.cogcomp.lorelei.edl.KBEntity;
 import edu.illinois.cs.cogcomp.lorelei.kb.GeonamesLoader;
@@ -42,7 +39,7 @@ public class HtmlGenerator {
 //        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
 //    }
 
-    private static Map<String, String> entityType = null;
+    private static GeonamesLoader gl = new GeonamesLoader("9");
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false);
@@ -186,24 +183,35 @@ public class HtmlGenerator {
             startoffset = sentspan.getFirst();
         }
 
+	Map<String, String> id2feature = new TreeMap<String, String>();
+
         for(Constituent c: candlist){
 
               Map<String, Double> labelScoreMap = c.getLabelsToScores();
               TreeMap<String, String> labelScoreMapString = new TreeMap<>();
-              Map<String, String> id2feature = new TreeMap<String, String>();
+              
 
               if(labelScoreMap != null){
-                GeonamesLoader gl = new GeonamesLoader("9");
 
                 for(String s : labelScoreMap.keySet()){
                   labelScoreMapString.put(s, labelScoreMap.get(s).toString());
+		  
+                  String type = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
 
-                  String feature = gl.get(Integer.parseInt(s.split("|")[0].trim())).getFeatureClass();
-                  id2feature.put(s.split("|")[0], feature);
+		  String externalLink = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getExternalLink();
+
+		  String featureCodeName = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getFeatureCodeName();
+
+		  String feature;
+		  if (externalLink == null || externalLink == ""){
+		      feature = featureCodeName + "|" + type;
+		  } else {
+		      feature = featureCodeName + "|" + type + "|" + externalLink;
+		  }
+		  
+                  id2feature.put(s, feature);
                 }
-                String jsonS  =  new JSONObject(id2feature).toString();
-
-                html += "<span id='candgen-entitytype' class='candgen-hidden' hidden>" + jsonS + "</span>";
+                
               }
 
               String jsonString  = (labelScoreMap == null) ? "{}" : new JSONObject(labelScoreMapString).toString();
@@ -214,11 +222,13 @@ public class HtmlGenerator {
 
         }
 
+	String jsonS  =  new JSONObject(id2feature).toString();
+	html += "<span id='candgen-entitytype' class='candgen-hidden' hidden>" + jsonS + "</span>";
+
         String htmltemplate = "<div class=\"card\">" +
                 "<div class=\"card-header\">%s</div>" +
                 "<div class=\"card-body text\" id=%s>%s</div></div>";
         String out = String.format(htmltemplate, id, id, html) + "\n";
-
 
         return out;
     }

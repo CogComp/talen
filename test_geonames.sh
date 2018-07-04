@@ -5,6 +5,6 @@ OPTIONS="$MEMORY -Xss40m -ea -cp $CP"
 PACKAGE_PREFIX="edu.illinois.cs.cogcomp"
 
 #MAIN="$PACKAGE_PREFIX.lorelei.AddTab"
-MAIN="$PACKAGE_PREFIX.lorelei.kb.MapDBCandGen"
-# time nice java $OPTIONS $MAIN $*
-time mvn exec:java -Dexec.mainClass=$MAIN -Dexec.args="$*"
+MAIN="$PACKAGE_PREFIX.lorelei.kb.GeonamesLoader"
+time nice java $OPTIONS $MAIN $*
+#time mvn exec:java -Dexec.mainClass=$MAIN -Dexec.args="$*"
