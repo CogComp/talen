@@ -195,14 +195,21 @@ public class HtmlGenerator {
 
                 for(String s : labelScoreMap.keySet()){
                   labelScoreMapString.put(s, labelScoreMap.get(s).toString());
-		  
+
+		  String feature;
+		  try{
+		      int idEntity = Integer.parseInt(s.replaceAll("[^0-9]+", ""));
+		  } catch(Exception e){
+		      id2feature.put(s, "");
+		      continue;
+		  }
                   String type = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
 
 		  String externalLink = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getExternalLink();
 
 		  String featureCodeName = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getFeatureCodeName();
 
-		  String feature;
+		  
 		  if (externalLink == null || externalLink == ""){
 		      feature = featureCodeName + "|" + type;
 		  } else {
