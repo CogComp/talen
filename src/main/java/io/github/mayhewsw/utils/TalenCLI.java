@@ -27,6 +27,9 @@ public class TalenCLI {
     private static HashMap<String, String> labelcolors;
     private static boolean roman = false;
 
+    private static List<String> listoflinks;
+
+
     private static String bootstrap = "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' crossorigin='anonymous'>";
 
 
@@ -93,15 +96,19 @@ public class TalenCLI {
         // load on demand.
         // this means that you can't know about all labels (potentially?)
         // every document will be a link on the index.
-        StringBuilder listoflinks = new StringBuilder();
+
+        listoflinks = new ArrayList<>();
+
+        StringBuilder linkstrings = new StringBuilder();
         for(File f : files) {
             id2filepath.put(f.getName(), f.getAbsolutePath());
-            listoflinks.append("<a href='"+f.getName() + "'>" + f.getName() + "</a><br />");
+            linkstrings.append("<a href='"+f.getName() + "'>" + f.getName() + "</a><br />");
+            listoflinks.add(f.getName());
         }
 
         String index = "<html><head>"+bootstrap+"</head><body><div class='container'>";
         index += "<h1>" + indir + "</h1>";
-        index = index + listoflinks.toString() + "</div></body></html>";
+        index = index + linkstrings.toString() + "</div></body></html>";
         id2filepath.put("index", index);
 
 
@@ -158,7 +165,37 @@ public class TalenCLI {
             }
             sb_css.append("." + label + "{background-color: " + color + "}");
         }
-        html = "<html><head>"+bootstrap+"<style>"+ sb_css.toString() +overrides +"</style></head><body><div class='container'><div><a href='/'>Back to list</a></div><div>"+labellegend+"</div>"+ html +"</div></body></html>";
+
+        int ind = listoflinks.indexOf(ta.getId());
+        String prevstring = "";
+        String nextstring = "";
+
+        if(ind > 0) {
+            String prevdocid = listoflinks.get(ind - 1);
+            prevstring = "<a href='/"+prevdocid+"' class=\"btn btn-outline-primary btn-sm\" role=\"button\">< Prev</a>";
+
+        }
+
+        if(ind < listoflinks.size() - 1) {
+            String nextdocid = listoflinks.get(ind + 1);
+            nextstring = "<a href='/"+nextdocid+"' class=\"btn btn-outline-primary btn-sm\" role=\"button\">Next ></a>";
+        }
+
+        // HALP. Does anyone know any good templating libraries??
+        html = "<html><head>"+bootstrap+"<style>"+ sb_css.toString() +overrides +"</style></head><body><div class='container'>" +
+                "<p><div class=\"btn-toolbar\" role=\"toolbar\" aria-label=\"Toolbar with button groups\">" +
+                "<div class='btn-group btn-group-sm mr-2' role='group'>"+
+                "<a href='/' class=\"btn btn-outline-secondary btn-sm\" role=\"button\">Back to list</a>" +
+                "</div>" +
+                "<div class='btn-group btn-group-sm mr-2' role='group'>"+
+                prevstring +
+                nextstring +
+                "</div>" +
+                "</div></p>" +
+                "<p>"+labellegend+"</p>"+ html +"" +
+                "</div>" +
+                "</body>" +
+                "</html>";
 
         html = html.replaceAll("</span><span", "</span> <span");
 
