@@ -6,6 +6,7 @@ import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
+import java.util.NoSuchElementException;
 import java.io.File;
 
 /**
@@ -50,11 +51,11 @@ public class GeonamesLoader {
                 .open();
     }
 
-    public KBEntity get(int eid){
+    public KBEntity get(int eid) throws NoSuchElementException{
         if(!namemap.containsKey(eid))
         {
             System.err.println("key not found"+eid);
-            System.exit(0);
+            throw new NoSuchElementException();
         }
         String line = namemap.get(eid);
         KBEntity bke = new KBEntity(line.split("\t"));

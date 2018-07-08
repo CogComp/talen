@@ -203,7 +203,13 @@ public class HtmlGenerator {
 		      id2feature.put(s, "");
 		      continue;
 		  }
-                  String type = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
+		  String type="";
+		  try{
+		      type = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
+		  } catch(Exception e){
+		      id2feature.put(s, "");
+		      continue;
+		  }
 
 		  String externalLink = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getExternalLink();
 

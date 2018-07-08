@@ -188,9 +188,9 @@ $(document).ready(function() {
 			suffixes = entity_val[0] + " " + entity_val[1]
 		    }
                   if(parseFloat(json_dict[key]) >= 1000.0){
-                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + " " + suffixes + "</button>";
+                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + " kb_id:"+id_name[0]+ " " + suffixes + "</button>";
                   } else{
-                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1]+" " +suffixes + "</button>";
+                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1]+" kb_id:"+id_name[0] + " "+ suffixes + "</button>";
                   }
                 }
                 out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
