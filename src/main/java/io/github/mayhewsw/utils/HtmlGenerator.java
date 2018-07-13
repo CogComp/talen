@@ -132,7 +132,7 @@ public class HtmlGenerator {
 
         String htmltemplate = "<div class=\"card\">" +
                     "<div class=\"card-header\">%s</div>" +
-                    "<div class=\"card-body text\" id=%s>%s</div></div>";
+                    "<div class=\"card-body text\" dir=\"auto\" id=%s>%s</div></div>";
         String out = String.format(htmltemplate, id, id, html) + "\n";
 
 
@@ -258,11 +258,11 @@ public class HtmlGenerator {
         if(allowcopy){
             htmltemplate = "<div class=\"card\">" +
                     "<div class=\"card-header\">%s</div>" +
-                    "<div class=\"card-body text\" id=%s>%s</div></div>";
+                    "<div class=\"card-body text\" dir=\"auto\" id=%s>%s</div></div>";
         }else{
             htmltemplate = "<div class=\"card\">" +
                     "<div class=\"card-header\">%s</div>" +
-                    "<div class=\"card-body text nocopy\" id=%s>%s</div></div>";
+                    "<div class=\"card-body text nocopy\" dir=\"auto\" id=%s>%s</div></div>";
         }
         String out = String.format(htmltemplate, id, id, html) + "\n";
 

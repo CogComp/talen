@@ -197,17 +197,17 @@ $(document).ready(function() {
                     }
                 });
 
-                if(range.start > -1) {
-                    $.ajax({
-                        method: "POST",
-                        url: "/stats/getstats",
-                        data: {text: gettextinrange(), alltext: getalltext()}
-                    }).done(function (msg) {
-                        $("#infobox").html(msg);
-                    });
-                }else{
-                    showtopstats();
-                }
+                // if(range.start > -1) {
+                //     $.ajax({
+                //         method: "POST",
+                //         url: "/stats/getstats",
+                //         data: {text: gettextinrange(), alltext: getalltext()}
+                //     }).done(function (msg) {
+                //         $("#infobox").html(msg);
+                //     });
+                // }else{
+                //     showtopstats();
+                // }
             }
         });
 
@@ -264,6 +264,7 @@ $(document).ready(function() {
         }).done(function (msg) {
             console.log("successful toggle");
             $("#htmlcontainer").html(msg);
+            showtopstats();
             loadtok();
         });
 
@@ -278,6 +279,7 @@ $(document).ready(function() {
         }).done(function (msg) {
             console.log("successful toggle");
             $("#htmlcontainer").html(msg);
+            showtopstats();
             loadtok();
         });
 
@@ -293,7 +295,7 @@ $(document).ready(function() {
         $.ajax({
             method: "POST",
             url: "/stats/gettopstats",
-            data: {alltext: getalltext()}
+            data: {docid: getParameterByName("taid")}
         }).done(function (msg) {
             $("#infobox").html(msg);
         });

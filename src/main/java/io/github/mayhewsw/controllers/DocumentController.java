@@ -126,7 +126,7 @@ public class DocumentController {
         }
 
         for(TextAnnotation ta : ret.values()){
-            TextStatisticsController.updateCounts(Utils.getRomanTaToksIfPresent(ta));
+            TextStatisticsController.updateCounts(ta.getTokens());
         }
 
         // now check the annotation folder to see what this user has already annotated.

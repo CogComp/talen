@@ -6,6 +6,7 @@ import edu.illinois.cs.cogcomp.core.io.LineIO;
 import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.SessionData;
 import io.github.mayhewsw.utils.HtmlGenerator;
+import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +35,22 @@ public class TextStatisticsController {
 
     @RequestMapping(value="gettopstats", method=RequestMethod.POST)
     @ResponseBody
-    public String gettopstats(@RequestParam(value="alltext[]") String[] alltext, HttpSession hs, Model model) {
+    public String gettopstats(@RequestParam(value="docid") String docid, HttpSession hs, Model model) {
 
         SessionData sd = new SessionData(hs);
 
+        TextAnnotation ta = sd.tas.get(docid);
+
         // need to keep track of the number of times this word appears in the document.
         HashMap<String, Integer> doccounts = new HashMap<>();
-        for(String word : alltext){
+        String[] romantext = Utils.getRomanTaToksIfPresent(ta);
+        HashMap<String, String> orig2roman = new HashMap<>();
+
+        for(int i = 0; i < ta.size(); i++){
+            String word = ta.getToken(i);
             int c = doccounts.getOrDefault(word, 0);
             doccounts.put(word, c+1);
+            orig2roman.put(word, romantext[i]);
         }
 
         String ret = "<small><table class=\"table table-sm table-hover\"><thead><tr>";
@@ -54,7 +62,7 @@ public class TextStatisticsController {
 
         HashSet<Pair<String, Double>> toptfidf = new HashSet();
 
-        for (String word : alltext){
+        for (String word : ta.getTokens()){
             toptfidf.add(new Pair<>(word, tfidf(word, doccounts.get(word))));
         }
 
@@ -69,7 +77,9 @@ public class TextStatisticsController {
             Double tfidf = p.getSecond();
 
             String def = word;
-            if (sd.showdefs && sd.dict != null && sd.dict.containsKey(word)) {
+            if (sd.showroman && orig2roman.containsKey(word)){
+                def = orig2roman.get(word);
+            } else if (sd.showdefs && sd.dict != null && sd.dict.containsKey(word)) {
                 def = "<i>" + sd.dict.get(word).get(0) + "</i>";
             }
 
@@ -89,49 +99,52 @@ public class TextStatisticsController {
     }
 
 
-
-    @RequestMapping(value="getstats", method=RequestMethod.POST)
-    @ResponseBody
-    public String getstats(@RequestParam(value="text") String text,@RequestParam(value="alltext[]") String[] alltext, HttpSession hs, Model model) {
-
-        SessionData sd = new SessionData(hs);
-
-        // need to keep track of the number of times this word appears in the document.
-        HashMap<String, Integer> doccounts = new HashMap<>();
-        for(String word : alltext){
-            int c = doccounts.getOrDefault(word, 0);
-            doccounts.put(word, c+1);
-        }
-
-        String ret = "<small><table class=\"table table-hover\"><thead><tr>";
-        ret += "<th scope=\"col\">Word</th>";
-        ret += "<th scope=\"col\">Cnt</th>";
-        ret += "<th scope=\"col\">%docs</th>";
-        ret += "<th scope=\"col\">Tfidf</th>";
-        ret += "</tr></thead><tbody>";
-
-        String[] words = text.split(" ");
-        for (String word : words){
-
-            String def = word;
-            if (sd.showdefs && sd.dict != null && sd.dict.containsKey(word)) {
-                def = "<i>" + sd.dict.get(word).get(0) + "</i>";
-            }
-
-            String row = "<tr>";
-            row += "<td>"+def+"</td>";
-            row += "<td>"+counts.getOrDefault(word, 0)+"</td>";
-            row += String.format("<td>%.2f</td>",term2numdocs.getOrDefault(word, 0)/(float)numdocs);
-            row += String.format("<td>%.2f</td>", tfidf(word, doccounts.get(word)));
-            row += "</tr>";
-
-            ret += row;
-        }
-
-        ret += "</tbody></table></small>";
-
-        return ret;
-    }
+    /**
+     * This is meant to be a method that gets stats for individual words (e.g. if they are out of the top 10 words that are displayed
+     * by default. But I think it is not that important and adds complexity.
+     */
+//    @RequestMapping(value="getstats", method=RequestMethod.POST)
+//    @ResponseBody
+//    public String getstats(@RequestParam(value="text") String text, @RequestParam(value="alltext[]") String[] alltext, HttpSession hs, Model model) {
+//
+//        SessionData sd = new SessionData(hs);
+//
+//        // need to keep track of the number of times this word appears in the document.
+//        HashMap<String, Integer> doccounts = new HashMap<>();
+//        for(String word : alltext){
+//            int c = doccounts.getOrDefault(word, 0);
+//            doccounts.put(word, c+1);
+//        }
+//
+//        String ret = "<small><table class=\"table table-hover\"><thead><tr>";
+//        ret += "<th scope=\"col\">Word</th>";
+//        ret += "<th scope=\"col\">Cnt</th>";
+//        ret += "<th scope=\"col\">%docs</th>";
+//        ret += "<th scope=\"col\">Tfidf</th>";
+//        ret += "</tr></thead><tbody>";
+//
+//        String[] words = text.split(" ");
+//        for (String word : words){
+//
+//            String def = word;
+//            if (sd.showdefs && sd.dict != null && sd.dict.containsKey(word)) {
+//                def = "<i>" + sd.dict.get(word).get(0) + "</i>";
+//            }
+//
+//            String row = "<tr>";
+//            row += "<td>"+def+"</td>";
+//            row += "<td>"+counts.getOrDefault(word, 0)+"</td>";
+//            row += String.format("<td>%.2f</td>",term2numdocs.getOrDefault(word, 0)/(float)numdocs);
+//            row += String.format("<td>%.2f</td>", tfidf(word, doccounts.get(word)));
+//            row += "</tr>";
+//
+//            ret += row;
+//        }
+//
+//        ret += "</tbody></table></small>";
+//
+//        return ret;
+//    }
 
     public static void resetstats() {
         counts = new HashMap<>();

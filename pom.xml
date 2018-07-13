@@ -133,6 +133,13 @@
             <version>1.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>cz.jirutka.unidecode</groupId>
+            <artifactId>unidecode</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>

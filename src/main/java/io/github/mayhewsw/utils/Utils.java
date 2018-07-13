@@ -1,5 +1,6 @@
 package io.github.mayhewsw.utils;
 
+import cz.jirutka.unidecode.Unidecode;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
@@ -14,8 +15,11 @@ import java.util.List;
 public class Utils {
 
     /**
-     * Given a TextAnnotation, this will return the tokens in a cloned String[] array. If the TRANSLITERATION
-     * view is present, the tokens will come from there.
+     * Given a TextAnnotation, this will return the tokens in a cloned String[] array. If the ROMANIZATION
+     * view is present, the tokens will come from there. Otherwise, this uses unidecode to get a base romanization.
+     *
+     * We recommend using the excellent Uroman library: https://www.isi.edu/~ulf/uroman.html
+     *
      * @param ta TextAnnotation
      * @return an array of words, romanized if available.
      */
@@ -33,7 +37,13 @@ public class Utils {
             }
             text = sb.toString().trim().split(" ");
         }else {
+
+            Unidecode unidecode = Unidecode.toAscii();
+
             text = ta.getTokens().clone();
+            for(int t = 0; t < text.length; t++){
+                text[t] = unidecode.decode(text[t]);
+            }
         }
 
         return text;
