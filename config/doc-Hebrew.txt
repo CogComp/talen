@@ -1,0 +1,2 @@
+folderpath /home/mayhew2/IdeaProjects/talen/data/acl2018demo/heb
+labels PER ORG LOC TRAP

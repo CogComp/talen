@@ -1,0 +1,2737 @@
+{
+  "corpusId": "",
+  "id": "154",
+  "text": "חזות קשה על מצבו של אזור התעשיה עטרות בירושלים נמסרה בדיון בוועדת הכלכלה של הכנסת . יושב ראש התאחדות התעשיינים של ירושלים , מוטי טפרברג , הזהיר כי אזור התעשיה הזה עלול להינטש כליל בקרוב בשל המצוקה הבטחוניח והכלכלית . לדבריו , מאז תחילת המהומות , חלה ירידה של 50 % במכירות של מפעלי התעשיה בעטרות , ובמקביל עלו ב- 150 % הוצאות הבטחון של התעשיינים במקום . טפרברג מבקש שמשרדי הבטחון , האוצר והתמ\u0026quot;ס יקזזו מתשלומי ישראל לפלשתינים את ההוצאות הללו , כפי שאכן הבטיחו לעשות . היום שוב יידו ערבים אבנים על חיילי צה\u0026quot;ל בנמל התעופה בעטרות . נמל התעופה עטרות סגור למעשה מאז תחילת מלחמת ראש השנה .\n",
+  "tokens": [
+    "חזות",
+    "קשה",
+    "על",
+    "מצבו",
+    "של",
+    "אזור",
+    "התעשיה",
+    "עטרות",
+    "בירושלים",
+    "נמסרה",
+    "בדיון",
+    "בוועדת",
+    "הכלכלה",
+    "של",
+    "הכנסת",
+    ".",
+    "יושב",
+    "ראש",
+    "התאחדות",
+    "התעשיינים",
+    "של",
+    "ירושלים",
+    ",",
+    "מוטי",
+    "טפרברג",
+    ",",
+    "הזהיר",
+    "כי",
+    "אזור",
+    "התעשיה",
+    "הזה",
+    "עלול",
+    "להינטש",
+    "כליל",
+    "בקרוב",
+    "בשל",
+    "המצוקה",
+    "הבטחוניח",
+    "והכלכלית",
+    ".",
+    "לדבריו",
+    ",",
+    "מאז",
+    "תחילת",
+    "המהומות",
+    ",",
+    "חלה",
+    "ירידה",
+    "של",
+    "50",
+    "%",
+    "במכירות",
+    "של",
+    "מפעלי",
+    "התעשיה",
+    "בעטרות",
+    ",",
+    "ובמקביל",
+    "עלו",
+    "ב-",
+    "150",
+    "%",
+    "הוצאות",
+    "הבטחון",
+    "של",
+    "התעשיינים",
+    "במקום",
+    ".",
+    "טפרברג",
+    "מבקש",
+    "שמשרדי",
+    "הבטחון",
+    ",",
+    "האוצר",
+    "והתמ\u0026quot;ס",
+    "יקזזו",
+    "מתשלומי",
+    "ישראל",
+    "לפלשתינים",
+    "את",
+    "ההוצאות",
+    "הללו",
+    ",",
+    "כפי",
+    "שאכן",
+    "הבטיחו",
+    "לעשות",
+    ".",
+    "היום",
+    "שוב",
+    "יידו",
+    "ערבים",
+    "אבנים",
+    "על",
+    "חיילי",
+    "צה\u0026quot;ל",
+    "בנמל",
+    "התעופה",
+    "בעטרות",
+    ".",
+    "נמל",
+    "התעופה",
+    "עטרות",
+    "סגור",
+    "למעשה",
+    "מאז",
+    "תחילת",
+    "מלחמת",
+    "ראש",
+    "השנה",
+    "."
+  ],
+  "tokenOffsets": [
+    {
+      "form": "חזות",
+      "startCharOffset": 0,
+      "endCharOffset": 4
+    },
+    {
+      "form": "קשה",
+      "startCharOffset": 5,
+      "endCharOffset": 8
+    },
+    {
+      "form": "על",
+      "startCharOffset": 9,
+      "endCharOffset": 11
+    },
+    {
+      "form": "מצבו",
+      "startCharOffset": 12,
+      "endCharOffset": 16
+    },
+    {
+      "form": "של",
+      "startCharOffset": 17,
+      "endCharOffset": 19
+    },
+    {
+      "form": "אזור",
+      "startCharOffset": 20,
+      "endCharOffset": 24
+    },
+    {
+      "form": "התעשיה",
+      "startCharOffset": 25,
+      "endCharOffset": 31
+    },
+    {
+      "form": "עטרות",
+      "startCharOffset": 32,
+      "endCharOffset": 37
+    },
+    {
+      "form": "בירושלים",
+      "startCharOffset": 38,
+      "endCharOffset": 46
+    },
+    {
+      "form": "נמסרה",
+      "startCharOffset": 47,
+      "endCharOffset": 52
+    },
+    {
+      "form": "בדיון",
+      "startCharOffset": 53,
+      "endCharOffset": 58
+    },
+    {
+      "form": "בוועדת",
+      "startCharOffset": 59,
+      "endCharOffset": 65
+    },
+    {
+      "form": "הכלכלה",
+      "startCharOffset": 66,
+      "endCharOffset": 72
+    },
+    {
+      "form": "של",
+      "startCharOffset": 73,
+      "endCharOffset": 75
+    },
+    {
+      "form": "הכנסת",
+      "startCharOffset": 76,
+      "endCharOffset": 81
+    },
+    {
+      "form": ".",
+      "startCharOffset": 82,
+      "endCharOffset": 83
+    },
+    {
+      "form": "יושב",
+      "startCharOffset": 84,
+      "endCharOffset": 88
+    },
+    {
+      "form": "ראש",
+      "startCharOffset": 89,
+      "endCharOffset": 92
+    },
+    {
+      "form": "התאחדות",
+      "startCharOffset": 93,
+      "endCharOffset": 100
+    },
+    {
+      "form": "התעשיינים",
+      "startCharOffset": 101,
+      "endCharOffset": 110
+    },
+    {
+      "form": "של",
+      "startCharOffset": 111,
+      "endCharOffset": 113
+    },
+    {
+      "form": "ירושלים",
+      "startCharOffset": 114,
+      "endCharOffset": 121
+    },
+    {
+      "form": ",",
+      "startCharOffset": 122,
+      "endCharOffset": 123
+    },
+    {
+      "form": "מוטי",
+      "startCharOffset": 124,
+      "endCharOffset": 128
+    },
+    {
+      "form": "טפרברג",
+      "startCharOffset": 129,
+      "endCharOffset": 135
+    },
+    {
+      "form": ",",
+      "startCharOffset": 136,
+      "endCharOffset": 137
+    },
+    {
+      "form": "הזהיר",
+      "startCharOffset": 138,
+      "endCharOffset": 143
+    },
+    {
+      "form": "כי",
+      "startCharOffset": 144,
+      "endCharOffset": 146
+    },
+    {
+      "form": "אזור",
+      "startCharOffset": 147,
+      "endCharOffset": 151
+    },
+    {
+      "form": "התעשיה",
+      "startCharOffset": 152,
+      "endCharOffset": 158
+    },
+    {
+      "form": "הזה",
+      "startCharOffset": 159,
+      "endCharOffset": 162
+    },
+    {
+      "form": "עלול",
+      "startCharOffset": 163,
+      "endCharOffset": 167
+    },
+    {
+      "form": "להינטש",
+      "startCharOffset": 168,
+      "endCharOffset": 174
+    },
+    {
+      "form": "כליל",
+      "startCharOffset": 175,
+      "endCharOffset": 179
+    },
+    {
+      "form": "בקרוב",
+      "startCharOffset": 180,
+      "endCharOffset": 185
+    },
+    {
+      "form": "בשל",
+      "startCharOffset": 186,
+      "endCharOffset": 189
+    },
+    {
+      "form": "המצוקה",
+      "startCharOffset": 190,
+      "endCharOffset": 196
+    },
+    {
+      "form": "הבטחוניח",
+      "startCharOffset": 197,
+      "endCharOffset": 205
+    },
+    {
+      "form": "והכלכלית",
+      "startCharOffset": 206,
+      "endCharOffset": 214
+    },
+    {
+      "form": ".",
+      "startCharOffset": 215,
+      "endCharOffset": 216
+    },
+    {
+      "form": "לדבריו",
+      "startCharOffset": 217,
+      "endCharOffset": 223
+    },
+    {
+      "form": ",",
+      "startCharOffset": 224,
+      "endCharOffset": 225
+    },
+    {
+      "form": "מאז",
+      "startCharOffset": 226,
+      "endCharOffset": 229
+    },
+    {
+      "form": "תחילת",
+      "startCharOffset": 230,
+      "endCharOffset": 235
+    },
+    {
+      "form": "המהומות",
+      "startCharOffset": 236,
+      "endCharOffset": 243
+    },
+    {
+      "form": ",",
+      "startCharOffset": 244,
+      "endCharOffset": 245
+    },
+    {
+      "form": "חלה",
+      "startCharOffset": 246,
+      "endCharOffset": 249
+    },
+    {
+      "form": "ירידה",
+      "startCharOffset": 250,
+      "endCharOffset": 255
+    },
+    {
+      "form": "של",
+      "startCharOffset": 256,
+      "endCharOffset": 258
+    },
+    {
+      "form": "50",
+      "startCharOffset": 259,
+      "endCharOffset": 261
+    },
+    {
+      "form": "%",
+      "startCharOffset": 262,
+      "endCharOffset": 263
+    },
+    {
+      "form": "במכירות",
+      "startCharOffset": 264,
+      "endCharOffset": 271
+    },
+    {
+      "form": "של",
+      "startCharOffset": 272,
+      "endCharOffset": 274
+    },
+    {
+      "form": "מפעלי",
+      "startCharOffset": 275,
+      "endCharOffset": 280
+    },
+    {
+      "form": "התעשיה",
+      "startCharOffset": 281,
+      "endCharOffset": 287
+    },
+    {
+      "form": "בעטרות",
+      "startCharOffset": 288,
+      "endCharOffset": 294
+    },
+    {
+      "form": ",",
+      "startCharOffset": 295,
+      "endCharOffset": 296
+    },
+    {
+      "form": "ובמקביל",
+      "startCharOffset": 297,
+      "endCharOffset": 304
+    },
+    {
+      "form": "עלו",
+      "startCharOffset": 305,
+      "endCharOffset": 308
+    },
+    {
+      "form": "ב-",
+      "startCharOffset": 309,
+      "endCharOffset": 311
+    },
+    {
+      "form": "150",
+      "startCharOffset": 312,
+      "endCharOffset": 315
+    },
+    {
+      "form": "%",
+      "startCharOffset": 316,
+      "endCharOffset": 317
+    },
+    {
+      "form": "הוצאות",
+      "startCharOffset": 318,
+      "endCharOffset": 324
+    },
+    {
+      "form": "הבטחון",
+      "startCharOffset": 325,
+      "endCharOffset": 331
+    },
+    {
+      "form": "של",
+      "startCharOffset": 332,
+      "endCharOffset": 334
+    },
+    {
+      "form": "התעשיינים",
+      "startCharOffset": 335,
+      "endCharOffset": 344
+    },
+    {
+      "form": "במקום",
+      "startCharOffset": 345,
+      "endCharOffset": 350
+    },
+    {
+      "form": ".",
+      "startCharOffset": 351,
+      "endCharOffset": 352
+    },
+    {
+      "form": "טפרברג",
+      "startCharOffset": 353,
+      "endCharOffset": 359
+    },
+    {
+      "form": "מבקש",
+      "startCharOffset": 360,
+      "endCharOffset": 364
+    },
+    {
+      "form": "שמשרדי",
+      "startCharOffset": 365,
+      "endCharOffset": 371
+    },
+    {
+      "form": "הבטחון",
+      "startCharOffset": 372,
+      "endCharOffset": 378
+    },
+    {
+      "form": ",",
+      "startCharOffset": 379,
+      "endCharOffset": 380
+    },
+    {
+      "form": "האוצר",
+      "startCharOffset": 381,
+      "endCharOffset": 386
+    },
+    {
+      "form": "והתמ\u0026quot;ס",
+      "startCharOffset": 387,
+      "endCharOffset": 398
+    },
+    {
+      "form": "יקזזו",
+      "startCharOffset": 399,
+      "endCharOffset": 404
+    },
+    {
+      "form": "מתשלומי",
+      "startCharOffset": 405,
+      "endCharOffset": 412
+    },
+    {
+      "form": "ישראל",
+      "startCharOffset": 413,
+      "endCharOffset": 418
+    },
+    {
+      "form": "לפלשתינים",
+      "startCharOffset": 419,
+      "endCharOffset": 428
+    },
+    {
+      "form": "את",
+      "startCharOffset": 429,
+      "endCharOffset": 431
+    },
+    {
+      "form": "ההוצאות",
+      "startCharOffset": 432,
+      "endCharOffset": 439
+    },
+    {
+      "form": "הללו",
+      "startCharOffset": 440,
+      "endCharOffset": 444
+    },
+    {
+      "form": ",",
+      "startCharOffset": 445,
+      "endCharOffset": 446
+    },
+    {
+      "form": "כפי",
+      "startCharOffset": 447,
+      "endCharOffset": 450
+    },
+    {
+      "form": "שאכן",
+      "startCharOffset": 451,
+      "endCharOffset": 455
+    },
+    {
+      "form": "הבטיחו",
+      "startCharOffset": 456,
+      "endCharOffset": 462
+    },
+    {
+      "form": "לעשות",
+      "startCharOffset": 463,
+      "endCharOffset": 468
+    },
+    {
+      "form": ".",
+      "startCharOffset": 469,
+      "endCharOffset": 470
+    },
+    {
+      "form": "היום",
+      "startCharOffset": 471,
+      "endCharOffset": 475
+    },
+    {
+      "form": "שוב",
+      "startCharOffset": 476,
+      "endCharOffset": 479
+    },
+    {
+      "form": "יידו",
+      "startCharOffset": 480,
+      "endCharOffset": 484
+    },
+    {
+      "form": "ערבים",
+      "startCharOffset": 485,
+      "endCharOffset": 490
+    },
+    {
+      "form": "אבנים",
+      "startCharOffset": 491,
+      "endCharOffset": 496
+    },
+    {
+      "form": "על",
+      "startCharOffset": 497,
+      "endCharOffset": 499
+    },
+    {
+      "form": "חיילי",
+      "startCharOffset": 500,
+      "endCharOffset": 505
+    },
+    {
+      "form": "צה\u0026quot;ל",
+      "startCharOffset": 506,
+      "endCharOffset": 515
+    },
+    {
+      "form": "בנמל",
+      "startCharOffset": 516,
+      "endCharOffset": 520
+    },
+    {
+      "form": "התעופה",
+      "startCharOffset": 521,
+      "endCharOffset": 527
+    },
+    {
+      "form": "בעטרות",
+      "startCharOffset": 528,
+      "endCharOffset": 534
+    },
+    {
+      "form": ".",
+      "startCharOffset": 535,
+      "endCharOffset": 536
+    },
+    {
+      "form": "נמל",
+      "startCharOffset": 537,
+      "endCharOffset": 540
+    },
+    {
+      "form": "התעופה",
+      "startCharOffset": 541,
+      "endCharOffset": 547
+    },
+    {
+      "form": "עטרות",
+      "startCharOffset": 548,
+      "endCharOffset": 553
+    },
+    {
+      "form": "סגור",
+      "startCharOffset": 554,
+      "endCharOffset": 558
+    },
+    {
+      "form": "למעשה",
+      "startCharOffset": 559,
+      "endCharOffset": 564
+    },
+    {
+      "form": "מאז",
+      "startCharOffset": 565,
+      "endCharOffset": 568
+    },
+    {
+      "form": "תחילת",
+      "startCharOffset": 569,
+      "endCharOffset": 574
+    },
+    {
+      "form": "מלחמת",
+      "startCharOffset": 575,
+      "endCharOffset": 580
+    },
+    {
+      "form": "ראש",
+      "startCharOffset": 581,
+      "endCharOffset": 584
+    },
+    {
+      "form": "השנה",
+      "startCharOffset": 585,
+      "endCharOffset": 589
+    },
+    {
+      "form": ".",
+      "startCharOffset": 590,
+      "endCharOffset": 591
+    }
+  ],
+  "sentences": {
+    "generator": "UserSpecified",
+    "score": 1.0,
+    "sentenceEndPositions": [
+      16,
+      40,
+      68,
+      88,
+      100,
+      111
+    ]
+  },
+  "views": [
+    {
+      "viewName": "LEMMA",
+      "viewData": [
+        {
+          "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+          "viewName": "LEMMA",
+          "generator": "AddTranslit",
+          "score": 1.0,
+          "constituents": [
+            {
+              "label": "xzwt",
+              "score": 1.0,
+              "start": 0,
+              "end": 1
+            },
+            {
+              "label": "qeh",
+              "score": 1.0,
+              "start": 1,
+              "end": 2
+            },
+            {
+              "label": "yl",
+              "score": 1.0,
+              "start": 2,
+              "end": 3
+            },
+            {
+              "label": "mcbw",
+              "score": 1.0,
+              "start": 3,
+              "end": 4
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 4,
+              "end": 5
+            },
+            {
+              "label": "azwr",
+              "score": 1.0,
+              "start": 5,
+              "end": 6
+            },
+            {
+              "label": "htyeih",
+              "score": 1.0,
+              "start": 6,
+              "end": 7
+            },
+            {
+              "label": "yvrwt",
+              "score": 1.0,
+              "start": 7,
+              "end": 8
+            },
+            {
+              "label": "birwelim",
+              "score": 1.0,
+              "start": 8,
+              "end": 9
+            },
+            {
+              "label": "nmsrh",
+              "score": 1.0,
+              "start": 9,
+              "end": 10
+            },
+            {
+              "label": "bdiwn",
+              "score": 1.0,
+              "start": 10,
+              "end": 11
+            },
+            {
+              "label": "bwwydt",
+              "score": 1.0,
+              "start": 11,
+              "end": 12
+            },
+            {
+              "label": "hklklh",
+              "score": 1.0,
+              "start": 12,
+              "end": 13
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 13,
+              "end": 14
+            },
+            {
+              "label": "hknst",
+              "score": 1.0,
+              "start": 14,
+              "end": 15
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 15,
+              "end": 16
+            },
+            {
+              "label": "iweb",
+              "score": 1.0,
+              "start": 16,
+              "end": 17
+            },
+            {
+              "label": "rae",
+              "score": 1.0,
+              "start": 17,
+              "end": 18
+            },
+            {
+              "label": "htaxdwt",
+              "score": 1.0,
+              "start": 18,
+              "end": 19
+            },
+            {
+              "label": "htyeiinim",
+              "score": 1.0,
+              "start": 19,
+              "end": 20
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 20,
+              "end": 21
+            },
+            {
+              "label": "irwelim",
+              "score": 1.0,
+              "start": 21,
+              "end": 22
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 22,
+              "end": 23
+            },
+            {
+              "label": "mwvi",
+              "score": 1.0,
+              "start": 23,
+              "end": 24
+            },
+            {
+              "label": "vprbrg",
+              "score": 1.0,
+              "start": 24,
+              "end": 25
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 25,
+              "end": 26
+            },
+            {
+              "label": "hzhir",
+              "score": 1.0,
+              "start": 26,
+              "end": 27
+            },
+            {
+              "label": "ki",
+              "score": 1.0,
+              "start": 27,
+              "end": 28
+            },
+            {
+              "label": "azwr",
+              "score": 1.0,
+              "start": 28,
+              "end": 29
+            },
+            {
+              "label": "htyeih",
+              "score": 1.0,
+              "start": 29,
+              "end": 30
+            },
+            {
+              "label": "hzh",
+              "score": 1.0,
+              "start": 30,
+              "end": 31
+            },
+            {
+              "label": "ylwl",
+              "score": 1.0,
+              "start": 31,
+              "end": 32
+            },
+            {
+              "label": "lhinve",
+              "score": 1.0,
+              "start": 32,
+              "end": 33
+            },
+            {
+              "label": "klil",
+              "score": 1.0,
+              "start": 33,
+              "end": 34
+            },
+            {
+              "label": "bqrwb",
+              "score": 1.0,
+              "start": 34,
+              "end": 35
+            },
+            {
+              "label": "bel",
+              "score": 1.0,
+              "start": 35,
+              "end": 36
+            },
+            {
+              "label": "hmcwqh",
+              "score": 1.0,
+              "start": 36,
+              "end": 37
+            },
+            {
+              "label": "hbvxwnix",
+              "score": 1.0,
+              "start": 37,
+              "end": 38
+            },
+            {
+              "label": "whklklit",
+              "score": 1.0,
+              "start": 38,
+              "end": 39
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 39,
+              "end": 40
+            },
+            {
+              "label": "ldbriw",
+              "score": 1.0,
+              "start": 40,
+              "end": 41
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 41,
+              "end": 42
+            },
+            {
+              "label": "maz",
+              "score": 1.0,
+              "start": 42,
+              "end": 43
+            },
+            {
+              "label": "txilt",
+              "score": 1.0,
+              "start": 43,
+              "end": 44
+            },
+            {
+              "label": "hmhwmwt",
+              "score": 1.0,
+              "start": 44,
+              "end": 45
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 45,
+              "end": 46
+            },
+            {
+              "label": "xlh",
+              "score": 1.0,
+              "start": 46,
+              "end": 47
+            },
+            {
+              "label": "iridh",
+              "score": 1.0,
+              "start": 47,
+              "end": 48
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 48,
+              "end": 49
+            },
+            {
+              "label": "50",
+              "score": 1.0,
+              "start": 49,
+              "end": 50
+            },
+            {
+              "label": "%",
+              "score": 1.0,
+              "start": 50,
+              "end": 51
+            },
+            {
+              "label": "bmkirwt",
+              "score": 1.0,
+              "start": 51,
+              "end": 52
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 52,
+              "end": 53
+            },
+            {
+              "label": "mpyli",
+              "score": 1.0,
+              "start": 53,
+              "end": 54
+            },
+            {
+              "label": "htyeih",
+              "score": 1.0,
+              "start": 54,
+              "end": 55
+            },
+            {
+              "label": "byvrwt",
+              "score": 1.0,
+              "start": 55,
+              "end": 56
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 56,
+              "end": 57
+            },
+            {
+              "label": "wbmqbil",
+              "score": 1.0,
+              "start": 57,
+              "end": 58
+            },
+            {
+              "label": "ylw",
+              "score": 1.0,
+              "start": 58,
+              "end": 59
+            },
+            {
+              "label": "b-",
+              "score": 1.0,
+              "start": 59,
+              "end": 60
+            },
+            {
+              "label": "150",
+              "score": 1.0,
+              "start": 60,
+              "end": 61
+            },
+            {
+              "label": "%",
+              "score": 1.0,
+              "start": 61,
+              "end": 62
+            },
+            {
+              "label": "hwcawt",
+              "score": 1.0,
+              "start": 62,
+              "end": 63
+            },
+            {
+              "label": "hbvxwn",
+              "score": 1.0,
+              "start": 63,
+              "end": 64
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 64,
+              "end": 65
+            },
+            {
+              "label": "htyeiinim",
+              "score": 1.0,
+              "start": 65,
+              "end": 66
+            },
+            {
+              "label": "bmqwm",
+              "score": 1.0,
+              "start": 66,
+              "end": 67
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 67,
+              "end": 68
+            },
+            {
+              "label": "vprbrg",
+              "score": 1.0,
+              "start": 68,
+              "end": 69
+            },
+            {
+              "label": "mbqe",
+              "score": 1.0,
+              "start": 69,
+              "end": 70
+            },
+            {
+              "label": "emerdi",
+              "score": 1.0,
+              "start": 70,
+              "end": 71
+            },
+            {
+              "label": "hbvxwn",
+              "score": 1.0,
+              "start": 71,
+              "end": 72
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 72,
+              "end": 73
+            },
+            {
+              "label": "hawcr",
+              "score": 1.0,
+              "start": 73,
+              "end": 74
+            },
+            {
+              "label": "whtm\u0026quot;s",
+              "score": 1.0,
+              "start": 74,
+              "end": 75
+            },
+            {
+              "label": "iqzzw",
+              "score": 1.0,
+              "start": 75,
+              "end": 76
+            },
+            {
+              "label": "mtelwmi",
+              "score": 1.0,
+              "start": 76,
+              "end": 77
+            },
+            {
+              "label": "ieral",
+              "score": 1.0,
+              "start": 77,
+              "end": 78
+            },
+            {
+              "label": "lpletinim",
+              "score": 1.0,
+              "start": 78,
+              "end": 79
+            },
+            {
+              "label": "at",
+              "score": 1.0,
+              "start": 79,
+              "end": 80
+            },
+            {
+              "label": "hhwcawt",
+              "score": 1.0,
+              "start": 80,
+              "end": 81
+            },
+            {
+              "label": "hllw",
+              "score": 1.0,
+              "start": 81,
+              "end": 82
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 82,
+              "end": 83
+            },
+            {
+              "label": "kpi",
+              "score": 1.0,
+              "start": 83,
+              "end": 84
+            },
+            {
+              "label": "eakn",
+              "score": 1.0,
+              "start": 84,
+              "end": 85
+            },
+            {
+              "label": "hbvixw",
+              "score": 1.0,
+              "start": 85,
+              "end": 86
+            },
+            {
+              "label": "lyewt",
+              "score": 1.0,
+              "start": 86,
+              "end": 87
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 87,
+              "end": 88
+            },
+            {
+              "label": "hiwm",
+              "score": 1.0,
+              "start": 88,
+              "end": 89
+            },
+            {
+              "label": "ewb",
+              "score": 1.0,
+              "start": 89,
+              "end": 90
+            },
+            {
+              "label": "iidw",
+              "score": 1.0,
+              "start": 90,
+              "end": 91
+            },
+            {
+              "label": "yrbim",
+              "score": 1.0,
+              "start": 91,
+              "end": 92
+            },
+            {
+              "label": "abnim",
+              "score": 1.0,
+              "start": 92,
+              "end": 93
+            },
+            {
+              "label": "yl",
+              "score": 1.0,
+              "start": 93,
+              "end": 94
+            },
+            {
+              "label": "xiili",
+              "score": 1.0,
+              "start": 94,
+              "end": 95
+            },
+            {
+              "label": "ch\u0026quot;l",
+              "score": 1.0,
+              "start": 95,
+              "end": 96
+            },
+            {
+              "label": "bnml",
+              "score": 1.0,
+              "start": 96,
+              "end": 97
+            },
+            {
+              "label": "htywph",
+              "score": 1.0,
+              "start": 97,
+              "end": 98
+            },
+            {
+              "label": "byvrwt",
+              "score": 1.0,
+              "start": 98,
+              "end": 99
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 99,
+              "end": 100
+            },
+            {
+              "label": "nml",
+              "score": 1.0,
+              "start": 100,
+              "end": 101
+            },
+            {
+              "label": "htywph",
+              "score": 1.0,
+              "start": 101,
+              "end": 102
+            },
+            {
+              "label": "yvrwt",
+              "score": 1.0,
+              "start": 102,
+              "end": 103
+            },
+            {
+              "label": "sgwr",
+              "score": 1.0,
+              "start": 103,
+              "end": 104
+            },
+            {
+              "label": "lmyeh",
+              "score": 1.0,
+              "start": 104,
+              "end": 105
+            },
+            {
+              "label": "maz",
+              "score": 1.0,
+              "start": 105,
+              "end": 106
+            },
+            {
+              "label": "txilt",
+              "score": 1.0,
+              "start": 106,
+              "end": 107
+            },
+            {
+              "label": "mlxmt",
+              "score": 1.0,
+              "start": 107,
+              "end": 108
+            },
+            {
+              "label": "rae",
+              "score": 1.0,
+              "start": 108,
+              "end": 109
+            },
+            {
+              "label": "henh",
+              "score": 1.0,
+              "start": 109,
+              "end": 110
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 110,
+              "end": 111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "viewName": "NER_CONLL",
+      "viewData": [
+        {
+          "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView",
+          "viewName": "NER_CONLL",
+          "generator": "UserSpecified",
+          "score": 1.0
+        }
+      ]
+    },
+    {
+      "viewName": "ROMANIZATION",
+      "viewData": [
+        {
+          "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.View",
+          "viewName": "ROMANIZATION",
+          "generator": "AddTranslit",
+          "score": 1.0,
+          "constituents": [
+            {
+              "label": "xzwt",
+              "score": 1.0,
+              "start": 0,
+              "end": 1
+            },
+            {
+              "label": "qeh",
+              "score": 1.0,
+              "start": 1,
+              "end": 2
+            },
+            {
+              "label": "yl",
+              "score": 1.0,
+              "start": 2,
+              "end": 3
+            },
+            {
+              "label": "mcbw",
+              "score": 1.0,
+              "start": 3,
+              "end": 4
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 4,
+              "end": 5
+            },
+            {
+              "label": "azwr",
+              "score": 1.0,
+              "start": 5,
+              "end": 6
+            },
+            {
+              "label": "htyeih",
+              "score": 1.0,
+              "start": 6,
+              "end": 7
+            },
+            {
+              "label": "yvrwt",
+              "score": 1.0,
+              "start": 7,
+              "end": 8
+            },
+            {
+              "label": "birwelim",
+              "score": 1.0,
+              "start": 8,
+              "end": 9
+            },
+            {
+              "label": "nmsrh",
+              "score": 1.0,
+              "start": 9,
+              "end": 10
+            },
+            {
+              "label": "bdiwn",
+              "score": 1.0,
+              "start": 10,
+              "end": 11
+            },
+            {
+              "label": "bwwydt",
+              "score": 1.0,
+              "start": 11,
+              "end": 12
+            },
+            {
+              "label": "hklklh",
+              "score": 1.0,
+              "start": 12,
+              "end": 13
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 13,
+              "end": 14
+            },
+            {
+              "label": "hknst",
+              "score": 1.0,
+              "start": 14,
+              "end": 15
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 15,
+              "end": 16
+            },
+            {
+              "label": "iweb",
+              "score": 1.0,
+              "start": 16,
+              "end": 17
+            },
+            {
+              "label": "rae",
+              "score": 1.0,
+              "start": 17,
+              "end": 18
+            },
+            {
+              "label": "htaxdwt",
+              "score": 1.0,
+              "start": 18,
+              "end": 19
+            },
+            {
+              "label": "htyeiinim",
+              "score": 1.0,
+              "start": 19,
+              "end": 20
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 20,
+              "end": 21
+            },
+            {
+              "label": "irwelim",
+              "score": 1.0,
+              "start": 21,
+              "end": 22
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 22,
+              "end": 23
+            },
+            {
+              "label": "mwvi",
+              "score": 1.0,
+              "start": 23,
+              "end": 24
+            },
+            {
+              "label": "vprbrg",
+              "score": 1.0,
+              "start": 24,
+              "end": 25
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 25,
+              "end": 26
+            },
+            {
+              "label": "hzhir",
+              "score": 1.0,
+              "start": 26,
+              "end": 27
+            },
+            {
+              "label": "ki",
+              "score": 1.0,
+              "start": 27,
+              "end": 28
+            },
+            {
+              "label": "azwr",
+              "score": 1.0,
+              "start": 28,
+              "end": 29
+            },
+            {
+              "label": "htyeih",
+              "score": 1.0,
+              "start": 29,
+              "end": 30
+            },
+            {
+              "label": "hzh",
+              "score": 1.0,
+              "start": 30,
+              "end": 31
+            },
+            {
+              "label": "ylwl",
+              "score": 1.0,
+              "start": 31,
+              "end": 32
+            },
+            {
+              "label": "lhinve",
+              "score": 1.0,
+              "start": 32,
+              "end": 33
+            },
+            {
+              "label": "klil",
+              "score": 1.0,
+              "start": 33,
+              "end": 34
+            },
+            {
+              "label": "bqrwb",
+              "score": 1.0,
+              "start": 34,
+              "end": 35
+            },
+            {
+              "label": "bel",
+              "score": 1.0,
+              "start": 35,
+              "end": 36
+            },
+            {
+              "label": "hmcwqh",
+              "score": 1.0,
+              "start": 36,
+              "end": 37
+            },
+            {
+              "label": "hbvxwnix",
+              "score": 1.0,
+              "start": 37,
+              "end": 38
+            },
+            {
+              "label": "whklklit",
+              "score": 1.0,
+              "start": 38,
+              "end": 39
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 39,
+              "end": 40
+            },
+            {
+              "label": "ldbriw",
+              "score": 1.0,
+              "start": 40,
+              "end": 41
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 41,
+              "end": 42
+            },
+            {
+              "label": "maz",
+              "score": 1.0,
+              "start": 42,
+              "end": 43
+            },
+            {
+              "label": "txilt",
+              "score": 1.0,
+              "start": 43,
+              "end": 44
+            },
+            {
+              "label": "hmhwmwt",
+              "score": 1.0,
+              "start": 44,
+              "end": 45
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 45,
+              "end": 46
+            },
+            {
+              "label": "xlh",
+              "score": 1.0,
+              "start": 46,
+              "end": 47
+            },
+            {
+              "label": "iridh",
+              "score": 1.0,
+              "start": 47,
+              "end": 48
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 48,
+              "end": 49
+            },
+            {
+              "label": "50",
+              "score": 1.0,
+              "start": 49,
+              "end": 50
+            },
+            {
+              "label": "%",
+              "score": 1.0,
+              "start": 50,
+              "end": 51
+            },
+            {
+              "label": "bmkirwt",
+              "score": 1.0,
+              "start": 51,
+              "end": 52
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 52,
+              "end": 53
+            },
+            {
+              "label": "mpyli",
+              "score": 1.0,
+              "start": 53,
+              "end": 54
+            },
+            {
+              "label": "htyeih",
+              "score": 1.0,
+              "start": 54,
+              "end": 55
+            },
+            {
+              "label": "byvrwt",
+              "score": 1.0,
+              "start": 55,
+              "end": 56
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 56,
+              "end": 57
+            },
+            {
+              "label": "wbmqbil",
+              "score": 1.0,
+              "start": 57,
+              "end": 58
+            },
+            {
+              "label": "ylw",
+              "score": 1.0,
+              "start": 58,
+              "end": 59
+            },
+            {
+              "label": "b-",
+              "score": 1.0,
+              "start": 59,
+              "end": 60
+            },
+            {
+              "label": "150",
+              "score": 1.0,
+              "start": 60,
+              "end": 61
+            },
+            {
+              "label": "%",
+              "score": 1.0,
+              "start": 61,
+              "end": 62
+            },
+            {
+              "label": "hwcawt",
+              "score": 1.0,
+              "start": 62,
+              "end": 63
+            },
+            {
+              "label": "hbvxwn",
+              "score": 1.0,
+              "start": 63,
+              "end": 64
+            },
+            {
+              "label": "el",
+              "score": 1.0,
+              "start": 64,
+              "end": 65
+            },
+            {
+              "label": "htyeiinim",
+              "score": 1.0,
+              "start": 65,
+              "end": 66
+            },
+            {
+              "label": "bmqwm",
+              "score": 1.0,
+              "start": 66,
+              "end": 67
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 67,
+              "end": 68
+            },
+            {
+              "label": "vprbrg",
+              "score": 1.0,
+              "start": 68,
+              "end": 69
+            },
+            {
+              "label": "mbqe",
+              "score": 1.0,
+              "start": 69,
+              "end": 70
+            },
+            {
+              "label": "emerdi",
+              "score": 1.0,
+              "start": 70,
+              "end": 71
+            },
+            {
+              "label": "hbvxwn",
+              "score": 1.0,
+              "start": 71,
+              "end": 72
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 72,
+              "end": 73
+            },
+            {
+              "label": "hawcr",
+              "score": 1.0,
+              "start": 73,
+              "end": 74
+            },
+            {
+              "label": "whtm\u0026quot;s",
+              "score": 1.0,
+              "start": 74,
+              "end": 75
+            },
+            {
+              "label": "iqzzw",
+              "score": 1.0,
+              "start": 75,
+              "end": 76
+            },
+            {
+              "label": "mtelwmi",
+              "score": 1.0,
+              "start": 76,
+              "end": 77
+            },
+            {
+              "label": "ieral",
+              "score": 1.0,
+              "start": 77,
+              "end": 78
+            },
+            {
+              "label": "lpletinim",
+              "score": 1.0,
+              "start": 78,
+              "end": 79
+            },
+            {
+              "label": "at",
+              "score": 1.0,
+              "start": 79,
+              "end": 80
+            },
+            {
+              "label": "hhwcawt",
+              "score": 1.0,
+              "start": 80,
+              "end": 81
+            },
+            {
+              "label": "hllw",
+              "score": 1.0,
+              "start": 81,
+              "end": 82
+            },
+            {
+              "label": ",",
+              "score": 1.0,
+              "start": 82,
+              "end": 83
+            },
+            {
+              "label": "kpi",
+              "score": 1.0,
+              "start": 83,
+              "end": 84
+            },
+            {
+              "label": "eakn",
+              "score": 1.0,
+              "start": 84,
+              "end": 85
+            },
+            {
+              "label": "hbvixw",
+              "score": 1.0,
+              "start": 85,
+              "end": 86
+            },
+            {
+              "label": "lyewt",
+              "score": 1.0,
+              "start": 86,
+              "end": 87
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 87,
+              "end": 88
+            },
+            {
+              "label": "hiwm",
+              "score": 1.0,
+              "start": 88,
+              "end": 89
+            },
+            {
+              "label": "ewb",
+              "score": 1.0,
+              "start": 89,
+              "end": 90
+            },
+            {
+              "label": "iidw",
+              "score": 1.0,
+              "start": 90,
+              "end": 91
+            },
+            {
+              "label": "yrbim",
+              "score": 1.0,
+              "start": 91,
+              "end": 92
+            },
+            {
+              "label": "abnim",
+              "score": 1.0,
+              "start": 92,
+              "end": 93
+            },
+            {
+              "label": "yl",
+              "score": 1.0,
+              "start": 93,
+              "end": 94
+            },
+            {
+              "label": "xiili",
+              "score": 1.0,
+              "start": 94,
+              "end": 95
+            },
+            {
+              "label": "ch\u0026quot;l",
+              "score": 1.0,
+              "start": 95,
+              "end": 96
+            },
+            {
+              "label": "bnml",
+              "score": 1.0,
+              "start": 96,
+              "end": 97
+            },
+            {
+              "label": "htywph",
+              "score": 1.0,
+              "start": 97,
+              "end": 98
+            },
+            {
+              "label": "byvrwt",
+              "score": 1.0,
+              "start": 98,
+              "end": 99
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 99,
+              "end": 100
+            },
+            {
+              "label": "nml",
+              "score": 1.0,
+              "start": 100,
+              "end": 101
+            },
+            {
+              "label": "htywph",
+              "score": 1.0,
+              "start": 101,
+              "end": 102
+            },
+            {
+              "label": "yvrwt",
+              "score": 1.0,
+              "start": 102,
+              "end": 103
+            },
+            {
+              "label": "sgwr",
+              "score": 1.0,
+              "start": 103,
+              "end": 104
+            },
+            {
+              "label": "lmyeh",
+              "score": 1.0,
+              "start": 104,
+              "end": 105
+            },
+            {
+              "label": "maz",
+              "score": 1.0,
+              "start": 105,
+              "end": 106
+            },
+            {
+              "label": "txilt",
+              "score": 1.0,
+              "start": 106,
+              "end": 107
+            },
+            {
+              "label": "mlxmt",
+              "score": 1.0,
+              "start": 107,
+              "end": 108
+            },
+            {
+              "label": "rae",
+              "score": 1.0,
+              "start": 108,
+              "end": 109
+            },
+            {
+              "label": "henh",
+              "score": 1.0,
+              "start": 109,
+              "end": 110
+            },
+            {
+              "label": ".",
+              "score": 1.0,
+              "start": 110,
+              "end": 111
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "viewName": "TOKENS",
+      "viewData": [
+        {
+          "viewType": "edu.illinois.cs.cogcomp.core.datastructures.textannotation.TokenLabelView",
+          "viewName": "TOKENS",
+          "generator": "UserSpecified",
+          "score": 1.0,
+          "constituents": [
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 0,
+              "end": 1
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 1,
+              "end": 2
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 2,
+              "end": 3
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 3,
+              "end": 4
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 4,
+              "end": 5
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 5,
+              "end": 6
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 6,
+              "end": 7
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 7,
+              "end": 8
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 8,
+              "end": 9
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 9,
+              "end": 10
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 10,
+              "end": 11
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 11,
+              "end": 12
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 12,
+              "end": 13
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 13,
+              "end": 14
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 14,
+              "end": 15
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 15,
+              "end": 16
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 16,
+              "end": 17
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 17,
+              "end": 18
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 18,
+              "end": 19
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 19,
+              "end": 20
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 20,
+              "end": 21
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 21,
+              "end": 22
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 22,
+              "end": 23
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 23,
+              "end": 24
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 24,
+              "end": 25
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 25,
+              "end": 26
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 26,
+              "end": 27
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 27,
+              "end": 28
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 28,
+              "end": 29
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 29,
+              "end": 30
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 30,
+              "end": 31
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 31,
+              "end": 32
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 32,
+              "end": 33
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 33,
+              "end": 34
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 34,
+              "end": 35
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 35,
+              "end": 36
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 36,
+              "end": 37
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 37,
+              "end": 38
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 38,
+              "end": 39
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 39,
+              "end": 40
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 40,
+              "end": 41
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 41,
+              "end": 42
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 42,
+              "end": 43
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 43,
+              "end": 44
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 44,
+              "end": 45
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 45,
+              "end": 46
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 46,
+              "end": 47
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 47,
+              "end": 48
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 48,
+              "end": 49
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 49,
+              "end": 50
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 50,
+              "end": 51
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 51,
+              "end": 52
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 52,
+              "end": 53
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 53,
+              "end": 54
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 54,
+              "end": 55
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 55,
+              "end": 56
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 56,
+              "end": 57
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 57,
+              "end": 58
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 58,
+              "end": 59
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 59,
+              "end": 60
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 60,
+              "end": 61
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 61,
+              "end": 62
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 62,
+              "end": 63
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 63,
+              "end": 64
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 64,
+              "end": 65
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 65,
+              "end": 66
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 66,
+              "end": 67
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 67,
+              "end": 68
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 68,
+              "end": 69
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 69,
+              "end": 70
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 70,
+              "end": 71
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 71,
+              "end": 72
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 72,
+              "end": 73
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 73,
+              "end": 74
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 74,
+              "end": 75
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 75,
+              "end": 76
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 76,
+              "end": 77
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 77,
+              "end": 78
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 78,
+              "end": 79
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 79,
+              "end": 80
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 80,
+              "end": 81
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 81,
+              "end": 82
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 82,
+              "end": 83
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 83,
+              "end": 84
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 84,
+              "end": 85
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 85,
+              "end": 86
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 86,
+              "end": 87
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 87,
+              "end": 88
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 88,
+              "end": 89
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 89,
+              "end": 90
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 90,
+              "end": 91
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 91,
+              "end": 92
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 92,
+              "end": 93
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 93,
+              "end": 94
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 94,
+              "end": 95
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 95,
+              "end": 96
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 96,
+              "end": 97
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 97,
+              "end": 98
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 98,
+              "end": 99
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 99,
+              "end": 100
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 100,
+              "end": 101
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 101,
+              "end": 102
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 102,
+              "end": 103
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 103,
+              "end": 104
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 104,
+              "end": 105
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 105,
+              "end": 106
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 106,
+              "end": 107
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 107,
+              "end": 108
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 108,
+              "end": 109
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 109,
+              "end": 110
+            },
+            {
+              "label": "",
+              "score": 1.0,
+              "start": 110,
+              "end": 111
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
