@@ -5,15 +5,12 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
-import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
-import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
-import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
-import groovyjarjarantlr.HTMLCodeGenerator;
 import io.github.mayhewsw.*;
 import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.utils.HtmlGenerator;
+import io.github.mayhewsw.utils.IO;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -93,37 +90,16 @@ public class DocumentController {
         String folderurl = props.getFolderpath();
         String foldertype = props.getFormat();
         if(foldertype == null){
-            // default to ta
-            foldertype = "ta";
-            props.setProperty("format", "ta");
+            // default to tajson
+            foldertype = "tajson";
+            props.setProperty("format", "tajson");
         }
-
-        File f = new File(folderurl);
 
         // This will be ordered by its keys.
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
         TextStatisticsController.resetstats();
-        if (foldertype.equals(Common.FOLDERTA)) {
-            String[] files = f.list();
-            int limit = Math.min(files.length, 500);
-            for (int i = 0; i < limit; i++) {
-                String file = files[i];
-                TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file, true);
-                if(!ta.hasView(ViewNames.NER_CONLL)){
-                    View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
-                    ta.addView(ViewNames.NER_CONLL, ner);
-                }
 
-                ret.put(file, ta);
-            }
-        } else if (foldertype.equals(Common.FOLDERCONLL)) {
-            CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
-            while (cnl.hasNext()) {
-                TextAnnotation ta = cnl.next();
-                logger.info("Loading: " + ta.getId());
-                ret.put(ta.getId(), ta);
-            }
-        }
+        IO.read(foldertype, folderurl, ret);
 
         for(TextAnnotation ta : ret.values()){
             TextStatisticsController.updateCounts(ta.getTokens());
@@ -136,26 +112,7 @@ public class DocumentController {
         logger.info("Now looking in user annotation folder: " + outfolder);
 
         if ((new File(outfolder)).exists()) {
-
-            if (foldertype.equals(Common.FOLDERTA)) {
-                File outf = new File(outfolder);
-                String[] files = outf.list();
-                int limit = Math.min(files.length, 300);
-
-                for (int i = 0; i < limit; i++) {
-                    String file = files[i];
-                    TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(outfolder + "/" + file, true);
-                    ret.put(file, ta);
-                }
-            } else if (foldertype.equals(Common.FOLDERCONLL)) {
-                CoNLLNerReader cnl = new CoNLLNerReader(outfolder);
-                while (cnl.hasNext()) {
-                    TextAnnotation ta = cnl.next();
-                    logger.info("Loading: " + ta.getId());
-
-                    ret.put(ta.getId(), ta);
-                }
-            }
+            IO.read(foldertype, outfolder, ret);
         }
 
         return ret;
@@ -378,14 +335,7 @@ public class DocumentController {
             TextAnnotation taToSave = tas.get(taid);
             String savepath = outpath + taid;
 
-            if(foldertype.equals(Common.FOLDERTA)) {
-                if(!IOUtils.exists(outpath)) {
-                    IOUtils.mkdir(outpath);
-                }
-                SerializationHelper.serializeTextAnnotationToFile(taToSave, savepath, true,true);
-            }else if(foldertype.equals(Common.FOLDERCONLL)) {
-                CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
-            }
+            IO.save(foldertype, savepath, taToSave);
 
             //String config = sd.prop.getProperty("nerconfig");
             //Sandbox.TrainAndAnnotate(config, outpath, tas);
@@ -558,11 +508,7 @@ public class DocumentController {
         model.addAttribute("tamap", newtas);
         model.addAttribute("annotatedfiles", annotatedfiles);
 
-
-
-
         return "document/getstarted";
-
     }
 
 
