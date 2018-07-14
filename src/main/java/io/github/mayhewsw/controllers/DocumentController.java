@@ -100,7 +100,7 @@ public class DocumentController {
 
         File f = new File(folderurl);
 
-        // This will be ordered by it's keys.
+        // This will be ordered by its keys.
         TreeMap<String, TextAnnotation> ret = new TreeMap<>(new KeyComparator());
         TextStatisticsController.resetstats();
         if (foldertype.equals(Common.FOLDERTA)) {
@@ -248,16 +248,26 @@ public class DocumentController {
         ConfigFile prop = sd.datasets.get(dataname);
         String folderpath = prop.getFolderpath();
 
+        // No, users should definitely provide labels.
+        // If a dataset is unlabeled, you need to say what labels you want.
         String labelsproperty = prop.getLabels();
         labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
-        for(String labelandcolor: labelsproperty.split(" ")){
-            String[] sl = labelandcolor.split(":");
-            labels.add(sl[0]);
-            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
+        for(String label: labelsproperty.split(" ")){
+            labels.add(label);
+            String color;
+            if(Utils.labelcolors.containsKey(label)){
+                color = Utils.labelcolors.get(label);
+            }else{
+                Random random = new Random();
+                int nextInt = random.nextInt(256*256*256);
+                color = String.format("#%06x", nextInt);
+            }
+            csslines.add("." + label + "{ background-color: " + color + "; }");
         }
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
+
 
         String dictpath = prop.getProperty("dict");
         Dictionary dict;
