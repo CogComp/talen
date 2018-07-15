@@ -1,0 +1,4 @@
+name	Hebrew
+folderpath	data/tajson/heb/
+format	tajson
+labels	PER ORG LOC GPE

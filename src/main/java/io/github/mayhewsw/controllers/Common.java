@@ -11,6 +11,8 @@ import java.util.Properties;
 public class Common {
 
     public static final String FOLDERTA = "ta";
+    public static final String FOLDERTAJSON = "tajson";
+    public static final String FOLDERCOLUMN = "column";
     public static final String FOLDERCONLL = "conll";
 
 

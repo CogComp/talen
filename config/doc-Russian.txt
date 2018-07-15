@@ -1,0 +1,4 @@
+name	Russian
+folderpath	data/column/rus/
+format	column
+labels	PER ORG LOC GPE

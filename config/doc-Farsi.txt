@@ -1,0 +1,4 @@
+name	Farsi
+folderpath	data/column/fas/
+format	column
+labels	PER ORG LOC GPE

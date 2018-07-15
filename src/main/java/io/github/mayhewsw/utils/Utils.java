@@ -7,12 +7,25 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created by mayhew2 on 6/7/17.
  */
 public class Utils {
+
+    public static HashMap<String, String> labelcolors;
+    static {
+        labelcolors = new HashMap<>();
+        // put some common label colors here.
+        labelcolors.put("PER", "yellow");
+        labelcolors.put("LOC", "greenyellow");
+        labelcolors.put("GPE", "coral");
+        labelcolors.put("MISC", "coral");
+        labelcolors.put("ORG", "lightblue");
+    }
+
 
     /**
      * Given a TextAnnotation, this will return the tokens in a cloned String[] array. If the ROMANIZATION
