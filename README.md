@@ -44,10 +44,7 @@ There are two kinds of config files, corresponding to the two annotation methods
 (see below). The document-based method looks for config files that start with 'doc-'
 and the sentence-based method looks for config files that start with 'sent-'.
 
-Describe config files, and how they are different for document and sentence.
-
-
-
+See the [example config files](config/) for the minimally required set of options.
 
 ## Annotation Methods
 
@@ -72,8 +69,6 @@ Presumably these sentences will contain entities such as 'Wimbledon' and 'New Yo
 this will continue until some cap on the number of entities has been reached.
 
 
-
-
 ## Non-speaker Helps
 One major focus of the software is to allow non-speakers of a language to 
 annotate text. Some features are: inline dictionary replacement, morphological 
@@ -81,8 +76,8 @@ awareness and coloring, entity propagation, entity suggestions, hints based on f
 mutual information.
 
 ### How to build an index
-Run `TextFileIndexer.java`, but modify the strings in the main method. The `indexdir` variable
-will be put in the sentence-based config file.
+Use [`buildindex.sh`](scripts/buildindex.sh) to build a local index for the sentence based mode. The `indexdir` variable
+will be put in the sentence-based config file. This, in turn calls `TextFileIndexer.java`.
 
 ## Command line tool
 We also ship a lightweight command line tool for TALEN. This tool will read a folder of JSON TextAnnotations (more formats coming soon)
@@ -107,7 +102,7 @@ This will serve static HTML documents at `localhost:PORT` (default `PORT` is 800
 $ talen-cli FolderOfTAFiles -roman -port 8888
 ```
 
-Where the `-roman` option uses the ROMANIZATION view in the TextAnnotation for text (if available), and the `-port` option
+Where the `-roman` option uses the `ROMANIZATION` view in the TextAnnotation for text (if available), and the `-port` option
 uses the specified port.
 
 
