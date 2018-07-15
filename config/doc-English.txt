@@ -1,4 +1,4 @@
 name	EnglishDefault
-folderpath	data/eng-conll/
+folderpath	data/conll/eng/
 format	conll
 labels	PER ORG LOC MISC

@@ -333,9 +333,8 @@ public class DocumentController {
 
             TreeMap<String, TextAnnotation> tas = sd.tas;
             TextAnnotation taToSave = tas.get(taid);
-            String savepath = outpath + taid;
 
-            IO.save(foldertype, savepath, taToSave);
+            IO.save(foldertype, outpath, taToSave);
 
             //String config = sd.prop.getProperty("nerconfig");
             //Sandbox.TrainAndAnnotate(config, outpath, tas);

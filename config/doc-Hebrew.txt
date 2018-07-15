@@ -1,2 +1,4 @@
-folderpath /home/mayhew2/IdeaProjects/talen/data/acl2018demo/heb
-labels PER ORG LOC TRAP
+name	Hebrew
+folderpath	data/tajson/heb/
+format	tajson
+labels	PER ORG LOC GPE
