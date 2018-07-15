@@ -10,26 +10,8 @@ A lightweight web-based tool for annotating word sequences.
 ![Screenshot of web interface](/src/main/resources/static/img/selection.png?raw=true "Screenshot")
 
 
-## Citation
 
-If you use this in your research paper, please cite us!
-
-```
-@inproceedings{talen2018,
-    author = {Stephen Mayhew, Dan Roth},
-    title = {TALEN: Tool for Annotation of Low-resource ENtities},
-    booktitle = {ACL System Demonstrations},
-    year = {2018},
-}
-```
-
-Read the paper here: [http://cogcomp.org/papers/MayhewRo18.pdf](http://cogcomp.org/papers/MayhewRo18.pdf) 
-
-## Lightweight Demo
-
-See a lightweight Javascript-only demo here: [cogcomp.github.io/talen/](http://cogcomp.github.io/talen/)
-
-## Usage
+## Installation
 
 Requires Java 8 and Maven. Run:
 
@@ -45,6 +27,8 @@ specified in the config file, and `<username>` is what you chose as username.
 Suppose you do some annotations, then leave the session, and come back again. If you log in with the same
 username as the previous session, it will reload all of the annotations right where you left off, so no
 work is lost.
+
+## Usage
 
 You make annotations by clicking on words and selecting a label. If you want to remove a label, right click on a word.
 
@@ -148,4 +132,21 @@ $ python scripts/preparedata.py testfile tmp.csv docs/index.html
 can all be removed if desired. I found it was useful for mturk tasks. When you create the mturk task, there will be a 
 submit button, and the answer will be put into the `#finalsubmission` field. The output string is a Javascript list of token spans along with 
 label. 
+
+
+## Citation
+
+If you use this in your research paper, please cite us!
+
+```
+@inproceedings{talen2018,
+    author = {Stephen Mayhew, Dan Roth},
+    title = {TALEN: Tool for Annotation of Low-resource ENtities},
+    booktitle = {ACL System Demonstrations},
+    year = {2018},
+}
+```
+
+Read the paper here: [http://cogcomp.org/papers/MayhewRo18.pdf](http://cogcomp.org/papers/MayhewRo18.pdf) 
+
 
