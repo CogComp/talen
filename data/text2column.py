@@ -3,6 +3,8 @@ import sys,os
 infolder = sys.argv[1]
 outfolder = sys.argv[2]
 
+os.mkdir(outfolder)
+
 for fname in os.listdir(infolder):
     with open(infolder + "/" + fname) as f:
         lines = f.readlines()
