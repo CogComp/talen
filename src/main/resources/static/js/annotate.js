@@ -166,33 +166,45 @@ $(document).ready(function() {
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
               } else {
+
                 var raw_id = $(this)[0].id.split('-')
                 var end = parseInt($(this)[0].closest('.cons').id.split('-')[2]) - 1;
                 var start = parseInt($(this)[0].closest('.cons').id.split('-')[1]);
                 raw_id[2] = (start).toString() + '-' + (end).toString();
+
                 var id_tok = "candgen-" + raw_id.join("-");
-                var json_dict = JSON.parse($(document.getElementById(id_tok)).html());
+                var json_dict;
+                try{
+                    json_dict = JSON.parse($(document.getElementById(id_tok)).html());
+                } catch(err){
+                    json_dict = {};
+                }
                 var json_entity_dict = JSON.parse($(document.getElementById('candgen-entitytype')).html());
                 console.log(json_entity_dict);
+
                 var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>"
+
                 for(var key in json_dict){
-                  if(key == "NIL"){
-                    continue;
-                  }
+                    if(key == "NIL"){
+                        continue;
+                    }
                     var id_name = key.split('|');
-		    var entity_val = json_entity_dict[key].split('|');
-		    var suffixes;
-		    if ((entity_val.length) == 4){
-			suffixes = entity_val[0] + " " + entity_val[1] + " " +entity_val[2] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[3] + "\">Wiki</a>";
-		    } else {
-			suffixes = entity_val[0] + " " + entity_val[1] + " " + entity_val[2];
-		    }
-                  if(parseFloat(json_dict[key]) >= 1000.0){
-                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + " kb_id:"+id_name[0]+ " " + suffixes + "</button>";
-                  } else{
-                      out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1]+" kb_id:"+id_name[0] + " "+ suffixes + "</button>";
-                  }
+		            var entity_val = json_entity_dict[key].split('|');
+		            var suffixes;
+
+		            if ((entity_val.length) == 4){
+			            suffixes = entity_val[0] + " " + entity_val[1] + " " +entity_val[2] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[3] + "\">Wiki</a>";
+		            } else {
+			            suffixes = entity_val[0] + " " + entity_val[1] + " " + entity_val[2];
+		            }
+
+                    if(parseFloat(json_dict[key]) >= 1000.0){
+                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + " kb_id:"+id_name[0]+ " " + suffixes + "</button>";
+                    } else{
+                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1]+" kb_id:"+id_name[0] + " "+ suffixes + "</button>";
+                    }
                 }
+
                 out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
                 return out;
               }

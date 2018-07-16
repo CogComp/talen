@@ -1,5 +1,5 @@
 name	EnglishDefault
-folderpath	data/candgen/
-format	ta
+folderpath	data/eng-conll/
+format	conll
 labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral
 dict  dicts/dict.rw
