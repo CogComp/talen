@@ -9,6 +9,7 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by mayhew2 on 6/7/17.
@@ -26,6 +27,22 @@ public class Utils {
         labelcolors.put("ORG", "lightblue");
     }
 
+    /**
+     * Given a label, this will return a standard color, or a random color.
+     * @param label
+     * @return
+     */
+    public static String getColorOrRandom(String label){
+        String color;
+        if(Utils.labelcolors.containsKey(label)){
+            color = Utils.labelcolors.get(label);
+        }else{
+            Random random = new Random();
+            int nextInt = random.nextInt(256*256*256);
+            color = String.format("#%06x", nextInt);
+        }
+        return color;
+    }
 
     /**
      * Given a TextAnnotation, this will return the tokens in a cloned String[] array. If the ROMANIZATION

@@ -292,13 +292,17 @@ $(document).ready(function() {
 
     // when the doc loads, get the top stats.
     function showtopstats() {
-        $.ajax({
-            method: "POST",
-            url: "/stats/gettopstats",
-            data: {docid: getParameterByName("taid")}
-        }).done(function (msg) {
-            $("#infobox").html(msg);
-        });
+        var taid = getParameterByName("taid");
+
+        if(taid != null) {
+            $.ajax({
+                method: "POST",
+                url: "/stats/gettopstats",
+                data: {docid: taid}
+            }).done(function (msg) {
+                $("#infobox").html(msg);
+            });
+        }
     }
 
     showtopstats();
@@ -353,8 +357,8 @@ $(document).ready(function() {
         $.ajax({
             method: "GET",
             url: "/dict/add",
-            data: {key:key, val:val, idlist: getsentids()}
-        }).done(function (msg) {
+            data: {key:key, val:val}
+        }).done(function () {
             refreshsents();
         });
     };
@@ -415,7 +419,7 @@ $(document).ready(function() {
                 sentids: getsentids(),
                 id: sentid,
                 propagate: srch == srchanno }
-        }).done(function (msg) {
+        }).done(function () {
             refreshsents();
         });
     };

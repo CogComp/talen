@@ -79,7 +79,7 @@ public class DictionaryController {
     @RequestMapping(value="add", method=RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
-    public void adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, @RequestParam(value="idlist[]") String[] idlist, HttpSession hs, Model model) throws IOException {
+    public String adddef(@RequestParam(value="key") String key, @RequestParam(value="val") String val, HttpSession hs) throws IOException {
 
         SessionData sd = new SessionData(hs);
 
@@ -89,6 +89,7 @@ public class DictionaryController {
             sd.dict.add(key, val);
             sd.dict.save(sd.dataname, sd.username);
         }
+        return "Success";
     }
 
 

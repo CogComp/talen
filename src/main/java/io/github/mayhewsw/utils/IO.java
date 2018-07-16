@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -28,6 +29,11 @@ public class IO {
 
         if (foldertype.equals(Common.FOLDERTA)) {
             File outf = new File(folder);
+
+            if(!outf.exists()){
+                throw new FileNotFoundException("Folder " + folder + " does not exist.");
+            }
+
             File[] files = outf.listFiles();
             int limit = Math.min(files.length, 500);
 
@@ -39,6 +45,10 @@ public class IO {
         }else if(foldertype.equals(Common.FOLDERTAJSON)){
 
             File outf = new File(folder);
+
+            if(!outf.exists()){
+                throw new FileNotFoundException("Folder " + folder + " does not exist.");
+            }
 
             File[] files = outf.listFiles();
 

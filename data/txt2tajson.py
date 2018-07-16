@@ -10,13 +10,13 @@ import codecs
 # This file converts a folder full of text files (one sentence per line, whitespace tokenized)
 # into a folder of tajson files.
 
-def lines2json(lines):
+def lines2json(lines, fname):
     """ This takes a set of lines (read from some text file)
     and converts them into a JSON TextAnnotation. This assumes
     that there is one sentence per line, whitespace tokenized. """
     
     doc = {}
-    doc["corpusId"] = infolder
+    doc["corpusId"] = ""
     doc["id"] = fname
 
     sents = {}
@@ -40,9 +40,7 @@ def lines2json(lines):
     return doc
     
 
-if __name__ == "__main__":
-    infolder = sys.argv[1]
-    outfolder = sys.argv[2]
+def convert(infolder, outfolder):
 
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
@@ -51,5 +49,11 @@ if __name__ == "__main__":
         with open(infolder + "/" + fname) as f:
             lines = f.readlines()
         with codecs.open(outfolder + "/" + fname, "w", encoding="utf-8") as out:
-            doc = lines2json(lines)
+            doc = lines2json(lines, fname)
             json.dump(doc, out, sort_keys=True, indent=4, ensure_ascii=False)
+
+
+if __name__ == "__main__":
+    infolder = sys.argv[1]
+    outfolder = sys.argv[2]
+    convert(infolder, outfolder)

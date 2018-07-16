@@ -160,15 +160,18 @@ public class SentenceController {
             errormsg = "The config value for indexpath is null. To fix this, run TextFileIndexer.java, and " +
                     "include the path of the indexpath in the config file for " + dataname;
         }else if(!(new File(indexpath)).exists()){
-            errormsg = "The config value for indexpath does not exist. Maybe you need to regenerate the index? Use TextFileIndexer.java. Indexpath:" +
-                    indexpath + ", dataname: " + dataname;
+            errormsg = "In config file "+dataname+", you have specified an indexpath of "+indexpath+", but this doesn't exist. Generate an index using: scripts/buildindex.sh";
         }
 
         if(errormsg != null){
             model.addAttribute("datasets", sd.datasets.keySet());
             model.addAttribute("user", new User());
             model.addAttribute("errormsg", errormsg);
-            return "sentence/home";
+
+            // in case you want to add a new one!
+            model.addAttribute("config", new ConfigFile());
+
+            return "index";
         }
 
 
@@ -262,10 +265,16 @@ public class SentenceController {
         String labelsproperty = prop.getLabels();
         List<String> labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
-        for (String labelandcolor : labelsproperty.split(" ")) {
-            String[] sl = labelandcolor.split(":");
-            labels.add(sl[0]);
-            csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
+        for (String label : labelsproperty.split(" ")) {
+            label = label.replaceAll(":", "");
+            label = label.replaceAll("\\.", "");
+            label = label.replaceAll("#", "");
+
+            labels.add(label);
+
+            String color = Utils.getColorOrRandom(label);
+
+            csslines.add("." + label + "{ background-color: " + color + "; }");
         }
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);
@@ -391,7 +400,6 @@ public class SentenceController {
      */
     @RequestMapping(value = "/addspan", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    @ResponseBody
     public void addspan(@RequestParam(value = "label") String label, @RequestParam(value = "starttokid") String starttokid, @RequestParam(value = "endtokid") String endtokid, @RequestParam(value = "sentid") String sentid, @RequestParam(value = "sentids[]", required = true) String[] sentids, @RequestParam(value = "propagate", required = false) boolean propagate, HttpSession hs, Model model) throws Exception {
 
         SessionData sd = new SessionData(hs);
@@ -426,7 +434,6 @@ public class SentenceController {
 
     @RequestMapping(value = "/addtext", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
-    @ResponseBody
     public void addtext(@RequestParam(value = "text") String text, @RequestParam(value = "label") String label, @RequestParam(value = "sentids[]", required = true) String[] sentids, HttpSession hs, Model model) throws Exception {
         SessionData sd = new SessionData(hs);
 
@@ -559,7 +566,6 @@ public class SentenceController {
                 sd.groups.putIfAbsent(stemmed, new Group());
                 sd.groups.get(stemmed).addAnno(sentid, name.getLabel());
             }
-            ;
 
             // only save those sentences that have some annotation.
             if (nerc.size() > 0) {
@@ -574,8 +580,8 @@ public class SentenceController {
 //        //// FIXME: add this functionality back in!
         // get suggestions for each label.
 
-        for(String label : sd.labels) {
-            Set<String> labelnames = sd.groups.keySet().stream().filter(x -> sd.groups.get(x).maxType().equals(label)).collect(Collectors.toSet());
+//        for(String label : sd.labels) {
+//            Set<String> labelnames = sd.groups.keySet().stream().filter(x -> sd.groups.get(x).maxType().equals(label)).collect(Collectors.toSet());
 
             //LinkedHashMap<String, Double> sortedcontexts = bs3.getcontexts(labelnames);
 
@@ -588,7 +594,7 @@ public class SentenceController {
             //while(iter.hasNext() && labelset.size() < 10){
             //    labelset.add(iter.next());
             //}
-        }
+//        }
 
 //        LinkedHashMap<String, Double> sortednames = sd.bs3.getnames(sd.groups.keySet(), sd.contexts);
 //

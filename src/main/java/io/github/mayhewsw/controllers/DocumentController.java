@@ -103,6 +103,11 @@ public class DocumentController {
 
         for(TextAnnotation ta : ret.values()){
             TextStatisticsController.updateCounts(ta.getTokens());
+
+            if(!ta.hasView(ViewNames.NER_CONLL)){
+                View ner = new View(ViewNames.NER_CONLL, "", ta, 1.0);
+                ta.addView(ViewNames.NER_CONLL, ner);
+            }
         }
 
         // now check the annotation folder to see what this user has already annotated.
@@ -198,7 +203,7 @@ public class DocumentController {
      * @throws IOException
      */
     @RequestMapping(value = "/loaddata", method=RequestMethod.GET)
-    public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs) throws Exception {
+    public String loaddata(@RequestParam(value="dataname") String dataname, HttpSession hs, Model model) throws Exception {
         SessionData sd = new SessionData(hs);
         String username = sd.username;
 
@@ -211,15 +216,14 @@ public class DocumentController {
         labels = new ArrayList<>();
         List<String> csslines = new ArrayList<String>();
         for(String label: labelsproperty.split(" ")){
+            label = label.replaceAll(":", "");
+            label = label.replaceAll("\\.", "");
+            label = label.replaceAll("#", "");
+
             labels.add(label);
-            String color;
-            if(Utils.labelcolors.containsKey(label)){
-                color = Utils.labelcolors.get(label);
-            }else{
-                Random random = new Random();
-                int nextInt = random.nextInt(256*256*256);
-                color = String.format("#%06x", nextInt);
-            }
+
+            String color = Utils.getColorOrRandom(label);
+
             csslines.add("." + label + "{ background-color: " + color + "; }");
         }
         logger.debug("using labels: " + labels.toString());
@@ -239,34 +243,53 @@ public class DocumentController {
 
 
         // this ensures that the suffixes item is never null.
-        String suffixlist = prop.getProperty("suffixes");
-        ArrayList<String> suffixes = new ArrayList<>();
-        if(suffixlist != null){
-            logger.info("Loading suffixes...");
-
-            for(String suff : suffixlist.split(" ")){
-                suffixes.add(suff);
-            }
-        }
+//        String suffixlist = prop.getProperty("suffixes");
+//        ArrayList<String> suffixes = new ArrayList<>();
+//        if(suffixlist != null){
+//            logger.info("Loading suffixes...");
+//
+//            for(String suff : suffixlist.split(" ")){
+//                suffixes.add(suff);
+//            }
+//        }
 
         // check to see if there are suffixes created by the user, in file suffixes-username.txt.
-        String folderparent = (new File(folderpath)).getParent();
-        File suffixfile = new File(folderparent, "suffixes-" + username + ".txt");
-        if(suffixfile.exists()){
-            // open and read
-            String suffixline = LineIO.read(suffixfile.getAbsolutePath()).get(0).trim();
-            for(String suff : suffixline.split(" ")){
-                suffixes.add(suff);
-            }
-        }else{
-            logger.error("COULD NOT FIND SUFFIX FILE: " + suffixfile.getAbsolutePath());
-        }
+//        String folderparent = (new File(folderpath)).getParent();
+//        File suffixfile = new File(folderparent, "suffixes-" + username + ".txt");
+//        if(suffixfile.exists()){
+//            // open and read
+//            String suffixline = LineIO.read(suffixfile.getAbsolutePath()).get(0).trim();
+//            for(String suff : suffixline.split(" ")){
+//                suffixes.add(suff);
+//            }
+//        }else{
+//            logger.error("COULD NOT FIND SUFFIX FILE: " + suffixfile.getAbsolutePath());
+//        }
 
-        suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
+//        suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
 
         HashMap<Pair<String, String>, Integer> patterns = new HashMap<>();
 
-        TreeMap<String, TextAnnotation> tas = loadFolder(dataname, username, sd.datasets);
+        String errormsg = null;
+        TreeMap<String, TextAnnotation> tas;
+        try{
+            tas = loadFolder(dataname, username, sd.datasets);
+            hs.setAttribute("tas", tas);
+        }catch(Exception e){
+            errormsg = e.getMessage();
+        }
+
+        if(errormsg != null){
+            model.addAttribute("datasets", sd.datasets.keySet());
+            model.addAttribute("user", new User());
+            model.addAttribute("errormsg", errormsg);
+
+            // in case you want to add a new one!
+            model.addAttribute("config", new ConfigFile());
+
+            return "index";
+        }
+
 
         String logpath = "logs/";
         String logfile= String.format("%s/%s-%s.log", logpath, dataname,username);
@@ -275,12 +298,12 @@ public class DocumentController {
         logger.info("Writing to logfile: " + logfile);
 
         hs.setAttribute("ramdirectory", new RAMDirectory());
-        hs.setAttribute("tas", tas);
+
         hs.setAttribute("dataname", dataname);
         hs.setAttribute("prop", prop);
         hs.setAttribute("patterns", patterns);
 
-        hs.setAttribute("suffixes", suffixes);
+//        hs.setAttribute("suffixes", suffixes);
 
         sd = new SessionData(hs);
 

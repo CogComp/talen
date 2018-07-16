@@ -171,6 +171,8 @@ public class HtmlGenerator {
 
         if(sentspan.getFirst() != -1) {
             text = Arrays.copyOfRange(text, sentspan.getFirst(), sentspan.getSecond());
+            nonroman_text = Arrays.copyOfRange(nonroman_text, sentspan.getFirst(), sentspan.getSecond());
+
         }
 
         // add spans to every word that is not a constituent.
@@ -183,14 +185,15 @@ public class HtmlGenerator {
             String tokid = String.format("tok-%s-%s", id, t);
 
 
+            // The orig attribute is used in the dictionary.
             if (showdefs && def != null) {
-                text[t] = "<span class='token pointer def' orig=\""+text[t]+"\" id='"+tokid+"'>" + def + "</span>";
+                text[t] = "<span class='token pointer def' orig=\""+nonroman_text[t]+"\" id='"+tokid+"'>" + def + "</span>";
             } else {
                 // FIXME: this will only work for single word queries.
                 if (query.length() > 0 && text[t].startsWith(query)) {
-                    text[t] = "<span class='token pointer emph' orig=\""+text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer emph' orig=\""+nonroman_text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
                 } else {
-                    text[t] = "<span class='token pointer' orig=\""+text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
+                    text[t] = "<span class='token pointer' orig=\""+nonroman_text[t]+"\" id='"+tokid+"'>" + text[t] + "</span>";
                 }
             }
         }

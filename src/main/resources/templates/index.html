@@ -42,6 +42,7 @@
                     <!--</p>-->
                 </div>
 
+                <div th:unless="${errormsg == null}" th:text="${errormsg}" class="alert alert-danger" role="alert"></div>
 
                 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
