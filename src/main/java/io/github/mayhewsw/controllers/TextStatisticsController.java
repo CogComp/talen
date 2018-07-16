@@ -2,12 +2,8 @@ package io.github.mayhewsw.controllers;
 
 import edu.illinois.cs.cogcomp.core.datastructures.Pair;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
-import edu.illinois.cs.cogcomp.core.io.LineIO;
-import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.SessionData;
-import io.github.mayhewsw.utils.HtmlGenerator;
 import io.github.mayhewsw.utils.Utils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -15,8 +11,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,7 +37,7 @@ public class TextStatisticsController {
 
         // need to keep track of the number of times this word appears in the document.
         HashMap<String, Integer> doccounts = new HashMap<>();
-        String[] romantext = Utils.getRomanTaToksIfPresent(ta);
+        String[] romantext = Utils.getRomanTaToks(ta);
         HashMap<String, String> orig2roman = new HashMap<>();
 
         for(int i = 0; i < ta.size(); i++){

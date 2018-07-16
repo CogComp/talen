@@ -1,0 +1,7 @@
+mode	sentence
+folderpath	data/tajson/hindi/
+terms	भारत
+name	hindi
+format	tajson
+indexpath	index-hindi
+labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral

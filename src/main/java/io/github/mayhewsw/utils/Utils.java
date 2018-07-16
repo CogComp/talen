@@ -36,7 +36,7 @@ public class Utils {
      * @param ta TextAnnotation
      * @return an array of words, romanized if available.
      */
-    public static String[] getRomanTaToksIfPresent(TextAnnotation ta){
+    public static String[] getRomanTaToks(TextAnnotation ta){
         String[] text;
         if(ta.hasView("ROMANIZATION")){
             View translit = ta.getView("ROMANIZATION");

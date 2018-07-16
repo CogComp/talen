@@ -64,7 +64,7 @@ public class HtmlGenerator {
         // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text;
         if(showroman) {
-            text = Utils.getRomanTaToksIfPresent(ta);
+            text = Utils.getRomanTaToks(ta);
         }else {
             text = ta.getTokens().clone();
         }
@@ -164,7 +164,7 @@ public class HtmlGenerator {
         // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text;
         if(showroman) {
-            text = Utils.getRomanTaToksIfPresent(ta);
+            text = Utils.getRomanTaToks(ta);
         }else {
             text = ta.getTokens().clone();
         }

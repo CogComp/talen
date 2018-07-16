@@ -33,6 +33,7 @@ def lines2json(lines):
 
     sents["sentenceEndPositions"] = sentends
     sents["score"] = 1.0
+    sents["generator"] = "txt2tajson.py"
     doc["sentences"] = sents
     doc["views"] = []
 

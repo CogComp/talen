@@ -10,7 +10,6 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.io.IOUtils;
 import edu.illinois.cs.cogcomp.core.io.LineIO;
 import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
-import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 //import edu.illinois.cs.cogcomp.wikirelation.core.CooccuranceMapLinker;
 import io.github.mayhewsw.*;
 import io.github.mayhewsw.Dictionary;
@@ -18,15 +17,12 @@ import io.github.mayhewsw.utils.HtmlGenerator;
 import io.github.mayhewsw.utils.SentenceCache;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.index.IndexNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
 import javax.servlet.http.HttpSession;
@@ -231,7 +227,7 @@ public class SentenceController {
                 View sents = ta.getView(ViewNames.SENTENCE);
                 talist.add(ta);
 
-                TextStatisticsController.updateCounts(Utils.getRomanTaToksIfPresent(ta));
+                TextStatisticsController.updateCounts(Utils.getRomanTaToks(ta));
 
                 // this will overwrite whatever was previously in the cache.
                 for (Constituent sent : sents.getConstituents()) {
@@ -866,14 +862,11 @@ public class SentenceController {
     public String toggleroman(@RequestParam(value="idlist[]") String[] idlist, Model model, HttpSession hs) throws Exception {
 
         SessionData sd = new SessionData(hs);
-        TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(idlist[0]);
 
         Boolean showroman = sd.showroman;
         showroman = !showroman;
         hs.setAttribute("showroman", showroman);
         sd.showroman = showroman;
-
 
         String query = "";
         String html = this.gethtml(idlist, query, model, hs);
