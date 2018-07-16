@@ -39,16 +39,30 @@ public class GeonamesLoader {
 
     private void load_namemap() {
         System.err.println("opening namedb..");
-        namedb = DBMaker.fileDB(new File(this.indexdir+"/namemap.db"))
-                .fileMmapEnable()
-                .closeOnJvmShutdown()
-                .readOnly()
-                .make();
+        try {
+            namedb = DBMaker.fileDB(new File(this.indexdir + "/namemap.db"))
+                    .fileMmapEnable()
+                    .closeOnJvmShutdown()
+                    .readOnly()
+                    .make();
+        } catch(Exception e){
+            namedb = DBMaker.tempFileDB()
+                    .fileMmapEnable()
+                    .closeOnJvmShutdown()
+                    .make();
+        }
 
-        namemap = namedb.hashMap("map")
-                .keySerializer(Serializer.INTEGER)
-                .valueSerializer(Serializer.STRING)
-                .open();
+        try{
+            namemap = namedb.hashMap("map")
+                    .keySerializer(Serializer.INTEGER)
+                    .valueSerializer(Serializer.STRING)
+                    .open();
+        } catch (Exception e){
+            namemap = namedb.hashMap("map")
+                    .keySerializer(Serializer.INTEGER)
+                    .valueSerializer(Serializer.STRING)
+                    .create();
+        }
     }
 
     public KBEntity get(int eid) throws NoSuchElementException{
