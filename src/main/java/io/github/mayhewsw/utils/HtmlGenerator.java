@@ -215,11 +215,11 @@ public class HtmlGenerator {
 
 		  String featureCodeName = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getFeatureCodeName();
 
-		  
+		  String countryCode = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getCountryCode();
 		  if (externalLink == null || externalLink == ""){
-		      feature = featureCodeName + "|" + type;
+		      feature = featureCodeName + "|" + type + "|" + countryCode;
 		  } else {
-		      feature = featureCodeName + "|" + type + "|" + externalLink;
+		      feature = featureCodeName + "|" + type + "|" +countryCode +"|"  +externalLink;
 		  }
 		  
                   id2feature.put(s, feature);

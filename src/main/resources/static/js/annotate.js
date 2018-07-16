@@ -182,10 +182,10 @@ $(document).ready(function() {
                     var id_name = key.split('|');
 		    var entity_val = json_entity_dict[key].split('|');
 		    var suffixes;
-		    if ((entity_val.length) == 3){
-			suffixes = entity_val[0] + " " + entity_val[1] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[2] + "\">Wiki</a>";
+		    if ((entity_val.length) == 4){
+			suffixes = entity_val[0] + " " + entity_val[1] + " " +entity_val[2] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[3] + "\">Wiki</a>";
 		    } else {
-			suffixes = entity_val[0] + " " + entity_val[1]
+			suffixes = entity_val[0] + " " + entity_val[1] + " " + entity_val[2];
 		    }
                   if(parseFloat(json_dict[key]) >= 1000.0){
                       out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + " kb_id:"+id_name[0]+ " " + suffixes + "</button>";
