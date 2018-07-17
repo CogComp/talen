@@ -79,6 +79,8 @@ public class ConfigFile extends Properties{
         String fname;
         if (mode.equals("document")) {
             fname = "doc-" + name + ".txt";
+        } else if (mode.equals("edl")){
+            fname = "edl-" + name + ".txt";
         } else {
             fname = "sent-" + name + ".txt";
         }
