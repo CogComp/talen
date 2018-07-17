@@ -68,6 +68,30 @@ will show up in the same sentence. If the annotator chooses to annotate
 Presumably these sentences will contain entities such as 'Wimbledon' and 'New York City'. In principle,
 this will continue until some cap on the number of entities has been reached.
 
+#### Using the sentence-based
+
+First, you need to download a corpus. We have used Hindi for this. Run:
+
+```bash
+$ (If you don't already have nltk) sudo pip install -U nltk 
+$ python -m nltk.downloader indian
+```
+
+Now convert this:
+```bash
+$ cd data
+$ python data/getindian.py
+$ cd ..
+```
+
+You'll notice that this created files in `data/txt/hindi` and in `data/tajson/hindi`. Now build the index:
+```bash
+$ mvn dependency:copy-dependencies
+$ ./scripts/buildindex.sh data/tajson/hindi/ data/index_hindi 
+```
+
+That's it! There is already a config file called `config/sent-Hindi.txt` that should get you started.
+
 
 ## Non-speaker Helps
 One major focus of the software is to allow non-speakers of a language to 
