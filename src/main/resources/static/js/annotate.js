@@ -207,7 +207,7 @@ $(document).ready(function() {
 
                 out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
                   out += "<input id='wiki-link' type=\"text\" value=\"Paste URL here\" onfocus=\"this.value = this.value=='Paste URL here'?'':this.value;\" onblur=\"this.value = this.value==''?'Paste URL here':this.value;\" class='popover-link'/>";
-                  out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Add link</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
+                  out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
                 return out;
               }
             },
