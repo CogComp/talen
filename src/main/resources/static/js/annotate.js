@@ -206,6 +206,8 @@ $(document).ready(function() {
                 }
 
                 out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
+                  out += "<input id='wiki-link' type=\"text\" value=\"Paste URL here\" onfocus=\"this.value = this.value=='Paste URL here'?'':this.value;\" onblur=\"this.value = this.value==''?'Paste URL here':this.value;\" class='popover-link'/>";
+                  out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Add link</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
                 return out;
               }
             },
@@ -365,6 +367,27 @@ $(document).ready(function() {
     // this runs when you click on a single button.
     $("body").on("click", '.popover button', function(event){
         var buttonvalue = $(this)[0].value;
+	var buttonid = $(this)[0].id
+        if(buttonvalue.startsWith("-1|thisisanewlink")){
+            bvalue = $("#wiki-link").val();
+
+            if(bvalue.startsWith("Paste URL")){
+                return
+            }
+            var entType = (document.getElementById("cons-" + range.start.toString() + "-" + (range.end + 1).toString()).className).split(" ");
+            $.ajax({
+                method: "GET",
+                url: "/edl/kbquery",
+                data:{qstring: bvalue, type: entType[0]}
+            }).done(function (msg){
+		console.log("Got this back: " + msg);
+		id_needed = "span-" + buttonid;
+		console.log("Id of span : " + id_needed);
+		$(document.getElementById(id_needed)).html(msg);
+            });
+	    return
+            //buttonvalue = "-1|" + bvalue;
+        }
 
         //var spanid = $(this).parents("[id^=popovertok]")[0].id;
 

@@ -780,6 +780,10 @@ public class EDLController {
 
         TextAnnotation ta = tas.get(idstring + ".json");
 
+        if(ta == null){
+            ta = tas.get(idstring);
+        }
+
         // cannot annotate across sentence boundaries. Return with no changes if this happens.
         View sents = ta.getView(ViewNames.SENTENCE);
         List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
@@ -860,7 +864,11 @@ public class EDLController {
 
                 String s = "None";
                 if(!label.equals(s)){
-                  lts.put(label, (double)(1 + lts.get(label)) * 1000);
+                    if(!lts.keySet().contains(label)){
+                        lts.put(label, (double)(1000));
+                    } else {
+                        lts.put(label, (double)(1 + lts.get(label)) * 1000);
+                    }
                 } else {
                   lts.put("NIL", (double)(1000));
                 }
@@ -1054,11 +1062,21 @@ public class EDLController {
         String ret = "";
         for(String sentid : sentids){
             TextAnnotation ta = sd.tas.get(sentid + ".json");
+            if(ta == null){
+                ta = sd.tas.get(sentid);
+            }
             String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
             ret += html + "\n";
         }
 
         return ret;
+    }
+
+    @RequestMapping(value = "/kbquery", method = RequestMethod.GET)
+    @ResponseBody
+    public String kbquery(@RequestParam(value = "qstring", required = true) String qstring, @RequestParam(value = "type", defaultValue = "TST") String type, Model model, HttpSession hs){
+
+        return HtmlGenerator.getHtmlFromKBQuery(qstring, type);
     }
 
 }

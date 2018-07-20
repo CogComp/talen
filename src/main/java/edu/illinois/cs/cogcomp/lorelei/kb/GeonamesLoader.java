@@ -35,7 +35,7 @@ public class GeonamesLoader {
 //        String kbfile = basepath + "il"+ilcode+"/source/kb/IL"+ilcode+"_kb/data/entities.tab";
     }
     DB namedb;
-    HTreeMap<Integer, String> namemap;
+    public HTreeMap<Integer, String> namemap;
 
     private void load_namemap() {
         System.err.println("opening namedb..");
