@@ -339,7 +339,13 @@ public class HtmlGenerator {
 
     public static String getHtmlFromKBQuery(String query, String type){
         System.out.println("Query: " + query + " Type: " + type);
-        LinkedHashMap<Integer, Double> results = db.retrieve(query, Arrays.asList(0, 1), type, db.maplist, 20);
+        LinkedHashMap<Integer, Double> results;
+	if (type.trim().equals("GPE") || type.trim().equals("LOC")){
+	    results = db.retrieve(query, Arrays.asList(0, 1), "LOC", db.maplist, 10);
+	    db.retrieve(query, Arrays.asList(0, 1), "GPE", db.maplist, 10).forEach(results::putIfAbsent);
+	} else {
+	    results = db.retrieve(query, Arrays.asList(0, 1), type, db.maplist, 20);
+	}
 	String html = "";
 	for(Integer result : results.keySet()){
 	    try{
@@ -349,8 +355,9 @@ public class HtmlGenerator {
 		String externalLink = entity.getExternalLink();
 		String featureCodeName = entity.getFeatureCodeName();
 		String countryCode = entity.getCountryCode();
+		String actualType = entity.getType();
 
-		String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
+		String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + actualType + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + actualType + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
 		html += "<button id='cand-" + result + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + result + "|" + entityName + "'>" + btval + "</button>";
 	    } catch (Exception e){
 		continue;
