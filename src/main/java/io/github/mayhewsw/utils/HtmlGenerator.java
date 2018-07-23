@@ -6,21 +6,18 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
-import edu.illinois.cs.cogcomp.lorelei.kb.MapDBMatcher;
+import edu.illinois.cs.cogcomp.lorelei.kb.KBSearch;
+import edu.illinois.cs.cogcomp.lorelei.kb.KBSearchInterface;
 import io.github.mayhewsw.Dictionary;
 import io.github.mayhewsw.SessionData;
 import io.github.mayhewsw.Suggestion;
 
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
-import java.io.IOException;
 import java.util.*;
 
 import edu.illinois.cs.cogcomp.lorelei.edl.KBEntity;
-import edu.illinois.cs.cogcomp.lorelei.kb.GeonamesLoader;
-import edu.illinois.cs.cogcomp.lorelei.kb.KBEntry;
 
 import org.json.JSONObject;
 
