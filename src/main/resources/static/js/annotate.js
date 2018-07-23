@@ -23,7 +23,6 @@ $(document).ready(function() {
     }
 
     fillunderlinerange();
-    console.log($(".candgen-list-hidden"));
 
     // This retrieves the text within a range. If the range
     // is empty, then it returns the empty string.
@@ -180,7 +179,6 @@ $(document).ready(function() {
                     json_dict = {};
                 }
                 var json_entity_dict = JSON.parse($(document.getElementById('candgen-entitytype')).html());
-                console.log(json_entity_dict);
 
                 var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>"
 
@@ -206,7 +204,7 @@ $(document).ready(function() {
                 }
 
                 out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
-                  out += "<input id='wiki-link' type=\"text\" value=\"Paste URL here\" onfocus=\"this.value = this.value=='Paste URL here'?'':this.value;\" onblur=\"this.value = this.value==''?'Paste URL here':this.value;\" class='popover-link'/>";
+                  out += "<input id='wiki-link' type=\"text\" value=\"Type URL or phrase here\" onfocus=\"this.value = this.value=='Type URL or phrase here'?'':this.value;\" onblur=\"this.value = this.value==''?'Type URL or phrase here':this.value;\" class='popover-link'/>";
                   out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
                 return out;
               }
@@ -380,9 +378,7 @@ $(document).ready(function() {
                 url: "/edl/kbquery",
                 data:{qstring: bvalue, type: entType[0]}
             }).done(function (msg){
-		console.log("Got this back: " + msg);
 		id_needed = "span-" + buttonid;
-		console.log("Id of span : " + id_needed);
 		$(document.getElementById(id_needed)).html(msg);
             });
 	    return
@@ -392,8 +388,6 @@ $(document).ready(function() {
         //var spanid = $(this).parents("[id^=popovertok]")[0].id;
 
         console.log(event);
-
-        console.log($(this).parents());
 
         //var sentid = $(this).parents(".card-body")[0].id;
         var sentid = range.id;
@@ -448,7 +442,6 @@ $(document).ready(function() {
         id_doc = sentid;
         for(i = startid; i <= endid; i++){
             id_final = "tok-" + id_doc +"-" + i.toString();
-            console.log("Tok id prasanna: " + id_final);
             $(document.getElementById(id_final)).addClass("underline");
         }
     }

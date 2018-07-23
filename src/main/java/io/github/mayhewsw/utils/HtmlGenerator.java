@@ -340,7 +340,6 @@ public class HtmlGenerator {
     public static String getHtmlFromKBQuery(String query, String type){
         System.out.println("Query: " + query + " Type: " + type);
         LinkedHashMap<Integer, Double> results = db.retrieve(query, Arrays.asList(0, 1), type, db.maplist, 20);
-        System.out.println("Query results: " + results.toString());
 	String html = "";
 	for(Integer result : results.keySet()){
 	    try{
@@ -357,7 +356,6 @@ public class HtmlGenerator {
 		continue;
 	    }
 	}
-	System.out.println(html);
         return html;
     }
 
