@@ -37,18 +37,7 @@ public class HtmlGenerator {
 //        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
 //    }
 
-    private static GeonamesLoader gl = new GeonamesLoader("9");
-    private static MapDBMatcher db;
-
-    static {
-        try {
-            db = new MapDBMatcher("9", Arrays.asList(0,1));
-            db.load_alldbs();
-        } catch (IOException e) {
-            e.printStackTrace();
-            db = null;
-        }
-    }
+    private static KBSearchInterface kb = new KBSearch();
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false);
@@ -209,23 +198,23 @@ public class HtmlGenerator {
                     try{
 		                int idEntity = Integer.parseInt(s.replaceAll("[^0-9]+", ""));
 		            } catch(Exception e){
-		                id2feature.put(s, "");
+		                id2feature.put(s, "||");
 		                continue;
 		            }
 
 		            String type="";
                     try{
-                        type = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
+                        type = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
                     } catch(Exception e){
-                        id2feature.put(s, "");
+                        id2feature.put(s, "||");
                         continue;
                     }
 
-		            String externalLink = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getExternalLink();
+		            String externalLink = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getExternalLink();
 
-		            String featureCodeName = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getFeatureCodeName();
+		            String featureCodeName = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getFeatureCodeName();
 
-		            String countryCode = gl.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getCountryCode();
+		            String countryCode = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getCountryCode();
 
 		            if (externalLink == null || externalLink == ""){
 		                feature = featureCodeName + "|" + type + "|" + countryCode;
@@ -339,23 +328,32 @@ public class HtmlGenerator {
 
     public static String getHtmlFromKBQuery(String query, String type){
         System.out.println("Query: " + query + " Type: " + type);
-        LinkedHashMap<Integer, Double> results = db.retrieve(query, Arrays.asList(0, 1), type, db.maplist, 20);
-	String html = "";
-	for(Integer result : results.keySet()){
-	    try{
-		KBEntity entity = gl.get(result);
-		String entityName = entity.getNameASCII();
-		String entityType = entity.getType();
-		String externalLink = entity.getExternalLink();
-		String featureCodeName = entity.getFeatureCodeName();
-		String countryCode = entity.getCountryCode();
+        Map<Integer, Double> results;
+        if(type.trim().equals("GPE") || type.trim().equals("LOC")){
+            results = kb.retrieve(query, Arrays.asList(0, 1), "GPE", 5);
+            kb.retrieve(query, Arrays.asList(0, 1), "LOC", 5).forEach(results::putIfAbsent);
+        } else {
+            results = kb.retrieve(query, Arrays.asList(0, 1), type, 10);
+        }
+        String html = "";
+        for(Integer result : results.keySet()){
+            try{
+                KBEntity entity = kb.get(result);
+                String entityName = entity.getNameASCII();
+                String entityType = entity.getType();
+                String externalLink = entity.getExternalLink();
+                String featureCodeName = entity.getFeatureCodeName();
+                String countryCode = entity.getCountryCode();
 
-		String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
-		html += "<button id='cand-" + result + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + result + "|" + entityName + "'>" + btval + "</button>";
-	    } catch (Exception e){
-		continue;
-	    }
-	}
+                String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
+                html += "<button id='cand-" + result + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + result + "|" + entityName + "'>" + btval + "</button>";
+            } catch (Exception e){
+                continue;
+            }
+        }
+        if(html.equals("")){
+            html = "<p>No result</p>";
+        }
         return html;
     }
 
