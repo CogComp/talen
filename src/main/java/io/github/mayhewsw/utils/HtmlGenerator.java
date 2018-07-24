@@ -341,8 +341,9 @@ public class HtmlGenerator {
                 String externalLink = entity.getExternalLink();
                 String featureCodeName = entity.getFeatureCodeName();
                 String countryCode = entity.getCountryCode();
+		String actualType = entity.getType();
 
-                String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + type + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
+                String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + actualType + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + actualType + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
                 html += "<button id='cand-" + result + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + result + "|" + entityName + "'>" + btval + "</button>";
             } catch (Exception e){
                 continue;
