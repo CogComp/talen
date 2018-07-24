@@ -369,7 +369,7 @@ $(document).ready(function() {
         if(buttonvalue.startsWith("-1|thisisanewlink")){
             bvalue = $("#wiki-link").val();
 
-            if(bvalue.startsWith("Paste URL")){
+            if(bvalue.startsWith("Type URL")){
                 return
             }
             var entType = (document.getElementById("cons-" + range.start.toString() + "-" + (range.end + 1).toString()).className).split(" ");
