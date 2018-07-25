@@ -12,6 +12,7 @@ public class Common {
 
     public static final String FOLDERTA = "ta";
     public static final String FOLDERCONLL = "conll";
+    public static final String FOLDERTAB = "tab";
 
 
     public static HashMap<String, ConfigFile> loadConfig() {

@@ -12,6 +12,7 @@ import edu.illinois.cs.cogcomp.core.utilities.StringUtils;
 import edu.illinois.cs.cogcomp.nlp.corpusreaders.CoNLLNerReader;
 import io.github.mayhewsw.*;
 import io.github.mayhewsw.Dictionary;
+import io.github.mayhewsw.utils.FileConverter;
 import io.github.mayhewsw.utils.HtmlGenerator;
 import io.github.mayhewsw.utils.Utils;
 import org.apache.lucene.analysis.Analyzer;
@@ -109,7 +110,7 @@ public class EDLController {
                 String file = files[i];
                 TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(folderurl + "/" + file, true);
                 if(!ta.hasView(ViewNames.NER_CONLL)){
-                    View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
+                    View ner = new View(ViewNames.NER_CONLL, "EDLController",ta,1.0);
                     ta.addView(ViewNames.NER_CONLL, ner);
                 }
 
@@ -119,6 +120,12 @@ public class EDLController {
             CoNLLNerReader cnl = new CoNLLNerReader(folderurl);
             while (cnl.hasNext()) {
                 TextAnnotation ta = cnl.next();
+                logger.info("Loading: " + ta.getId());
+                ret.put(ta.getId(), ta);
+            }
+        } else if (foldertype.equals(Common.FOLDERTAB)){
+            List<TextAnnotation> lst = FileConverter.fromTabSeparated(folderurl);
+            for(TextAnnotation ta: lst){
                 logger.info("Loading: " + ta.getId());
                 ret.put(ta.getId(), ta);
             }
@@ -136,7 +143,7 @@ public class EDLController {
 
         if ((new File(outfolder)).exists()) {
 
-            if (foldertype.equals(Common.FOLDERTA)) {
+            if (foldertype.equals(Common.FOLDERTA) || foldertype.equals(Common.FOLDERTAB)) {
                 File outf = new File(outfolder);
                 String[] files = outf.list();
                 int limit = Math.min(files.length, 300);
@@ -364,10 +371,15 @@ public class EDLController {
             logger.info("id is: " + taid);
 
             TreeMap<String, TextAnnotation> tas = sd.tas;
-            TextAnnotation taToSave = tas.get(taid + ".json");
-            String savepath = outpath + taid + ".json";
+            TextAnnotation taToSave = tas.get(taid );
+            String savepath = "";
+            if (taToSave == null){
+                taToSave = tas.get(taid + ".json");
+                savepath = outpath + taid + ".json";
+            }
+            if (savepath.equals("")){savepath = outpath + taid;}
 
-            if(foldertype.equals(Common.FOLDERTA)) {
+            if(foldertype.equals(Common.FOLDERTA) || foldertype.equals(Common.FOLDERTAB)) {
                 if(!IOUtils.exists(outpath)) {
                     IOUtils.mkdir(outpath);
                 }
@@ -857,21 +869,18 @@ public class EDLController {
             } else{
                 if(lts == null){ lts = new TreeMap<>(); }
                 for(String keys: lts.keySet()){
-                    if(lts.get(keys) >= 1000){
+                    if(lts.get(keys) >= 1000.0){
                       lts.put(keys, (lts.get(keys)/1000.0) - 1.0);
                     }
                 }
 
-                String s = "None";
-                if(!label.equals(s)){
-                    if(!lts.keySet().contains(label)){
-                        lts.put(label, (double)(1000));
-                    } else {
-                        lts.put(label, (double)(1 + lts.get(label)) * 1000);
-                    }
+
+                if(!lts.keySet().contains(label)){
+                    lts.put(label, (double)(1000));
                 } else {
-                  lts.put("NIL", (double)(1000));
+                    lts.put(label, (double)(1 + lts.get(label)) * 1000);
                 }
+
                 Constituent newc = new Constituent(lts, "CANDGEN", ta, span.getFirst(), span.getSecond());
                 candgen.addConstituent(newc);
                 logwrite(String.format("%s span (%s-%s) to label: %s", idstring, span.getFirst(),span.getSecond(), label), hs);

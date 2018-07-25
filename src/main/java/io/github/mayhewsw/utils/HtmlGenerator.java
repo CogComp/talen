@@ -178,7 +178,7 @@ public class HtmlGenerator {
             startoffset = sentspan.getFirst();
         }
 
-	Map<String, String> id2feature = new TreeMap<String, String>();
+	    Map<String, String> id2feature = new TreeMap<String, String>();
 
         for(Constituent c: candlist){
 
@@ -190,6 +190,8 @@ public class HtmlGenerator {
 
                 for(String s : labelScoreMap.keySet()){
                     labelScoreMapString.put(s, labelScoreMap.get(s).toString());
+
+                    System.out.println(s + " : " + labelScoreMap.get(s).toString());
 
                     String feature;
                     try{

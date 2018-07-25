@@ -1,5 +1,5 @@
 name	EnglishDefault
-folderpath	data/eng-conll/
-format	conll
-labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral
+folderpath	data/test/
+format	tab
+labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral MISC:lightgrey
 dict  dicts/dict.rw

@@ -180,32 +180,42 @@ $(document).ready(function() {
                 }
                 var json_entity_dict = JSON.parse($(document.getElementById('candgen-entitytype')).html());
 
-                var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>"
+                var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>";
+                var noneButtonPressed = false;
 
                 for(var key in json_dict){
-                    if(key == "NIL"){
+                    if(key.includes("None of the above")){
+                        if(json_dict[key] >= 1000.0){
+                        noneButtonPressed = true;
+                        }
                         continue;
                     }
+
                     var id_name = key.split('|');
 		            var entity_val = json_entity_dict[key].split('|');
-		            var suffixes;
+		            var suffixes = "";
 
-		            if ((entity_val.length) == 4){
-			            suffixes = entity_val[0] + " " + entity_val[1] + " " +entity_val[2] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[3] + "\">Wiki</a>";
-		            } else {
-			            suffixes = entity_val[0] + " " + entity_val[1] + " " + entity_val[2];
+		            if ((entity_val.length) == 4 && id_name[0] != "-1"){
+			            suffixes = " kb_id:" + id_name[0]+ " " + entity_val[0] + " " + entity_val[1] + " " +entity_val[2] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[3] + "\">Wiki</a>";
+		            } else if ((entity_val.length) == 3 && id_name[0] != "-1") {
+			            suffixes = " kb_id:" + id_name[0]+ " " + entity_val[0] + " " + entity_val[1] + " " + entity_val[2];
 		            }
 
                     if(parseFloat(json_dict[key]) >= 1000.0){
-                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + " kb_id:"+id_name[0]+ " " + suffixes + "</button>";
+                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + suffixes + "</button>";
                     } else{
-                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1]+" kb_id:"+id_name[0] + " "+ suffixes + "</button>";
+                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1] + suffixes + "</button>";
                     }
                 }
 
-                out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='None'>None of the above</button></div>"
-                  out += "<input id='wiki-link' type=\"text\" value=\"Type URL or phrase here\" onfocus=\"this.value = this.value=='Type URL or phrase here'?'':this.value;\" onblur=\"this.value = this.value==''?'Type URL or phrase here':this.value;\" class='popover-link'/>";
-                  out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
+                if(!noneButtonPressed){
+                    out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|None of the above'>None of the above</button></div>";
+                } else {
+                    out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='-1|None of the above'>None of the above</button>";
+                }
+
+                out += "<br><input id='wiki-link' type=\"text\" value=\"Type URL or phrase here\" onfocus=\"this.value = this.value=='Type URL or phrase here'?'':this.value;\" onblur=\"this.value = this.value==''?'Type URL or phrase here':this.value;\" class='popover-link'/>";
+                out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
                 return out;
               }
             },
@@ -365,7 +375,7 @@ $(document).ready(function() {
     // this runs when you click on a single button.
     $("body").on("click", '.popover button', function(event){
         var buttonvalue = $(this)[0].value;
-	var buttonid = $(this)[0].id
+	    var buttonid = $(this)[0].id
         if(buttonvalue.startsWith("-1|thisisanewlink")){
             bvalue = $("#wiki-link").val();
 
@@ -378,10 +388,10 @@ $(document).ready(function() {
                 url: "/edl/kbquery",
                 data:{qstring: bvalue, type: entType[0]}
             }).done(function (msg){
-		id_needed = "span-" + buttonid;
-		$(document.getElementById(id_needed)).html(msg);
+		        id_needed = "span-" + buttonid;
+		        $(document.getElementById(id_needed)).html(msg);
             });
-	    return
+	        return
             //buttonvalue = "-1|" + bvalue;
         }
 
