@@ -1,5 +1,5 @@
 name	EnglishDefault
 folderpath	data/test/
 format	tab
-labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral MISC:lightgrey
+labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral
 dict  dicts/dict.rw

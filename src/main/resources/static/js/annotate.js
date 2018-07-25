@@ -215,7 +215,7 @@ $(document).ready(function() {
                 }
 
                 out += "<br><input id='wiki-link' type=\"text\" value=\"Type URL or phrase here\" onfocus=\"this.value = this.value=='Type URL or phrase here'?'':this.value;\" onblur=\"this.value = this.value==''?'Type URL or phrase here':this.value;\" class='popover-link'/>";
-                out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
+                out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn-md btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
                 return out;
               }
             },

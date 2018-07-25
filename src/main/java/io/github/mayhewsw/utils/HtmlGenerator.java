@@ -191,8 +191,6 @@ public class HtmlGenerator {
                 for(String s : labelScoreMap.keySet()){
                     labelScoreMapString.put(s, labelScoreMap.get(s).toString());
 
-                    System.out.println(s + " : " + labelScoreMap.get(s).toString());
-
                     String feature;
                     try{
 		                int idEntity = Integer.parseInt(s.replaceAll("[^0-9]+", ""));
