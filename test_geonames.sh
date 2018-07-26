@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 CP="./config/:./target/classes/:./target/dependency/*"
 
 MEMORY="-Xmx30g"
