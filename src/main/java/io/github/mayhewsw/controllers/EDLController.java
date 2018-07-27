@@ -917,6 +917,9 @@ public class EDLController {
 
 
         TextAnnotation ta = tas.get(idstring + ".json");
+        if(ta == null){
+            ta = tas.get(idstring);
+        }
 
         // String[] spantoks = ta.getTokensInSpan(tokspan.getFirst(), tokspan.getSecond());
         // String text = StringUtils.join(" ", spantoks);
@@ -959,6 +962,9 @@ public class EDLController {
         TreeMap<String, TextAnnotation> tas = sd.tas;
         io.github.mayhewsw.Dictionary dict = sd.dict;
         TextAnnotation ta = tas.get(idstring + ".json");
+        if(ta == null){
+            ta = tas.get(idstring);
+        }
 
         Boolean showdefs = sd.showdefs;
 
@@ -980,6 +986,9 @@ public class EDLController {
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
         TextAnnotation ta = tas.get(idlist[0] + ".json");
+        if(ta == null){
+            ta = tas.get(idlist[0]);
+        }
 
         Boolean showdefs = sd.showdefs;
         showdefs = !showdefs;
@@ -995,7 +1004,10 @@ public class EDLController {
 
         SessionData sd = new SessionData(hs);
         TreeMap<String, TextAnnotation> tas = sd.tas;
-        TextAnnotation ta = tas.get(idlist[0] + ".json");
+        TextAnnotation ta = tas.get(idlist[0]);
+        if(ta == null){
+            ta = tas.get(idlist[0] + ".json");
+        }
 
         Boolean showroman = sd.showroman;
         showroman = !showroman;
