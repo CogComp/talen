@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/edl/")
 public class EDLController {
 
-    private static Logger logger = LoggerFactory.getLogger(DocumentController.class);
+    private static Logger logger = LoggerFactory.getLogger(EDLController.class);
 
     // These are all common objects that don't change user by user.
     //private HashMap<String, Properties> datasets;
