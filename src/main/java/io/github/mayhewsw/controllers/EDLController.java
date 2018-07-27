@@ -262,9 +262,9 @@ public class EDLController {
             labels.add(sl[0]);
             csslines.add("." + sl[0] + "{ background-color: " + sl[1] + "; }");
         }
-        if(!labels.contains("MISC")) {
-            labels.add("MISC");
-            csslines.add(".MISC{ background-color: lightgray; }" );
+        if(!labels.contains("MENTION")) {
+            labels.add("MENTION");
+            csslines.add(".MENTION{ background-color: lightgray; }" );
         }
         logger.debug("using labels: " + labels.toString());
         LineIO.write("src/main/resources/static/css/labels.css", csslines);

@@ -1,5 +1,5 @@
 name	EnglishDefault
-folderpath	data/test/
+folderpath	data/eng-tas/
 format	tab
 labels	PER:yellow ORG:lightblue LOC:greenyellow GPE:coral
 dict  dicts/dict.rw
