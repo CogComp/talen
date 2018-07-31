@@ -323,6 +323,14 @@ public class HtmlGenerator {
         return out;
     }
 
+    /**
+     * Given a query and its type, returns all the buttons to be displayed to the user in HTML format
+     *
+     * @param query 
+     * @param type
+     *
+     * @return
+     * **/
     public static String getHtmlFromKBQuery(String query, String type){
         System.out.println("Query: " + query + " Type: " + type);
         Map<Integer, Double> results;

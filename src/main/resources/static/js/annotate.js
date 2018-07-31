@@ -46,6 +46,7 @@ $(document).ready(function() {
         }
     }
 
+    //adds the texts that are already annotated to a "bold" set.
     function fillunderlinerange(){
       for(i = 0; i < $(".candgen-list-hidden").length; i++){
           cand_dict = JSON.parse($(".candgen-list-hidden").get(i).textContent);
@@ -165,7 +166,7 @@ $(document).ready(function() {
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
               } else {
-
+                // retreive all candidates for this token.
                 var raw_id = $(this)[0].id.split('-')
                 var end = parseInt($(this)[0].closest('.cons').id.split('-')[2]) - 1;
                 var start = parseInt($(this)[0].closest('.cons').id.split('-')[1]);
@@ -180,6 +181,8 @@ $(document).ready(function() {
                 }
                 var json_entity_dict = JSON.parse($(document.getElementById('candgen-entitytype')).html());
 
+                //Done obtaining candidates. For each candidate, create a button includinge "None of the above" button
+                //Also include the KB search option
                 var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>";
                 var noneButtonPressed = false;
 
@@ -376,9 +379,11 @@ $(document).ready(function() {
     $("body").on("click", '.popover button', function(event){
         var buttonvalue = $(this)[0].value;
 	    var buttonid = $(this)[0].id
+	    //if KB search is done
         if(buttonvalue.startsWith("-1|thisisanewlink")){
             bvalue = $("#wiki-link").val();
 
+            //Search button pressed without typing anything
             if(bvalue.startsWith("Type URL")){
                 return
             }
@@ -392,14 +397,10 @@ $(document).ready(function() {
 		        $(document.getElementById(id_needed)).html(msg);
             });
 	        return
-            //buttonvalue = "-1|" + bvalue;
         }
-
-        //var spanid = $(this).parents("[id^=popovertok]")[0].id;
 
         console.log(event);
 
-        //var sentid = $(this).parents(".card-body")[0].id;
         var sentid = range.id;
 
 
@@ -448,6 +449,7 @@ $(document).ready(function() {
         });
     };
 
+    //amkes the current token bold
     function underlinerange(sentid, startid, endid){
         id_doc = sentid;
         for(i = startid; i <= endid; i++){

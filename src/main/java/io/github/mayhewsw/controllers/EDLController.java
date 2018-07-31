@@ -391,10 +391,6 @@ public class EDLController {
             }else if(foldertype.equals(Common.FOLDERCONLL)) {
                 CoNLLNerReader.TaToConll(Collections.singletonList(taToSave), outpath);
             }
-
-            //String config = sd.prop.getProperty("nerconfig");
-            //Sandbox.TrainAndAnnotate(config, outpath, tas);
-
         }
 
         String indexDir = sd.prop.getProperty("indexDir");
@@ -521,19 +517,6 @@ public class EDLController {
         return "redirect:/";
     }
 
-//    @RequestMapping(value="/logout")
-//    public String logout(HttpSession hs){
-//        logger.info("Logging out...");
-////        hs.removeAttribute("username");
-////        hs.removeAttribute("dataname");
-////        hs.removeAttribute("tas");
-//
-//        // I think this is preferable.
-//        hs.invalidate();
-//
-//        return "redirect:/";
-//    }
-
     @RequestMapping(value="/search", method=RequestMethod.GET)
     public String search(@RequestParam(value="query", required=true) String query, HttpSession hs, Model model) throws IOException, ParseException {
         SessionData sd = new SessionData(hs);
@@ -612,7 +595,6 @@ public class EDLController {
 
         IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(sd.ramDirectory));
 
-        //Query q = new QueryParser("body", analyzer).parse("\"" + query + "\"*");
         Query q = new PrefixQuery(new Term("body", query));
 
         TopScoreDocCollector collector = TopScoreDocCollector.create(20);
@@ -921,34 +903,6 @@ public class EDLController {
             ta = tas.get(idstring);
         }
 
-        // String[] spantoks = ta.getTokensInSpan(tokspan.getFirst(), tokspan.getSecond());
-        // String text = StringUtils.join(" ", spantoks);
-        //
-        // View ner = ta.getView(ViewNames.NER_CONLL);
-        // List<Constituent> lc = ner.getConstituentsCoveringSpan(tokspan.getFirst(), tokspan.getSecond());
-        //
-        // if(lc.size() > 0) {
-        //     Constituent oldc = lc.get(0);
-        //
-        //     int origstart = oldc.getStartSpan();
-        //     int origend = oldc.getEndSpan();
-        //     String origlabel = oldc.getLabel();
-        //     ner.removeConstituent(oldc);
-        //
-        //     if(origstart != tokspan.getFirst()){
-        //         // this means last token is being changed.
-        //         Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, origstart, tokspan.getFirst());
-        //         ner.addConstituent(newc);
-        //     }else if(origend != tokspan.getSecond()){
-        //         // this means first token is being changed.
-        //         Constituent newc = new Constituent(origlabel, ViewNames.NER_CONLL, ta, tokspan.getSecond(), origend);
-        //         ner.addConstituent(newc);
-        //     }
-        // }
-
-        // TODO: remove this because it is slow!!!
-        //updateallpatterns(sd);
-
         String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
         return out;
     }
@@ -967,13 +921,6 @@ public class EDLController {
         }
 
         Boolean showdefs = sd.showdefs;
-
-        // View ner = ta.getView(ViewNames.NER_CONLL);
-        // //ner.removeAllConsituents();
-        //
-        // for(Constituent c : ner.getConstituents()){
-        //     ner.removeConstituent(c);
-        // }
 
         String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
         return out;
@@ -1097,6 +1044,14 @@ public class EDLController {
         return ret;
     }
 
+    /**
+     * Given a query and its type, returns all the buttons to be displayed to the user in HTML format
+     *
+     * @param qstring
+     * @param type
+     *
+     * @return
+     * **/
     @RequestMapping(value = "/kbquery", method = RequestMethod.GET)
     @ResponseBody
     public String kbquery(@RequestParam(value = "qstring", required = true) String qstring, @RequestParam(value = "type", defaultValue = "TST") String type, Model model, HttpSession hs){
