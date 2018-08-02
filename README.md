@@ -5,7 +5,7 @@
 
 # TALEN: Tool for Annotation of Low-resource ENtities
 
-A lightweight web-based tool for annotating word sequences.
+A lightweight web-based tool for annotating word sequences. This branch (edl) was created by [psanna77](https://github.com/psanna77). It is mostly compatible, but not quite.
 
 ![Screenshot of web interface](/src/main/resources/static/img/selection.png?raw=true "Screenshot")
 
