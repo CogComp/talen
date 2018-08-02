@@ -14,6 +14,7 @@ public class Common {
     public static final String FOLDERTAJSON = "tajson";
     public static final String FOLDERCOLUMN = "column";
     public static final String FOLDERCONLL = "conll";
+    public static final String FOLDERTAB = "tab";
 
 
     public static HashMap<String, ConfigFile> loadConfig() {
@@ -27,7 +28,7 @@ public class Common {
         for(File f : configfiles){
             if(f.getName().endsWith("~")) continue;
 
-            if(f.getName().startsWith("doc-") || f.getName().startsWith("sent-")) {
+            if(f.getName().startsWith("doc-") || f.getName().startsWith("sent-") || f.getName().startsWith("edl-")) {
 
                 System.out.println(f);
                 ConfigFile c = new ConfigFile();

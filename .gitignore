@@ -32,3 +32,6 @@ hs_err_pid*
 data/train*
 wishlist.txt
 *lbjava*
+
+# databases
+*.db

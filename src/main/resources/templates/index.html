@@ -61,6 +61,7 @@
                                             <select class="custom-select" id="inputMode" th:field="*{mode}">
                                                 <option value="document">Document</option>
                                                 <option value="sentence">Sentence</option>
+                                                <option value="edl">EDL</option>
                                             </select>
                                         </div>
                                     </div>
@@ -127,7 +128,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-2"></div>
+            <!--<div class="col-md-2"></div>-->
 
             <div class="col-md-4">
 
@@ -165,7 +166,22 @@
                 </div>
             </div>
 
-            <div class="col-md-2"></div>
+            <div class="col-md-4">
+
+
+                <div class="card" style="width: 18rem;">
+                    <div class="card-header">
+                        EDL options:
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        <a th:each="dataname : ${session.datasets.keySet()}" th:if="${dataname.startsWith('edl')}" href="#" th:href="@{/edl/loaddata(dataname=${dataname})}" class="list-group-item list-group-item-action"  th:text="${dataname}"></a>
+                        <a href="#" class="list-group-item" data-toggle="modal" data-target="#exampleModal">Add new...</a>
+                    </div>
+                </div>
+            </div>
+
+            <!--<div class="col-md-1"></div>-->
 
         </div>
     </div>

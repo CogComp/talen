@@ -15,11 +15,14 @@ $(document).ready(function() {
 
     var highlighting = false;
     var range = {start:-1, end:-1, id:""};
+    var underlined_range = [];
 
     function resetrange(){
         range = {start:-1, end:-1, id:""};
         highlightrange();
     }
+
+    fillunderlinerange();
 
     // This retrieves the text within a range. If the range
     // is empty, then it returns the empty string.
@@ -41,6 +44,22 @@ $(document).ready(function() {
         }else{
             return "";
         }
+    }
+
+    //adds the texts that are already annotated to a "bold" set.
+    function fillunderlinerange(){
+      for(i = 0; i < $(".candgen-list-hidden").length; i++){
+          cand_dict = JSON.parse($(".candgen-list-hidden").get(i).textContent);
+          for(var keys in cand_dict){
+            if(parseFloat(cand_dict[keys]) >= 1000.0){
+                id_list = $(".candgen-list-hidden").get(i).id.split('-');
+
+                var ranges = {start:parseInt(id_list[3]), end:parseInt(id_list[4]), id:id_list[2]};
+                console.log(ranges);
+                underlined_range.push($.extend(true, {}, ranges));
+            }
+          }
+      }
     }
 
     // This returns a list of all words in the document.
@@ -110,6 +129,12 @@ $(document).ready(function() {
             ret = true;
         }
 
+        if(controller.startsWith('edl')){
+          var id_needed = $(document.getElementById(id))[0].closest('.cons').id.split('-');
+          range.start = parseInt(id_needed[1]);
+          range.end = parseInt(id_needed[2]) - 1;
+        }
+
         highlightrange();
 
         return ret;
@@ -136,14 +161,71 @@ $(document).ready(function() {
         $("[id^=tok]").popover({
             placement: "bottom",
             content: function () {
+              if(controller.startsWith('doc')){
                 var html = $("#buttons").html();
                 var out = " <div id='popover" + $(this)[0].id + "'>" + html + "</div>";
                 return out;
+              } else {
+                // retreive all candidates for this token.
+                var raw_id = $(this)[0].id.split('-')
+                var end = parseInt($(this)[0].closest('.cons').id.split('-')[2]) - 1;
+                var start = parseInt($(this)[0].closest('.cons').id.split('-')[1]);
+                raw_id[2] = (start).toString() + '-' + (end).toString();
+
+                var id_tok = "candgen-" + raw_id.join("-");
+                var json_dict;
+                try{
+                    json_dict = JSON.parse($(document.getElementById(id_tok)).html());
+                } catch(err){
+                    json_dict = {};
+                }
+                var json_entity_dict = JSON.parse($(document.getElementById('candgen-entitytype')).html());
+
+                //Done obtaining candidates. For each candidate, create a button includinge "None of the above" button
+                //Also include the KB search option
+                var out = " <div id='popover-" + $(this)[0].id + "' class='candgen-div'>";
+                var noneButtonPressed = false;
+
+                for(var key in json_dict){
+                    if(key.includes("None of the above")){
+                        if(json_dict[key] >= 1000.0){
+                        noneButtonPressed = true;
+                        }
+                        continue;
+                    }
+
+                    var id_name = key.split('|');
+		            var entity_val = json_entity_dict[key].split('|');
+		            var suffixes = "";
+
+		            if ((entity_val.length) == 4 && id_name[0] != "-1"){
+			            suffixes = " kb_id:" + id_name[0]+ " " + entity_val[0] + " " + entity_val[1] + " " +entity_val[2] + " <a target=\"_blank\" class=\"popover-link\" href=\"" + entity_val[3] + "\">Wiki</a>";
+		            } else if ((entity_val.length) == 3 && id_name[0] != "-1") {
+			            suffixes = " kb_id:" + id_name[0]+ " " + entity_val[0] + " " + entity_val[1] + " " + entity_val[2];
+		            }
+
+                    if(parseFloat(json_dict[key]) >= 1000.0){
+                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='" + key + "'>" + id_name[1] + suffixes + "</button>";
+                    } else{
+                        out += "<button id='cand-"+ id_name[0] + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + key + "'>" + id_name[1] + suffixes + "</button>";
+                    }
+                }
+
+                if(!noneButtonPressed){
+                    out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='-1|None of the above'>None of the above</button></div>";
+                } else {
+                    out += "<button id='cand-NIL-"+ $(this)[0].id + "' class='candgen-btn labelbutton btn btn-outline-secondary top-user-choice' value='-1|None of the above'>None of the above</button>";
+                }
+
+                out += "<br><input id='wiki-link' type=\"text\" value=\"Type URL or phrase here\" onfocus=\"this.value = this.value=='Type URL or phrase here'?'':this.value;\" onblur=\"this.value = this.value==''?'Type URL or phrase here':this.value;\" class='popover-link'/>";
+                out += "<button id='cand-WIKILINK-"+ $(this)[0].id +"' class='candgen-btn labelbutton btn-md btn-outline-secondary' value='-1|thisisanewlink'>Search KB</button><span id='span-cand-WIKILINK-"+$(this)[0].id+"'></span></div>"
+                return out;
+              }
             },
             title: function () {
                 var text = gettextinrange(true);
-                var link = "<a class='search' href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\">Google</a>"
-                return text + " (" + link + ")";
+                var link = "<a href=\"https://www.google.com/search?q=" + gettextinrange(true) + "\" target=\"_blank\" class=\"popover-link\">Google</a>";
+                return text + " (" + link + " )";
             },
             html: true,
             trigger: "focus",
@@ -160,9 +242,8 @@ $(document).ready(function() {
 
         // click on anything but a word, and they hide.
         $(document).mousedown(function(e){
-            console.log(e);
-            var hasclass = $(e.target).hasClass("labelbutton") || $(e.target).hasClass("search");
-            if(!e.target.id == "submitdict" && !e.target.id.startsWith("tok") && !hasclass && !(e.target.tagName == "MARK")) {
+            var hasclass = $(e.target).hasClass("labelbutton") || $(e.target).hasClass("popover-link");
+            if(!e.target.id.startsWith("tok") && !hasclass && !(e.target.tagName == "MARK")) {
                 console.log("extraneous click");
                 $("[id^=tok]").popover("hide");
                 resetrange();
@@ -239,6 +320,10 @@ $(document).ready(function() {
             removelabel(span);
         });
 
+        fillunderlinerange();
+        underlined_range.forEach(function(ranges){
+            underlinerange(ranges.id, ranges.start, ranges.end);
+        });
     }
 
     loadtok();
@@ -312,14 +397,29 @@ $(document).ready(function() {
     // this runs when you click on a single button.
     $("body").on("click", '.popover button', function(event){
         var buttonvalue = $(this)[0].value;
+	    var buttonid = $(this)[0].id
+	    //if KB search is done
+        if(buttonvalue.startsWith("-1|thisisanewlink")){
+            bvalue = $("#wiki-link").val();
 
-        //var spanid = $(this).parents("[id^=popovertok]")[0].id;
+            //Search button pressed without typing anything
+            if(bvalue.startsWith("Type URL")){
+                return
+            }
+            var entType = (document.getElementById("cons-" + range.start.toString() + "-" + (range.end + 1).toString()).className).split(" ");
+            $.ajax({
+                method: "GET",
+                url: "/edl/kbquery",
+                data:{qstring: bvalue, type: entType[0]}
+            }).done(function (msg){
+		        id_needed = "span-" + buttonid;
+		        $(document.getElementById(id_needed)).html(msg);
+            });
+	        return
+        }
 
         console.log(event);
 
-        console.log($(this).parents());
-
-        //var sentid = $(this).parents(".card-body")[0].id;
         var sentid = range.id;
 
 
@@ -330,15 +430,18 @@ $(document).ready(function() {
         var startid = "tok-" + range.start;
         var endid = "tok-" + (range.end+1);
 
-        if(!event.target.id=="submitdict"){
-            $("[id^=tok]").popover("hide");
+        var start = range.start;
+        var end = range.end;
 
-            resetrange();
-            showtopstats();
+        $("[id^=tok]").popover("hide");
+        underlined_range.push($.extend(true, {}, range));
+        resetrange();
+        showtopstats();
 
-            addlabel(sentid, startid, endid, buttonvalue);
-        }
-        
+        resetrange();
+        showtopstats();
+
+        addlabel(sentid, startid, endid, buttonvalue);
     });
 
     $("body").on("click", '#submitdict', submitdict);
@@ -367,6 +470,15 @@ $(document).ready(function() {
             refreshsents();
         });
     };
+
+    //amkes the current token bold
+    function underlinerange(sentid, startid, endid){
+        id_doc = sentid;
+        for(i = startid; i <= endid; i++){
+            id_final = "tok-" + id_doc +"-" + i.toString();
+            $(document.getElementById(id_final)).addClass("underline");
+        }
+    }
 
 
 
