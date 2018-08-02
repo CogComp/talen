@@ -6,13 +6,18 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.SpanLabelView;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
+import edu.illinois.cs.cogcomp.lorelei.kb.KBSearch;
+import edu.illinois.cs.cogcomp.lorelei.kb.KBSearchInterface;
 import io.github.mayhewsw.Dictionary;
 
 import org.apache.commons.lang3.StringUtils;
 
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+import edu.illinois.cs.cogcomp.lorelei.edl.KBEntity;
+
+import org.json.JSONObject;
 
 /**
  * Created by stephen on 8/31/17.
@@ -24,6 +29,8 @@ public class HtmlGenerator {
 //    public static String getHTMLfromTA(TextAnnotation ta, boolean showdefs) {
 //        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", null, showdefs);
 //    }
+
+    private static KBSearchInterface kb = new KBSearch();
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
         return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false, false);
@@ -130,15 +137,87 @@ public class HtmlGenerator {
 
         String html = StringUtils.join(text, " ");
 
+        View candgen = null;
+        if(ta.hasView("CANDGEN")){
+          candgen = ta.getView("CANDGEN");
+        } else {
+          candgen = new SpanLabelView("CANDGEN", ta);
+          ta.addView("CANDGEN", candgen);
+        }
+
+        List<Constituent> candlist;
+        if(sentspan.getFirst() == -1){
+            candlist = candgen.getConstituents();
+            startoffset = 0;
+        }else {
+            candlist = candgen.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            startoffset = sentspan.getFirst();
+        }
+
+	    Map<String, String> id2feature = new TreeMap<String, String>();
+
+        for(Constituent c: candlist){
+
+              Map<String, Double> labelScoreMap = c.getLabelsToScores();
+              TreeMap<String, String> labelScoreMapString = new TreeMap<>();
+              
+
+              if(labelScoreMap != null){
+
+                for(String s : labelScoreMap.keySet()){
+                    labelScoreMapString.put(s, labelScoreMap.get(s).toString());
+
+                    String feature;
+                    try{
+		                int idEntity = Integer.parseInt(s.replaceAll("[^0-9]+", ""));
+		            } catch(Exception e){
+		                id2feature.put(s, "||");
+		                continue;
+		            }
+
+		            String type="";
+                    try{
+                        type = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getType();
+                    } catch(Exception e){
+                        id2feature.put(s, "||");
+                        continue;
+                    }
+
+		            String externalLink = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getExternalLink();
+
+		            String featureCodeName = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getFeatureCodeName();
+
+		            String countryCode = kb.get(Integer.parseInt(s.replaceAll("[^0-9]+", ""))).getCountryCode();
+
+		            if (externalLink == null || externalLink == ""){
+		                feature = featureCodeName + "|" + type + "|" + countryCode;
+		            } else {
+		                feature = featureCodeName + "|" + type + "|" +countryCode +"|"  +externalLink;
+		            }
+		  
+                    id2feature.put(s, feature);
+                }
+                
+              }
+
+              String jsonString  = (labelScoreMap == null) ? "{}" : new JSONObject(labelScoreMapString).toString();
+
+              int end = c.getEndSpan() - startoffset;
+              int start = c.getStartSpan() - startoffset;
+              html += String.format("<span id='candgen-tok-%s-%d-%d' class='candgen-list-hidden' hidden>", id, start, end - 1) + jsonString + "</span>";
+
+        }
+
+	    String jsonS  =  new JSONObject(id2feature).toString();
+	    html += "<span id='candgen-entitytype' class='candgen-hidden' hidden>" + jsonS + "</span>";
+
         String htmltemplate = "<div class=\"card\">" +
                     "<div class=\"card-header\">%s</div>" +
                     "<div class=\"card-body text\" dir=\"auto\" id=%s>%s</div></div>";
         String out = String.format(htmltemplate, id, id, html) + "\n";
 
-
         return out;
     }
-
 
     /**
      * Given a sentence, produce the HTML for display. .
@@ -273,85 +352,44 @@ public class HtmlGenerator {
         return out;
     }
 
+    /**
+     * Given a query and its type, returns all the buttons to be displayed to the user in HTML format
+     *
+     * @param query 
+     * @param type
+     *
+     * @return
+     * **/
+    public static String getHtmlFromKBQuery(String query, String type){
+        System.out.println("Query: " + query + " Type: " + type);
+        Map<Integer, Double> results;
+        if(type.trim().equals("GPE") || type.trim().equals("LOC")){
+            results = kb.retrieve(query, Arrays.asList(0, 1), "GPE", 5);
+            kb.retrieve(query, Arrays.asList(0, 1), "LOC", 5).forEach(results::putIfAbsent);
+        } else {
+            results = kb.retrieve(query, Arrays.asList(0, 1), type, 10);
+        }
+        String html = "";
+        for(Integer result : results.keySet()){
+            try{
+                KBEntity entity = kb.get(result);
+                String entityName = entity.getNameASCII();
+                String entityType = entity.getType();
+                String externalLink = entity.getExternalLink();
+                String featureCodeName = entity.getFeatureCodeName();
+                String countryCode = entity.getCountryCode();
+		String actualType = entity.getType();
 
-//    /**
-//     * Given a TA, this returns the HTML string.
-//     * @param
-//     * @return
-//     */
-//    public static String getHTMLfromTA_OLD(TextAnnotation ta, SessionData sd){
-//
-//        View ner = ta.getView(ViewNames.NER_CONLL);
-//        View sents = ta.getView(ViewNames.SENTENCE);
-//
-//        String[] text = ta.getTokenizedText().split(" ");
-//
-//        ArrayList<String> suffixes = sd.suffixes;
-//
-//        if(suffixes == null){
-//            new ArrayList<>();
-//        }else{
-//            suffixes.sort((String s1, String s2)-> s2.length()-s1.length());
-//        }
-//
-//        // add spans to every word that is not a constituent.
-//        for(int t = 0; t < text.length; t++){
-//            String def = null;
-//            if(sd.dict != null && sd.dict.containsKey(text[t])){
-//                def = sd.dict.get(text[t]).get(0);
-//            }
-//
-//            for(String suffix : suffixes){
-//                if(text[t].endsWith(suffix)){
-//                    //System.out.println(text[t] + " ends with " + suffix);
-//                    text[t] = text[t].substring(0, text[t].length()-suffix.length()) + "<span class='suffix'>" + suffix + "</span>";
-//                    break;
-//                }
-//            }
-//
-//            if(sd.showdefs && def != null) {
-//                text[t] = "<span class='token pointer def' id='tok-"+ t + "'>" + def + "</span>";
-//            }else{
-//                text[t] = "<span class='token pointer' id='tok-" + t + "'>" + text[t] + "</span>";
-//            }
-//        }
-//
-//        for(Constituent c : ner.getConstituents()){
-//
-//            int start = c.getStartSpan();
-//            int end = c.getEndSpan();
-//
-//            // important to also include 'cons' class, as it is a keyword in the html
-//            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
-//            text[end-1] += "</span>";
-//        }
-//
-//        List<Suggestion> suggestions = getdocsuggestions(ta, sd);
-//
-//        for(Suggestion s : suggestions){
-//
-//            int start = s.getStartSpan();
-//            int end = s.getEndSpan();
-//
-//            // don't suggest spans that cover already tagged areas.
-//            if(ner.getConstituentsCoveringSpan(start, end).size() > 0) continue;
-//
-//            System.out.println(start + " " + end + ": " + s.reason + " " + s);
-//
-//            // important to also include 'cons' class, as it is a keyword in the html
-//            text[start] = String.format("<span class='pointer suggestion' data-toggle=\"tooltip\" title='%s' id='cons-%d-%d'>%s", s.reason, start, end, text[start]);
-//            text[end-1] += "</span>";
-//        }
-//
-//        for(Constituent c : sents.getConstituents()){
-//            int start = c.getStartSpan();
-//            int end = c.getEndSpan();
-//            text[start] = "<p>" + text[start];
-//            text[end-1] += "</p>";
-//        }
-//
-//        String out = StringUtils.join("", text);
-//        return out;
-//    }
+                String btval = externalLink == null ? entityName + " kb_id: " + result  + " " + featureCodeName + " " + actualType + " " + countryCode : entityName + " kb_id: " + result  + " " + featureCodeName + " " + actualType + " " + countryCode + " <a target='_blank' class='popover-link' href='" + externalLink + "'>Wiki</a>";
+                html += "<button id='cand-" + result + "' class='candgen-btn labelbutton btn btn-outline-secondary' value='" + result + "|" + entityName + "'>" + btval + "</button>";
+            } catch (Exception e){
+                continue;
+            }
+        }
+        if(html.equals("")){
+            html = "<p>No result</p>";
+        }
+        return html;
+    }
 
 }

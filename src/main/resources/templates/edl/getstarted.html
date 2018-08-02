@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.thymeleaf.org" layout:decorate="~{edl/doc-base}">
+<head>
+    <title>Documents</title>
+</head>
+<body>
+
+
+
+
+<div layout:fragment="content">
+    <div class="container">
+        <script>
+            $(document).ready(function($) {
+                $(".clickable-row").click(function() {
+                    window.location = $(this).data("href");
+                });
+            });
+        </script>
+
+
+        <h3>Let's get started</h3>
+
+        <div class="card-deck">
+
+            <div class="card">
+                <div class="card-header">
+                    Info
+                </div>
+                <div class="card-body">
+                    <p class="card-text">Green rows are documents you have seen and saved. Click on a row to see that document.</p>
+
+                </div>
+            </div>
+
+            <div th:if="${stats != null}" class="card">
+                <div class="card-header">
+                    Corpus Statistics
+                </div>
+                <ul class="list-group list-group-flush">
+                    <small><li th:each="line : ${stats}" th:text="${line}" class="list-group-item"></li></small>
+                </ul>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <table class="table table-hover">
+            <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Num Labels</th>
+                <th>Text annotation</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="key : ${tamap.keySet()}" class="clickable-row" th:classappend="${annotatedfiles.contains(key)} ? table-success : none" th:data-href="@{/edl/annotation(taid=${key})}">
+                <td th:text="${key}"></td>
+                <td th:text="${tamap.get(key).getView('NER_CONLL').getConstituents().size()}"></td>
+                <td th:text="${tamap.get(key).getText().split(' ')[0]}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+</body>
+
+
+</html>
