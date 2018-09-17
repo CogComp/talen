@@ -276,6 +276,7 @@ public class DocumentController {
             tas = loadFolder(dataname, username, sd.datasets);
             hs.setAttribute("tas", tas);
         }catch(Exception e){
+            e.printStackTrace();
             errormsg = e.getMessage();
         }
 

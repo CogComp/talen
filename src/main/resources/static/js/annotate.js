@@ -330,7 +330,8 @@ $(document).ready(function() {
         var startid = "tok-" + range.start;
         var endid = "tok-" + (range.end+1);
 
-        if(!event.target.id=="submitdict"){
+        if(event.target.id !== "submitdict"){
+            console.log("not submitdict...")
             $("[id^=tok]").popover("hide");
 
             resetrange();
