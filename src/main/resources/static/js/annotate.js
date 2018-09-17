@@ -162,7 +162,7 @@ $(document).ready(function() {
         $(document).mousedown(function(e){
             console.log(e);
             var hasclass = $(e.target).hasClass("labelbutton") || $(e.target).hasClass("search");
-            if(!e.target.id == "submitdict" && !e.target.id.startsWith("tok") && !hasclass && !(e.target.tagName == "MARK")) {
+            if(!e.target.id.startsWith("tok") && !hasclass && !(e.target.tagName == "MARK")) {
                 console.log("extraneous click");
                 $("[id^=tok]").popover("hide");
                 resetrange();
@@ -330,14 +330,14 @@ $(document).ready(function() {
         var startid = "tok-" + range.start;
         var endid = "tok-" + (range.end+1);
 
-        if(!event.target.id=="submitdict"){
+        //if(!event.target.id=="submitdict"){
             $("[id^=tok]").popover("hide");
 
             resetrange();
             showtopstats();
 
             addlabel(sentid, startid, endid, buttonvalue);
-        }
+        //}
         
     });
 

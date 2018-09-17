@@ -12,6 +12,8 @@ import edu.illinois.cs.cogcomp.core.utilities.SerializationHelper;
 import org.apache.commons.cli.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -78,6 +80,7 @@ public class TalenCLI {
         labelcolors = new HashMap<>();
         // put some common label colors here.
         labelcolors.put("PER", "yellow");
+        labelcolors.put("PERSON", "yellow");
         labelcolors.put("LOC", "greenyellow");
         labelcolors.put("GPE", "coral");
         labelcolors.put("MISC", "coral");
@@ -159,9 +162,13 @@ public class TalenCLI {
             if(labelcolors.containsKey(label)){
                 color = labelcolors.get(label);
             }else{
-                Random random = new Random();
-                int nextInt = random.nextInt(256*256*256);
-                color = String.format("#%06x", nextInt);
+                Random r = new Random();
+                Color c = Color.getHSBColor(r.nextFloat(), 0.4f, 0.8f);
+                color = String.format("#%02x%02x%02x", c.getRed(), c.getBlue(), c.getGreen());
+                //int nextInt = label.hashCode() % 256*256*256;
+                //color = String.format("#%06x", hex);
+                
+                labelcolors.put(label, color);
             }
             sb_css.append("." + label + "{background-color: " + color + "}");
         }

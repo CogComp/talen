@@ -104,7 +104,7 @@ public class HtmlGenerator {
             int end = c.getEndSpan() - startoffset;
 
             // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='%s cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
+            text[start] = String.format("<span class='%s cons' id='cons-%d-%d' title='%s'>%s", c.getLabel(), start, end, c.getLabel(), text[start]);
             text[end - 1] += "</span>";
         }
 
@@ -217,7 +217,7 @@ public class HtmlGenerator {
             int end = c.getEndSpan() - startoffset;
 
             // important to also include 'cons' class, as it is a keyword in the html
-            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d'>%s", c.getLabel(), start, end, text[start]);
+            text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d' title='%s'>%s", c.getLabel(), start, end, c.getLabel(), text[start]);
             text[end - 1] += "</span>";
         }
 
