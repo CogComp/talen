@@ -127,14 +127,18 @@ public class TalenCLI {
     private static String loadTextAnnotation(String docid) throws Exception {
         TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(docid, true);
 
-        // add a dummy view if
-        if(!ta.hasView(ViewNames.NER_CONLL)){
-            View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
-            ta.addView(ViewNames.NER_CONLL, ner);
-        }else{
+        // add a dummy view if no NER view
+        if(ta.hasView(ViewNames.NER_CONLL)){
             for(Constituent c : ta.getView(ViewNames.NER_CONLL).getConstituents()){
                 labels.add(c.getLabel());
             }
+        }else if(ta.hasView(ViewNames.NER_ONTONOTES)) {
+            for (Constituent c : ta.getView(ViewNames.NER_ONTONOTES).getConstituents()) {
+                labels.add(c.getLabel());
+            }
+        }else{
+            View ner = new View(ViewNames.NER_CONLL, "DocumentController",ta,1.0);
+            ta.addView(ViewNames.NER_CONLL, ner);
         }
 
         // Some style features are not wanted in this version. In particular: we want to
