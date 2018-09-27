@@ -177,7 +177,9 @@ public class TalenCLI {
             sb_css.append("." + label + "{background-color: " + color + "}");
         }
 
-        int ind = listoflinks.indexOf(ta.getId());
+        // sometimes the id is a path.
+        File f = new File(ta.getId());
+        int ind = listoflinks.indexOf(f.getName());
         String prevstring = "";
         String nextstring = "";
 
