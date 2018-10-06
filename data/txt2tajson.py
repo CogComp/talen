@@ -1,26 +1,27 @@
 #!/usr/bin/python
-import sys,os
-import ccg_nlpy
-import json
 import codecs
-
-# Install ccg_nlpy with:
-# $ pip install ccg_nlpy
+import json
+import os
+import sys
 
 # This file converts a folder full of text files (one sentence per line, whitespace tokenized)
 # into a folder of tajson files.
+
+# Usage:
+# $ txt2tajson.py input_folder output_folder
+
 
 def lines2json(lines, fname):
     """ This takes a set of lines (read from some text file)
     and converts them into a JSON TextAnnotation. This assumes
     that there is one sentence per line, whitespace tokenized. """
-    
+
     doc = {}
     doc["corpusId"] = ""
     doc["id"] = fname
 
     sents = {}
-    sentends = []               
+    sentends = []
     tokens = []
 
     for sent in lines:
@@ -38,10 +39,9 @@ def lines2json(lines, fname):
     doc["views"] = []
 
     return doc
-    
+
 
 def convert(infolder, outfolder):
-
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
 
@@ -54,6 +54,10 @@ def convert(infolder, outfolder):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: txt2tajson.py input_folder output_folder")
+        exit(1)
+
     infolder = sys.argv[1]
     outfolder = sys.argv[2]
     convert(infolder, outfolder)
