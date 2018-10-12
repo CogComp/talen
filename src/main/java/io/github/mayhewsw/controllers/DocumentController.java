@@ -190,8 +190,6 @@ public class DocumentController {
             }
         }
 
-        System.out.println(sd.patterns);
-
         logger.info("Done updating patterns.");
     }
 

@@ -40,7 +40,9 @@ public class IO {
             for (int i = 0; i < limit; i++) {
                 File file = files[i];
                 TextAnnotation ta = SerializationHelper.deserializeTextAnnotationFromFile(file.getAbsolutePath());
-                ret.put(file.getName(), ta);
+                // NOTE: ideally file.getName() == ta.getID(), but this is not always the case.
+                //ret.put(file.getName(), ta);
+                ret.put(ta.getId(), ta);
             }
         }else if(foldertype.equals(Common.FOLDERTAJSON)){
 
