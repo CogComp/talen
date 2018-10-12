@@ -326,18 +326,20 @@ $(document).ready(function() {
         console.log(sentid);
         console.log("Clicked on a button..." + buttonvalue);
         console.log(range);
+        console.log(event.target.id);
+        console.log(event.target.id == "submitdict");
 
         var startid = "tok-" + range.start;
         var endid = "tok-" + (range.end+1);
 
-        //if(!event.target.id=="submitdict"){
+        if(!(event.target.id == "submitdict")){
             $("[id^=tok]").popover("hide");
 
             resetrange();
             showtopstats();
 
             addlabel(sentid, startid, endid, buttonvalue);
-        //}
+        }
         
     });
 
@@ -358,6 +360,7 @@ $(document).ready(function() {
 
         $("[id^=tok]").popover("hide");
 
+        console.log(range);
         console.log("you want to submit: " + key + ", " + val);
         $.ajax({
             method: "GET",
