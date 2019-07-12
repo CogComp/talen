@@ -92,16 +92,9 @@ public class Utils {
                 sb.append(googletext +" ");
             }
             text = sb.toString().trim().split(" ");
-        }else {
-
-            Unidecode unidecode = Unidecode.toAscii();
-
+        } else {
             text = ta.getTokens().clone();
-            for(int t = 0; t < text.length; t++){
-                text[t] = unidecode.decode(text[t]);
-            }
         }
-
         return text;
     }
 
