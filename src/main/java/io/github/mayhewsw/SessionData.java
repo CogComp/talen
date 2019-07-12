@@ -23,6 +23,7 @@ public class SessionData {
     public Boolean showdefs;
     public Boolean showroman;
     public Boolean allowcopy;
+    public Boolean showgoogle;
 
 
     public TreeMap<String, TextAnnotation> tas;
@@ -62,6 +63,11 @@ public class SessionData {
         showroman = (Boolean) hs.getAttribute("showroman");
         if(showroman == null){
             showroman = false;
+        }
+
+        showgoogle = (Boolean) hs.getAttribute("showgoogle");
+        if(showgoogle == null){
+            showgoogle = false;
         }
 
         allowcopy = (Boolean) hs.getAttribute("allowcopy");

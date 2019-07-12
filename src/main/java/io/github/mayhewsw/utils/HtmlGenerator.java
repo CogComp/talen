@@ -26,25 +26,29 @@ public class HtmlGenerator {
 //    }
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false, false, false);
     }
 
     public static String getHTMLfromTA(TextAnnotation ta, String query, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false, false, false);
     }
 
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, false, false);
     }
 
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy, false);
+    }
+
+    public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy, boolean showgoogle) {
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy, showgoogle);
     }
 
     // this is basically read only
-    public static String getCopyableHTMLFromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman){
+    public static String getCopyableHTMLFromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean showgoogle){
         IntPair sentspan = new IntPair(-1, -1);
         String id = ta.getId();
 
@@ -71,6 +75,12 @@ public class HtmlGenerator {
         String[] text;
         if(showroman) {
             text = Utils.getRomanTaToks(ta);
+        }else {
+            text = ta.getTokens().clone();
+        }
+
+        if(showgoogle) {
+            text = Utils.getGoogleTaToks(ta);
         }else {
             text = ta.getTokens().clone();
         }
@@ -150,7 +160,7 @@ public class HtmlGenerator {
      * Given a sentence, produce the HTML for display. .
      * @return
      */
-    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy) {
+    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy, boolean showgoogle) {
 
         IntPair sentspan = span;
 
@@ -177,6 +187,12 @@ public class HtmlGenerator {
         String[] text;
         if(showroman) {
             text = Utils.getRomanTaToks(ta);
+        }else {
+            text = ta.getTokens().clone();
+        }
+
+        if(showgoogle) {
+            text = Utils.getGoogleTaToks(ta);
         }else {
             text = ta.getTokens().clone();
         }

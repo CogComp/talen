@@ -79,6 +79,32 @@ public class Utils {
         return text;
     }
 
+    public static String[] getGoogleTaToks(TextAnnotation ta){
+        String[] text;
+        if(ta.hasView("GOOGLE_RELEVANT")){
+            View google = ta.getView("GOOGLE_RELEVANT");
+            StringBuilder sb = new StringBuilder();
+            for(Constituent c : google.getConstituents()){
+                String googletext = c.getLabel().replace(" ", "_");
+                if (googletext.length() == 0){
+                    googletext = "_";
+                }
+                sb.append(googletext +" ");
+            }
+            text = sb.toString().trim().split(" ");
+        }else {
+
+            Unidecode unidecode = Unidecode.toAscii();
+
+            text = ta.getTokens().clone();
+            for(int t = 0; t < text.length; t++){
+                text[t] = unidecode.decode(text[t]);
+            }
+        }
+
+        return text;
+    }
+
 
     /**
      * This removes all stems from a word, even if they are stacked.

@@ -271,6 +271,20 @@ $(document).ready(function() {
 
     });
 
+    $("#googlebutton").click(function(){
+            $.ajax({
+                method: "GET",
+                url: baseurl + "/" + controller + "/togglegoogle",
+                data: {idlist: getsentids()}
+            }).done(function (msg) {
+                console.log("successful toggle");
+                $("#htmlcontainer").html(msg);
+                showtopstats();
+                loadtok();
+            });
+
+        });
+
 
     $("#copybutton").click(function(){
         $.ajax({
