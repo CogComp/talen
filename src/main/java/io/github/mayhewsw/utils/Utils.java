@@ -84,14 +84,37 @@ public class Utils {
         if(ta.hasView("GOOGLE_RELEVANT")){
             View google = ta.getView("GOOGLE_RELEVANT");
             StringBuilder sb = new StringBuilder();
+
+            int currIndex = 0;
+
             for(Constituent c : google.getConstituents()){
                 String googletext = c.getLabel().replace(" ", "_");
                 if (googletext.length() == 0){
                     googletext = "_";
                 }
                 System.out.println(googletext);
+
+                int start = c.getStartSpan();
+                int end = c.getEndSpan();
+
+                String[] tokensBefore = ta.getTokensInSpan(currIndex, start);
+                for (int i = 0; i < tokensBefore.length; i++) {
+                    sb.append(tokensBefore[i]);
+                }
+
+                currIndex = end;
+
                 sb.append(googletext + " ");
             }
+
+            int lastTAIndex = ta.getTokens().length - 1;
+            if (currIndex != lastTAIndex) {
+                String[] tokensBefore = ta.getTokensInSpan(currIndex, lastTAIndex);
+                for (int i = 0; i < tokensBefore.length; i++) {
+                    sb.append(tokensBefore[i]);
+                }
+            }
+
             text = sb.toString().trim().split(" ");
         } else {
             System.out.println("GOOGLE_RELEVANT view not found");
