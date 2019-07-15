@@ -1050,7 +1050,7 @@ public class DocumentController {
         String ret = "";
         for(String sentid : sentids){
             TextAnnotation ta = sd.tas.get(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.showgoogle);
+            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
             ret += html + "\n";
         }
 
