@@ -86,6 +86,7 @@ public class Utils {
             StringBuilder sb = new StringBuilder();
             for(Constituent c : google.getConstituents()){
                 String googletext = c.getLabel();
+                System.out.println(googletext);
                 sb.append(googletext + " ");
             }
             text = sb.toString().trim().split(" ");
