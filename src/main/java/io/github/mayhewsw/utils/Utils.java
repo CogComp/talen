@@ -86,6 +86,7 @@ public class Utils {
             StringBuilder sb = new StringBuilder();
 
             int currIndex = 0;
+            int tokens = 0;
 
             for(Constituent c : google.getConstituents()){
                 String googletext = c.getLabel().replace(" ", "_");
@@ -100,21 +101,29 @@ public class Utils {
                 String[] tokensBefore = ta.getTokensInSpan(currIndex, start);
                 for (int i = 0; i < tokensBefore.length; i++) {
                     sb.append(tokensBefore[i]);
+                    tokens++;
                 }
 
                 currIndex = end;
 
                 sb.append(googletext + " ");
+                tokens++;
             }
 
             int lastTAIndex = ta.getTokens().length - 1;
+
+            System.out.println("currIndex = " + currIndex);
+            System.out.println("lastTAindex = " + lastTAIndex);
+
             if (currIndex != lastTAIndex) {
                 String[] tokensBefore = ta.getTokensInSpan(currIndex, lastTAIndex);
                 for (int i = 0; i < tokensBefore.length; i++) {
                     sb.append(tokensBefore[i]);
+                    tokens++;
                 }
             }
 
+            System.out.println("Tokens added: " + tokens);
             text = sb.toString().trim().split(" ");
         } else {
             System.out.println("GOOGLE_RELEVANT view not found");
