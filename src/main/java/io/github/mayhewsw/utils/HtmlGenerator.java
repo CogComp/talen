@@ -78,11 +78,9 @@ public class HtmlGenerator {
         }else {
             text = ta.getTokens().clone();
         }
-
+        
         if(showgoogle) {
             text = Utils.getGoogleTaToks(ta);
-        }else {
-            text = ta.getTokens().clone();
         }
 
         if(sentspan.getFirst() != -1) {
