@@ -61,6 +61,8 @@ public class HtmlGenerator {
             ner = ta.getView(ViewNames.NER_CONLL);
         }
 
+        View googleNer = null;
+
         View nersugg = null;
         if(ta.hasView("NER_SUGGESTION")) {
             nersugg = ta.getView("NER_SUGGESTION");
@@ -82,6 +84,9 @@ public class HtmlGenerator {
 
         if(showgoogle) {
             //text = Utils.getGoogleTaToks(ta);
+            if (ta.hasView("GOOGLE")) {
+                googleNer = ta.getView("GOOGLE");
+            }
         }
 
         if(sentspan.getFirst() != -1) {
@@ -125,13 +130,32 @@ public class HtmlGenerator {
 
         // Then add sentences.
         List<Constituent> sentlist;
+        List<Constituent> sentGoogleNer = new ArrayList<>();
         View sentview = ta.getView(ViewNames.SENTENCE);
         if(sentspan.getFirst() == -1){
             sentlist = sentview.getConstituents();
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituents();
+            }
             startoffset = 0;
         }else {
             sentlist = sentview.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            }
             startoffset = sentspan.getFirst();
+        }
+
+        if (sentGoogleNer.size() > 0) {
+            for (Constituent c : sentGoogleNer) {
+
+                int start = c.getStartSpan() - startoffset;
+                int end = c.getEndSpan() - startoffset;
+
+                // important to also include 'cons' class, as it is a keyword in the html
+                text[start] = String.format("<span class='suggestion' id='cons-%d-%d' title='%s'>%s", start, end, c.getLabel(), text[start]);
+                text[end - 1] += "</span>";
+            }
         }
 
         for (Constituent c : sentlist) {
