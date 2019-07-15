@@ -11,6 +11,7 @@ import io.github.mayhewsw.Dictionary;
 import org.apache.commons.lang3.StringUtils;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -181,6 +182,8 @@ public class HtmlGenerator {
             ta.addView("NER_SUGGESTION", nersugg);
         }
 
+        View googleNer = null;
+
         String[] nonroman_text = ta.getTokens().clone();
 
         // We clone the text so that when we modify it (below) the TA is unchanged.
@@ -193,6 +196,9 @@ public class HtmlGenerator {
 
         if(showgoogle) {
             text = Utils.getGoogleTaToks(ta);
+            if (ta.hasView("GOOGLE")) {
+                googleNer = ta.getView("GOOGLE");
+            }
         }
 
         if(sentspan.getFirst() != -1) {
@@ -225,17 +231,37 @@ public class HtmlGenerator {
         }
 
         List<Constituent> sentner;
+        List<Constituent> sentGoogleNer = new ArrayList<>();
         List<Constituent> sentnersugg;
         int startoffset;
         if(sentspan.getFirst() == -1){
             sentner = ner.getConstituents();
             sentnersugg = nersugg.getConstituents();
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituents();
+            }
             startoffset = 0;
         }else {
             sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
             sentnersugg = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            }
             startoffset = sentspan.getFirst();
         }
+
+        if (sentGoogleNer.size() > 0) {
+            for (Constituent c : sentGoogleNer) {
+
+                int start = c.getStartSpan() - startoffset;
+                int end = c.getEndSpan() - startoffset;
+
+                // important to also include 'cons' class, as it is a keyword in the html
+                text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d' title='%s'>%s", c.getLabel(), start, end, c.getLabel(), text[start]);
+                text[end - 1] += "</span>";
+            }
+        }
+
 
         for (Constituent c : sentner) {
 
@@ -246,6 +272,7 @@ public class HtmlGenerator {
             text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d' title='%s'>%s", c.getLabel(), start, end, c.getLabel(), text[start]);
             text[end - 1] += "</span>";
         }
+
 
 //        for (Constituent c : sentnersugg) {
 //

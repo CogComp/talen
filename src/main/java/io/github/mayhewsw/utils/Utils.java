@@ -25,6 +25,7 @@ public class Utils {
         labelcolors.put("GPE", "coral");
         labelcolors.put("MISC", "coral");
         labelcolors.put("ORG", "lightblue");
+        labelcolors.put("G", "grey");
     }
 
     /**
