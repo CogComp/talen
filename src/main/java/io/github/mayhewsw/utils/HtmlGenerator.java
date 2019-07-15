@@ -245,7 +245,8 @@ public class HtmlGenerator {
 
             int start = c.getStartSpan() - startoffset;
             int end = c.getEndSpan() - startoffset;
-            
+
+            System.out.println("len(text) = " + text.length);
             System.out.println("start index: " + start);
             System.out.println("end index: " + end);
 
