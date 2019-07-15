@@ -110,7 +110,7 @@ public class Utils {
                 tokens++;
             }
 
-            int lastTAIndex = ta.getTokens().length - 1;
+            int lastTAIndex = ta.getTokens().length;
 
             System.out.println("currIndex = " + currIndex);
             System.out.println("lastTAindex = " + lastTAIndex);
