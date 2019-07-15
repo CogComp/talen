@@ -186,6 +186,7 @@ public class HtmlGenerator {
         // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text;
         if(showroman) {
+            System.out.println("Show_Roman button clicked");
             text = Utils.getRomanTaToks(ta);
         }else {
             text = ta.getTokens().clone();
@@ -194,6 +195,8 @@ public class HtmlGenerator {
         if(showgoogle) {
             System.out.println("Show_Google button clicked");
             text = Utils.getGoogleTaToks(ta);
+        } else {
+            System.out.println("Show_Google button was not clicked... ");
         }
 
         if(sentspan.getFirst() != -1) {
