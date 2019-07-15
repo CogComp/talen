@@ -85,11 +85,8 @@ public class Utils {
             View google = ta.getView("GOOGLE_RELEVANT");
             StringBuilder sb = new StringBuilder();
             for(Constituent c : google.getConstituents()){
-                String googletext = c.getLabel().replace(" ", "_");
-                if (googletext.length() == 0){
-                    googletext = "_";
-                }
-                sb.append(googletext +" ");
+                String googletext = c.getLabel();
+                sb.append(googletext + " ");
             }
             text = sb.toString().trim().split(" ");
         } else {
