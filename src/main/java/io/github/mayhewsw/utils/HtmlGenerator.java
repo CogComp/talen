@@ -161,6 +161,7 @@ public class HtmlGenerator {
      */
     public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy, boolean showgoogle) {
 
+        System.out.println("Inside getHTMLfromTA method");
         IntPair sentspan = span;
 
         // required to have one view or another...
