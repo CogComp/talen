@@ -80,6 +80,7 @@ public class HtmlGenerator {
         }
 
         if(showgoogle) {
+            System.out.println("Show_Google button clicked");
             text = Utils.getGoogleTaToks(ta);
         }
 
@@ -190,6 +191,7 @@ public class HtmlGenerator {
         }
 
         if(showgoogle) {
+            System.out.println("Show_Google button clicked");
             text = Utils.getGoogleTaToks(ta);
         }
 

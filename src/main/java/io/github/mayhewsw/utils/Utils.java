@@ -91,6 +91,7 @@ public class Utils {
             }
             text = sb.toString().trim().split(" ");
         } else {
+            System.out.println("GOOGLE_RELEVANT view not found");
             text = ta.getTokens().clone();
         }
         return text;
