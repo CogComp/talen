@@ -100,7 +100,7 @@ public class Utils {
 
                 String[] tokensBefore = ta.getTokensInSpan(currIndex, start);
                 for (int i = 0; i < tokensBefore.length; i++) {
-                    sb.append(tokensBefore[i]);
+                    sb.append(tokensBefore[i] + " ");
                     tokens++;
                 }
 
@@ -118,7 +118,7 @@ public class Utils {
             if (currIndex != lastTAIndex) {
                 String[] tokensBefore = ta.getTokensInSpan(currIndex, lastTAIndex);
                 for (int i = 0; i < tokensBefore.length; i++) {
-                    sb.append(tokensBefore[i]);
+                    sb.append(tokensBefore[i] + " ");
                     tokens++;
                 }
             }
