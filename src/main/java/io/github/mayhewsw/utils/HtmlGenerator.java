@@ -81,8 +81,7 @@ public class HtmlGenerator {
         }
 
         if(showgoogle) {
-            System.out.println("Show_Google button clicked");
-            text = Utils.getGoogleTaToks(ta);
+            //text = Utils.getGoogleTaToks(ta);
         }
 
         if(sentspan.getFirst() != -1) {
@@ -195,7 +194,7 @@ public class HtmlGenerator {
         }
 
         if(showgoogle) {
-            text = Utils.getGoogleTaToks(ta);
+            //text = Utils.getGoogleTaToks(ta);
             if (ta.hasView("GOOGLE")) {
                 googleNer = ta.getView("GOOGLE");
             }
