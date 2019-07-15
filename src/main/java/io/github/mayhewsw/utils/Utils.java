@@ -81,19 +81,17 @@ public class Utils {
 
     public static String[] getGoogleTaToks(TextAnnotation ta){
         String[] text;
-        if(ta.hasView("GOOGLE_RELEVANT")){
-            View google = ta.getView("GOOGLE_RELEVANT");
+        if(ta.hasView("GOOGLE")){
+            View google = ta.getView("GOOGLE");
             StringBuilder sb = new StringBuilder();
 
             int currIndex = 0;
-            int tokens = 0;
 
             for(Constituent c : google.getConstituents()){
                 String googletext = c.getLabel().replace(" ", "_");
                 if (googletext.length() == 0){
                     googletext = "_";
                 }
-                System.out.println(googletext);
 
                 int start = c.getStartSpan();
                 int end = c.getEndSpan();
@@ -101,29 +99,22 @@ public class Utils {
                 String[] tokensBefore = ta.getTokensInSpan(currIndex, start);
                 for (int i = 0; i < tokensBefore.length; i++) {
                     sb.append(tokensBefore[i] + " ");
-                    tokens++;
                 }
 
                 currIndex = end;
 
                 sb.append(googletext + " ");
-                tokens++;
             }
 
             int lastTAIndex = ta.getTokens().length;
-
-            System.out.println("currIndex = " + currIndex);
-            System.out.println("lastTAindex = " + lastTAIndex);
 
             if (currIndex != lastTAIndex) {
                 String[] tokensBefore = ta.getTokensInSpan(currIndex, lastTAIndex);
                 for (int i = 0; i < tokensBefore.length; i++) {
                     sb.append(tokensBefore[i] + " ");
-                    tokens++;
                 }
             }
 
-            System.out.println("Tokens added: " + tokens);
             text = sb.toString().trim().split(" ");
         } else {
             System.out.println("GOOGLE_RELEVANT view not found");

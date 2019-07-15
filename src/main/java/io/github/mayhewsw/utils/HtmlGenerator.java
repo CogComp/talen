@@ -186,17 +186,13 @@ public class HtmlGenerator {
         // We clone the text so that when we modify it (below) the TA is unchanged.
         String[] text;
         if(showroman) {
-            System.out.println("Show_Roman button clicked");
             text = Utils.getRomanTaToks(ta);
         }else {
             text = ta.getTokens().clone();
         }
 
         if(showgoogle) {
-            System.out.println("Show_Google button clicked");
             text = Utils.getGoogleTaToks(ta);
-        } else {
-            System.out.println("Show_Google button was not clicked... ");
         }
 
         if(sentspan.getFirst() != -1) {
@@ -245,10 +241,6 @@ public class HtmlGenerator {
 
             int start = c.getStartSpan() - startoffset;
             int end = c.getEndSpan() - startoffset;
-
-            System.out.println("len(text) = " + text.length);
-            System.out.println("start index: " + start);
-            System.out.println("end index: " + end);
 
             // important to also include 'cons' class, as it is a keyword in the html
             text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d' title='%s'>%s", c.getLabel(), start, end, c.getLabel(), text[start]);
