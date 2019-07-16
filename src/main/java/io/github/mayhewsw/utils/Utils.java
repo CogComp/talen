@@ -25,6 +25,7 @@ public class Utils {
         labelcolors.put("GPE", "coral");
         labelcolors.put("MISC", "coral");
         labelcolors.put("ORG", "lightblue");
+        labelcolors.put("G", "grey");
     }
 
     /**
@@ -76,6 +77,50 @@ public class Utils {
             }
         }
 
+        return text;
+    }
+
+    public static String[] getGoogleTaToks(TextAnnotation ta){
+        String[] text;
+        if(ta.hasView("GOOGLE")){
+            View google = ta.getView("GOOGLE");
+            StringBuilder sb = new StringBuilder();
+
+            int currIndex = 0;
+
+            for(Constituent c : google.getConstituents()){
+                String googletext = c.getLabel().replace(" ", "_");
+                if (googletext.length() == 0){
+                    googletext = "_";
+                }
+
+                int start = c.getStartSpan();
+                int end = c.getEndSpan();
+
+                String[] tokensBefore = ta.getTokensInSpan(currIndex, start);
+                for (int i = 0; i < tokensBefore.length; i++) {
+                    sb.append(tokensBefore[i] + " ");
+                }
+
+                currIndex = end;
+
+                sb.append(googletext + " ");
+            }
+
+            int lastTAIndex = ta.getTokens().length;
+
+            if (currIndex != lastTAIndex) {
+                String[] tokensBefore = ta.getTokensInSpan(currIndex, lastTAIndex);
+                for (int i = 0; i < tokensBefore.length; i++) {
+                    sb.append(tokensBefore[i] + " ");
+                }
+            }
+
+            text = sb.toString().trim().split(" ");
+        } else {
+            System.out.println("GOOGLE_RELEVANT view not found");
+            text = ta.getTokens().clone();
+        }
         return text;
     }
 

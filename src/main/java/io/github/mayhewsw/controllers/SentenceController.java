@@ -793,7 +793,7 @@ public class SentenceController {
         }
 
         String query = "";
-        return HtmlGenerator.getHTMLfromTA(ta, sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs, sd.showroman, false);
+        return HtmlGenerator.getHTMLfromTA(ta, sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs, sd.showroman, false, false);
     }
 
     @RequestMapping(value = "/gethtml", method = RequestMethod.POST)
@@ -805,7 +805,7 @@ public class SentenceController {
         String ret = "";
         for(String sentid : sentids){
             Constituent sent = sd.cache.getSentence(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs, sd.showroman, false);
+            String html = HtmlGenerator.getHTMLfromTA(sent.getTextAnnotation(), sent.getSpan(), getSentId(sent), query, sd.dict, sd.showdefs, sd.showroman, false, sd.showgoogle);
             ret += html + "\n<br />";
         }
 

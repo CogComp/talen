@@ -602,7 +602,7 @@ public class DocumentController {
         Map.Entry<String, TextAnnotation> entry = sd.tas.firstEntry();
         TextAnnotation ta = entry.getValue();
 
-        String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
 
         model.addAttribute("html", html);
 
@@ -684,7 +684,7 @@ public class DocumentController {
         View sents = ta.getView(ViewNames.SENTENCE);
 
         // set up the html string.
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
         model.addAttribute("html", out);
 
         if(!tas.firstKey().equals(taid)) {
@@ -763,7 +763,7 @@ public class DocumentController {
             View sents = ta.getView(ViewNames.SENTENCE);
             List<Constituent> sentlc = sents.getConstituentsCoveringSpan(starttokint, endtokint);
             if(sentlc.size() != 1){
-                String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+                String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
                 System.out.println("Cannot annotate across sentences");
                 return;
             }
@@ -882,7 +882,7 @@ public class DocumentController {
         // TODO: remove this because it is slow!!!
         //updateallpatterns(sd);
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
         return out;
     }
 
@@ -905,7 +905,7 @@ public class DocumentController {
             ner.removeConstituent(c);
         }
 
-        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        String out = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
         return out;
     }
 
@@ -922,7 +922,7 @@ public class DocumentController {
         hs.setAttribute("showdefs", showdefs);
         sd.showdefs = showdefs;
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
     }
 
     @RequestMapping(value="/togglerom", method= RequestMethod.GET)
@@ -938,7 +938,23 @@ public class DocumentController {
         hs.setAttribute("showroman", showroman);
         sd.showroman = showroman;
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
+    }
+
+    @RequestMapping(value="/togglegoogle", method= RequestMethod.GET)
+    @ResponseBody
+    public String togglegoogle(@RequestParam(value="idlist[]") String[] idlist, HttpSession hs) {
+
+        SessionData sd = new SessionData(hs);
+        TreeMap<String, TextAnnotation> tas = sd.tas;
+        TextAnnotation ta = tas.get(idlist[0]);
+
+        Boolean showgoogle = sd.showgoogle;
+        showgoogle = !showgoogle;
+        hs.setAttribute("showgoogle", showgoogle);
+        sd.showgoogle = showgoogle;
+
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
     }
 
     @RequestMapping(value="/togglecopy", method= RequestMethod.GET)
@@ -956,9 +972,9 @@ public class DocumentController {
 
         String ret;
         if(allowcopy) {
-            ret = HtmlGenerator.getCopyableHTMLFromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+            ret = HtmlGenerator.getCopyableHTMLFromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.showgoogle);
         }else{
-            ret = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+            ret = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
         }
 
         return ret;
@@ -1002,7 +1018,7 @@ public class DocumentController {
 
         }
 
-        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+        return HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
     }
 
 
@@ -1034,7 +1050,7 @@ public class DocumentController {
         String ret = "";
         for(String sentid : sentids){
             TextAnnotation ta = sd.tas.get(sentid);
-            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman);
+            String html = HtmlGenerator.getHTMLfromTA(ta, sd.dict, sd.showdefs, sd.showroman, sd.allowcopy, sd.showgoogle);
             ret += html + "\n";
         }
 

@@ -11,6 +11,7 @@ import io.github.mayhewsw.Dictionary;
 import org.apache.commons.lang3.StringUtils;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,25 +27,29 @@ public class HtmlGenerator {
 //    }
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, false, false, false);
     }
 
     public static String getHTMLfromTA(TextAnnotation ta, String query, Dictionary dict, boolean showdefs) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), query, dict, showdefs, false, false, false);
     }
 
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, false);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, false, false);
     }
 
 
     public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy) {
-        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy);
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy, false);
+    }
+
+    public static String getHTMLfromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy, boolean showgoogle) {
+        return getHTMLfromTA(ta, new IntPair(-1, -1), ta.getId(), "", dict, showdefs, showroman, allowcopy, showgoogle);
     }
 
     // this is basically read only
-    public static String getCopyableHTMLFromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman){
+    public static String getCopyableHTMLFromTA(TextAnnotation ta, Dictionary dict, boolean showdefs, boolean showroman, boolean showgoogle){
         IntPair sentspan = new IntPair(-1, -1);
         String id = ta.getId();
 
@@ -55,6 +60,8 @@ public class HtmlGenerator {
         } else{
             ner = ta.getView(ViewNames.NER_CONLL);
         }
+
+        View googleNer = null;
 
         View nersugg = null;
         if(ta.hasView("NER_SUGGESTION")) {
@@ -73,6 +80,13 @@ public class HtmlGenerator {
             text = Utils.getRomanTaToks(ta);
         }else {
             text = ta.getTokens().clone();
+        }
+
+        if(showgoogle) {
+            //text = Utils.getGoogleTaToks(ta);
+            if (ta.hasView("GOOGLE")) {
+                googleNer = ta.getView("GOOGLE");
+            }
         }
 
         if(sentspan.getFirst() != -1) {
@@ -116,13 +130,32 @@ public class HtmlGenerator {
 
         // Then add sentences.
         List<Constituent> sentlist;
+        List<Constituent> sentGoogleNer = new ArrayList<>();
         View sentview = ta.getView(ViewNames.SENTENCE);
         if(sentspan.getFirst() == -1){
             sentlist = sentview.getConstituents();
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituents();
+            }
             startoffset = 0;
         }else {
             sentlist = sentview.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            }
             startoffset = sentspan.getFirst();
+        }
+
+        if (sentGoogleNer.size() > 0) {
+            for (Constituent c : sentGoogleNer) {
+
+                int start = c.getStartSpan() - startoffset;
+                int end = c.getEndSpan() - startoffset;
+
+                // important to also include 'cons' class, as it is a keyword in the html
+                text[start] = String.format("<span class='suggestion' id='cons-%d-%d' title='%s'>%s", start, end, c.getLabel(), text[start]);
+                text[end - 1] += "</span>";
+            }
         }
 
         for (Constituent c : sentlist) {
@@ -150,7 +183,7 @@ public class HtmlGenerator {
      * Given a sentence, produce the HTML for display. .
      * @return
      */
-    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy) {
+    public static String getHTMLfromTA(TextAnnotation ta, IntPair span, String id, String query, Dictionary dict, boolean showdefs, boolean showroman, boolean allowcopy, boolean showgoogle) {
 
         IntPair sentspan = span;
 
@@ -171,6 +204,8 @@ public class HtmlGenerator {
             ta.addView("NER_SUGGESTION", nersugg);
         }
 
+        View googleNer = null;
+
         String[] nonroman_text = ta.getTokens().clone();
 
         // We clone the text so that when we modify it (below) the TA is unchanged.
@@ -179,6 +214,13 @@ public class HtmlGenerator {
             text = Utils.getRomanTaToks(ta);
         }else {
             text = ta.getTokens().clone();
+        }
+
+        if(showgoogle) {
+            //text = Utils.getGoogleTaToks(ta);
+            if (ta.hasView("GOOGLE")) {
+                googleNer = ta.getView("GOOGLE");
+            }
         }
 
         if(sentspan.getFirst() != -1) {
@@ -211,17 +253,37 @@ public class HtmlGenerator {
         }
 
         List<Constituent> sentner;
+        List<Constituent> sentGoogleNer = new ArrayList<>();
         List<Constituent> sentnersugg;
         int startoffset;
         if(sentspan.getFirst() == -1){
             sentner = ner.getConstituents();
             sentnersugg = nersugg.getConstituents();
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituents();
+            }
             startoffset = 0;
         }else {
             sentner = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
             sentnersugg = ner.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            if (googleNer != null) {
+                sentGoogleNer = googleNer.getConstituentsCoveringSpan(sentspan.getFirst(), sentspan.getSecond());
+            }
             startoffset = sentspan.getFirst();
         }
+
+        if (sentGoogleNer.size() > 0) {
+            for (Constituent c : sentGoogleNer) {
+
+                int start = c.getStartSpan() - startoffset;
+                int end = c.getEndSpan() - startoffset;
+
+                // important to also include 'cons' class, as it is a keyword in the html
+                text[start] = String.format("<span class='suggestion' id='cons-%d-%d' title='%s'>%s", start, end, c.getLabel(), text[start]);
+                text[end - 1] += "</span>";
+            }
+        }
+
 
         for (Constituent c : sentner) {
 
@@ -232,6 +294,7 @@ public class HtmlGenerator {
             text[start] = String.format("<span class='%s pointer cons' id='cons-%d-%d' title='%s'>%s", c.getLabel(), start, end, c.getLabel(), text[start]);
             text[end - 1] += "</span>";
         }
+
 
 //        for (Constituent c : sentnersugg) {
 //
